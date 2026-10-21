@@ -198,3 +198,14 @@ This iteration comes directly from mobile feedback after the core Find Dinner fl
 ## Milestone 1D.2 — A layout fix still needs visual refinement
 
 The first structural footer fix kept content from sliding behind navigation but retained a rounded floating card against cream page background. The next iteration uses a full-width surface with a clean dividing line and preserves rounded affordances for individual tabs. **PM takeaway:** usability correctness and visual cohesion are separate acceptance criteria. Mobile safe-area backgrounds must also be considered, not just the clickable tab controls.
+
+## Milestone 1D.3 — Brand polish and recognizing a stopping point
+
+### Content-column alignment
+A header can be individually left-aligned but still appear offset from a centered, narrower page content column. The corrected header uses a width that includes the content column plus its horizontal padding. **PM takeaway:** check alignment relative to the rest of the screen, not just CSS `text-align: left`.
+
+### Small branded icons without dependencies
+A tiny inline SVG using existing sage color tokens avoids emoji rendering differences, new image requests and package churn. **PM takeaway:** prefer the smallest solution that meets the intended visual quality.
+
+### When to resume feature work
+Product feedback identified concrete defects and visual distractions; this milestone addresses the last reported header concern. **PM takeaway:** declare a polish stopping point and resume validated user-value work. Build success, code review and real-device acceptance are different levels of evidence.

@@ -156,3 +156,12 @@ A later GitHub Actions run unexpectedly published an earlier commit after the Mi
 - The footer (including the iPhone bottom safe area) occupies dedicated flex layout space; the main page scrolls independently and cannot pass underneath the navigation.
 - **Only appearance/layout was changed:** no change to search results, recipe detail behavior, profile data, persistence, or AI.
 - Mobile acceptance: on iPhone, inspect the boundary between cream content and white footer while scrolling and on long cards; confirm all final buttons and text are reachable above the footer.
+
+## Milestone 1D.3 — Final header branding and UX checkpoint (October 21, 2026)
+
+- Displayed app header is **Find dinner.** (lowercase `d` after Find, trailing period), left-aligned to the same centered content column as the page body at larger screen sizes.
+- Replaced the plain starburst glyph with a small, hand-authored steaming-bowl SVG. It uses the existing sage icon color on a sage-soft rounded square, with no new image assets, icon package, network requests or fonts.
+- The browser tab title remains **Find Dinner**, and GitHub repository, Pages URL, storage keys and navigation labels are unchanged.
+- Reviewed the three core pages and recipe details for the final UX pass: route scroll-to-top, separate scrollable main pane and non-overlapping footer, existing editable profile controls, recipe links, and three-plus-expandable results. **Static code review does not establish on-device visual or interaction success.** No other application edits were necessary within this pass.
+- **iPhone acceptance test:** confirm the icon looks aligned and visible, “Find dinner.” lines up with page content, no heading or header tagline crowds it on phone, view a recipe from the bottom of expanded results and return, and verify the white navigation footer does not cover the last item on any page.
+- After acceptance, prioritize the **next functional product milestone** rather than open-ended aesthetic polishing. A separate explicit scope approval is required for the next feature.

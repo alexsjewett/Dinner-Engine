@@ -132,3 +132,9 @@ The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions re
 ## Milestone 1D.2 — Footer polish
 
 **Approved and implemented, awaiting phone visual acceptance:** A full-width white footer now backs the existing bottom navigation. The earlier floating-nav rounded container and pronounced shadow are removed, leaving softer rounding only on individual tab states. Main content still scrolls independently and stays above the footer. No other feature changes.
+
+## Milestone 1D.3 — Final small UI polish and move-forward decision
+
+**Approved and implemented; deployment and phone acceptance tracked separately.** Header changed to “Find dinner.” with a sage steaming-bowl icon and alignment to the page content column. The rest of the app was reviewed in a limited static UX checklist, with no broader redesign or unrelated feature work.
+
+**Next:** Once the user confirms the revised header looks right, propose and separately approve the next functional feature milestone. Avoid polishing indefinitely without clear usability issues. Do not infer user acceptance from a successful GitHub Pages build.

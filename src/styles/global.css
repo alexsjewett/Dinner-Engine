@@ -34,16 +34,26 @@ a:focus-visible, button:focus-visible {
   overflow: hidden;
 }
 .top-header {
-  max-width: 950px;
+  /* Align brand to the left edge of the centered 710px page content. */
+  width: min(100%, 754px);
   margin: 0 auto;
-  padding: calc(24px + env(safe-area-inset-top, 0px)) 22px 8px;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 22px 8px;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 11px;
   flex: 0 0 auto;
 }
-.brand-symbol { color: var(--sage); font-size: 28px; line-height: 1; }
-.brand-name { font-size: 19px; font-weight: 800; letter-spacing: -0.7px; }
+.brand-symbol {
+  display: inline-grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+.brand-name { font-size: 20px; font-weight: 800; letter-spacing: -0.7px; }
 .header-note {
   margin-left: auto;
   font-size: 12px;

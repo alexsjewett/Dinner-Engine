@@ -130,3 +130,13 @@ No ingredient/dietary rule, recipe, household data, or AI changes were authorize
 | DEC-055 | Pending device check | Preserve the 1D.1 dedicated footer space and content scrolling, including iOS safe-area coverage. | A visual refinement must not reintroduce overlapping navigation or clipped controls. |
 
 This approval covers visual/layout polish only; no matching, recipe, profile, storage, or AI changes.
+
+## Milestone 1D.3 — Header branding and UX checkpoint (October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-056 | Approved and implemented | Use “Find dinner.” with a trailing period in the visual header; keep the existing GitHub URL and browser title. | Friendlier personality without infrastructure renaming. |
+| DEC-057 | Approved and implemented | Replace the starburst with a compact, sage-colored steaming-bowl SVG icon on sage-soft background. Align header width with the page content column. | Matches the established palette and aligns the brand with the primary content, without adding icon dependencies. |
+| DEC-058 | Review complete; mobile acceptance pending | Perform a scoped static UX checklist for navigation, route scroll, results expansion and profile inputs, without unrelated rewrites. | Preserve core workflow while ensuring small polish does not overshadow the next functional increment. |
+
+No changes to matching, profile storage, recipe content, AI, backend or public repository identifier.
