@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:import": "node tests/paprika-import-smoke.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

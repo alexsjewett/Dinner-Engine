@@ -9,9 +9,18 @@ import type { ImportPreview, ImportedRecipe } from "../types/importedRecipe";
 
 const samples = getAllRecipes();
 type Tab = "my" | "sample";
+const TAB_SESSION_KEY = "find-dinner:library-tab:v1";
+
+function readTab(): Tab {
+  try {
+    return sessionStorage.getItem(TAB_SESSION_KEY) === "sample" ? "sample" : "my";
+  } catch {
+    return "my";
+  }
+}
 
 export function RecipeLibrary() {
-  const [tab, setTab] = useState<Tab>("my");
+  const [tab, setTab] = useState<Tab>(readTab);
   const [imported, setImported] = useState<ImportedRecipe[]>([]);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
@@ -19,6 +28,10 @@ export function RecipeLibrary() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    try { sessionStorage.setItem(TAB_SESSION_KEY, tab); } catch { /* optional */ }
+  }, [tab]);
 
   useEffect(() => {
     listImportedRecipes()
