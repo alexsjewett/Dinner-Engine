@@ -1,8 +1,8 @@
-# Dinner Engine
+# Find Dinner
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1 Milestone 1D: Find Dinner rule-based search, household profile selection and explained demo recipe recommendations implemented; final deployment and mobile acceptance checks tracked separately.
+**Status:** Phase 1 Milestone 1D.1: mobile UX polish implemented, with final deployment and iPhone acceptance checks tracked separately.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -130,3 +130,17 @@ A recipe with identified conflicts may still inspire an adaptation, but **the us
 4. Try Gluten-free and Vegan checkboxes on sample profiles and inspect review reasons; labels and cross-contact still require human verification.
 5. Open a suggested recipe, tap Back to Find Dinner; check input and results remain.
 6. Repeat on iPhone; remember household profiles and searches are browser-local.
+
+## Milestone 1D.1 — Mobile UX & Polish (October 21, 2026)
+
+The **public-facing app name** is now **Find Dinner** (app header, browser title, and visible recipe messaging). The GitHub repository remains `alexsjewett/Dinner-Engine`, and the existing Pages URL and storage keys stay unchanged.
+
+- Intro copy now begins: “Share what's in your kitchen, how much time you have, and who's eating.”
+- Find Dinner still starts with the exact same **top three** deterministic recommendations and the same straightforward-versus-review markings. When more candidates are available, **Show more matches** appends up to seven more (ten total); **Show fewer matches** restores the initial three. Additional cards are flagged and explained with the same safety caveats.
+- Expanding or collapsing the matches is held in the existing per-tab search session, including navigation to a recipe and back. A new submitted search resets to the initial three.
+- Navigating to a recipe (including View from Find Dinner or Recipe Library) scrolls the actual page-content container to the top rather than inheriting the previous page's scroll position.
+- The entire app now uses a full-height flex column. The header and bottom navigation occupy their own layout space; only main content scrolls. The nav no longer overlays any content, including on iPhone safe-area layouts.
+- Profiles page now reads “Who's eating dinner today?”
+- No changes were made to profile storage, recipe source data, ingredient classifications, dietary matching/ranking rules, AI/backend architecture, or GitHub URL.
+
+**iPhone acceptance test:** open Find Dinner, run a search, expand and collapse results, open a recipe from lower in the list and verify its title appears at the top, return and verify search criteria and expanded status, scroll to the bottom on Find Dinner, Library, Profiles and Details, and confirm every final button and paragraph remains visible above the nav.

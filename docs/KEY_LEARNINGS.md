@@ -177,3 +177,20 @@ The form and last submitted search live in per-tab sessionStorage so returning f
 
 ### Limits of hand-curated synonyms
 The sample matcher knows a few ingredient aliases and categories (e.g. milk/dairy versus coconut milk), but cannot infer every hidden ingredient, food label or cross-contact scenario. **PM takeaway:** describe uncertainty and limitations honestly, especially for high-stakes choices.
+
+## Milestone 1D.1 — Mobile polish after real-world testing
+
+### Navigation scroll position
+Single-page apps can retain a previous scroll offset when changing routes. Recipe Details should start with the recipe title, so the scrollable main container resets when the route changes. **PM takeaway:** successful navigation must also land people at the correct reading position.
+
+### Mobile layout: reserve space instead of covering content
+The old fixed bottom bar floated over text and controls. The updated app gives the navigation a dedicated position in a full-height layout and makes only the main content area scroll. **PM takeaway:** structural layout fixes are more robust than repeatedly increasing bottom padding to compensate for overlays.
+
+### Progressive disclosure
+The existing top three dinner ideas remain first, and a Show more control reveals up to ten candidates using the same ranked rule-based results; Show fewer returns to three. **PM takeaway:** start with a manageable choice set while keeping discovery accessible, and avoid silently changing ranking logic during a UX refactor.
+
+### Identity vs infrastructure
+The displayed product name and tab title can be rebranded without renaming a GitHub repository, changing the published URL, or changing browser storage keys. **PM takeaway:** distinguish user-facing brand decisions from technical identifiers so a visual refresh doesn't introduce unnecessary migration work.
+
+### User testing drives quality
+This iteration comes directly from mobile feedback after the core Find Dinner flow worked. **PM takeaway:** acceptance testing should include where the page scrolls, how many recommendations feel manageable, and whether actions remain reachable above persistent navigation.

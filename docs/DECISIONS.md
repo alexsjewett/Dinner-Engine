@@ -107,3 +107,17 @@ The public repo contains only implementation and generic requirements, never rea
 | DEC-046 | Verification pending | Validate final build/deploy and run mobile scenario-based testing of profile-specific hard constraints, synonyms, and navigation. | Automated build is not proof of nutritional accuracy or on-device UX quality. |
 
 **Safety and scope:** This is a transparent ten-recipe demo matcher, not allergy-safe recipe certification. Free-text ingredient matching can miss composite, hidden or ambiguous ingredients; advise manual checks of products and cross-contact. The algorithm does not create AI substitutions, enforce real-world food safety or infer that a separate topping is safe.
+
+## Milestone 1D.1 — Mobile UX polish (October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-047 | Approved and implemented | Use “Find Dinner” as the displayed app name, browser title and visible app copy; keep the Dinner-Engine repository name and GitHub Pages URL. | Friendly, focused branding without breaking hosting or links. |
+| DEC-048 | Approved and implemented | Use the intro copy “Share what's in your kitchen, how much time you have, and who's eating.” | Makes the experience conversational and inviting. |
+| DEC-049 | Approved and implemented | Continue to show the original first three recommendations, with optional expansion to up to ten and a collapse control. | Preserves matching order and safety flags while improving discovery. |
+| DEC-050 | Approved and implemented | Reset the content-scroll container when navigating between routes, ensuring Recipe Details opens at the top. | Addresses a real iPhone navigation defect caused by inherited scroll position. |
+| DEC-051 | Approved and implemented | Put bottom navigation in its own non-overlapping flex layout region, with a scrollable main region and iPhone safe-area margin. | Prevents content being hidden behind navigation without relying on guessed padding. |
+| DEC-052 | Approved and implemented | Change the Profiles heading to “Who's eating dinner today?” | Requested copy improvement without altering profiles. |
+| DEC-053 | Deployment and mobile regression verification pending | Verify build/deployment, long-page scroll endpoints, top-of-recipe navigation, result expansion/collapse, and state retention on iPhone. | Build success alone does not prove in-device scrolling or ergonomics. |
+
+No ingredient/dietary rule, recipe, household data, or AI changes were authorized by this milestone.

@@ -40,7 +40,7 @@
 - **Milestone 1A — App foundation:** Completed; product owner verified build and preview in GitHub Codespaces. Deployment is still deferred.
 - **Milestone 1B — Recipe Library:** Source committed: ten JSON demo recipes, working library cards, ingredient lists and original instructions. Product owner reviewed the updated library; automated build verification remains pending.
 - **Milestone 1C — Profiles:** CRUD, inline edits, browser-only persistence and deletion confirmation implemented and tested by product owner; Milestone 1C.2 expands the profile schema.
-- **Milestone 1D — Find Dinner:** Functional ingredient/time/eater input, rule-based ranking of ten manually indexed demo recipes, up to three explained results, separate review category and session search restoration; final user acceptance pending.
+- **Milestone 1D — Find Dinner:** Working rule-based search and explained demo matches, product-owner feedback positive. Milestone 1D.1 adds branding and mobile UX polish without changing food-matching rules.
 - **GitHub Pages hosting:** Public repository and automatic Pages workflow chosen; verify published URL and iPhone navigation after configuring Pages Settings.
 
 Increment sequence is proposed for the remainder of Phase 1; each code change still requires separate approval.
@@ -120,3 +120,11 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 **Next possible improvements (not authorized yet):** richer ingredient equivalence and exclusions; explicit ranking rationale or sort controls; more complete ingredient taxonomy for imports; confidence/unknown ingredient notices; a structured and cook-reviewed way to indicate which person gets an adjusted portion; stronger testing fixtures and automated unit tests.
 
 The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions remains deferred. It will require an explicit approval, secure server, cost controls and food-safety review.
+
+## Milestone 1D.1 — Mobile UX & polish acceptance
+
+**Approved and implemented:** visible rebrand to Find Dinner, revised search introduction, first three plus expandable up-to-ten results, recipe route scroll-to-top, structurally separated bottom navigation, and revised Profiles heading. Display name changes do not rename the repository or published URL. No dietary data or matching migration needed.
+
+**Regression test on phone:** Open Recipe Details from the bottom of Find Dinner and Library; check the recipe title appears at the top. Return and expand/collapse results; confirm top three remain unchanged, review cards keep their warnings, and submitted filters survive. Scroll to the bottom of each long screen and verify navigation never covers actions/text. Recheck visible branding, Profiles heading, and mobile safe area.
+
+**Future only / not authorized:** a separate naming exercise, full app icon/identity redesign, deeper kitchen matching, ingredient substitution AI, user accounts or API/backend features.

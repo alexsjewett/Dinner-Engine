@@ -214,8 +214,12 @@ export function FindDinner() {
             </div>
           )}
 
-          {search.expanded && extras.length > 0 && (
-            <div className="dinner-result-section" id="additional-dinner-matches">
+          {extras.length > 0 && (
+            <div
+              className="dinner-result-section"
+              id="additional-dinner-matches"
+              hidden={!search.expanded}
+            >
               <h3>Additional matches</h3>
               <p className="helper-text">
                 More ranked ideas from the same cookbook. Review notices and food restrictions
