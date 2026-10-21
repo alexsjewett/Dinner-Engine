@@ -57,6 +57,7 @@ export default function App() {
         <Route path="/" element={<FindDinner />} />
         <Route path="/library" element={<RecipeLibrary />} />
         <Route path="/profiles" element={<Profiles />} />
+        <Route path="/recipes/imported/:recipeId" element={<RecipeDetails imported />} />
         <Route path="/recipes/:recipeId" element={<RecipeDetails />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

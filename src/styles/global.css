@@ -550,3 +550,50 @@ h1 {
 }
 .dinner-more-button:hover { background: #dcebd9; }
 .dinner-more-button:focus-visible { outline: 3px solid #91b392; outline-offset: 3px; }
+
+/* Milestone 2A — local Paprika import, selection and preserved plain text */
+.recipe-library-tabs {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px; margin: 5px 0 20px;
+}
+.recipe-library-tab {
+  min-height: 48px; border: 1px solid #dbe5d9;
+  border-radius: 14px; background: var(--paper); color: var(--forest);
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.recipe-library-tab--active { background: var(--sage-soft); border-color: var(--sage); }
+.paprika-file-input {
+  max-width: 100%; min-height: 48px; color: var(--forest); font-size: 14px;
+}
+.paprika-file-input::file-selector-button {
+  background: var(--sage-soft); color: var(--forest);
+  border: 1px solid #d4e0d1; border-radius: 11px;
+  padding: 10px 12px; font: inherit; font-weight: 700; cursor: pointer; margin-right: 10px;
+}
+.paprika-preview {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--paper); padding: 20px; margin-bottom: 25px;
+}
+.paprika-preview .library-heading h2 { font-size: 19px; }
+.paprika-preview-actions { margin: 12px 0; }
+.paprika-preview-list {
+  max-height: 360px; overflow-y: auto; border: 1px solid #e3e9df;
+  border-radius: 14px; background: #fafbf8;
+}
+.paprika-preview-row {
+  display: flex; align-items: center; gap: 11px;
+  border-bottom: 1px solid #e6e9e1; min-height: 49px;
+  padding: 9px 13px; cursor: pointer; font-size: 14px;
+}
+.paprika-preview-row:last-child { border-bottom: 0; }
+.paprika-preview-row input { width: 19px; height: 19px; flex: 0 0 auto; accent-color: var(--sage); }
+.paprika-preview-row span:nth-child(2) { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.paprika-duplicate { color: var(--muted); font-size: 11px; }
+.paprika-save-button { width: 100%; margin-top: 15px; min-height: 49px; }
+.paprika-library-heading { margin: 25px 0 13px; }
+.import-original-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+@media (max-width: 420px) {
+  .paprika-preview { padding: 15px; }
+  .recipe-library-tabs { gap: 7px; }
+  .recipe-library-tab { font-size: 13px; padding: 6px; }
+}

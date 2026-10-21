@@ -1,23 +1,91 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { FeatureCard } from "../components/FeatureCard";
 import { getRecipeById } from "../data/cookbook";
+import { getImportedRecipe } from "../services/importedRecipeStorage";
+import type { ImportedRecipe } from "../types/importedRecipe";
 
 interface DetailsLocationState { from?: string; }
 
-export function RecipeDetails() {
+export function RecipeDetails({ imported = false }: { imported?: boolean }) {
   const { recipeId } = useParams<{ recipeId: string }>();
   const { state } = useLocation();
   const origin = state as DetailsLocationState | null;
   const backTo = origin?.from === "/" ? "/" : "/library";
   const backLabel = backTo === "/" ? "Find Dinner" : "Recipe Library";
-  const recipe = getRecipeById(recipeId ?? "");
+  const recipe = imported ? undefined : getRecipeById(recipeId ?? "");
+
+  const [savedRecipe, setSavedRecipe] = useState<ImportedRecipe | null>(null);
+  const [loading, setLoading] = useState(imported);
+  const [readError, setReadError] = useState("");
+
+  useEffect(() => {
+    if (!imported || !recipeId) return;
+    let active = true;
+    getImportedRecipe(recipeId)
+      .then((value) => { if (active) setSavedRecipe(value ?? null); })
+      .catch(() => { if (active) setReadError("Could not open the local recipe in this browser."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [imported, recipeId]);
 
   return (
     <div className="page-content">
       <Link className="back-link" to={backTo}>
         <span aria-hidden="true">←</span> Back to {backLabel}
       </Link>
-      {recipe ? (
+
+      {imported ? (
+        loading ? (
+          <p className="helper-text" role="status">Loading your recipe…</p>
+        ) : savedRecipe ? (
+          <>
+            <div className="page-intro page-intro--details">
+              <p className="eyebrow">From your Paprika export · Local to this browser</p>
+              <h1>{savedRecipe.name}</h1>
+              {savedRecipe.description && <p className="lead import-original-text">{savedRecipe.description}</p>}
+              <div className="recipe-facts">
+                {savedRecipe.totalTime && <span>Total time: {savedRecipe.totalTime}</span>}
+                {savedRecipe.prepTime && <span>Prep: {savedRecipe.prepTime}</span>}
+                {savedRecipe.cookTime && <span>Cook: {savedRecipe.cookTime}</span>}
+                {savedRecipe.servings && <span>Serves: {savedRecipe.servings}</span>}
+                {!savedRecipe.totalTime && !savedRecipe.prepTime && !savedRecipe.cookTime && (
+                  <span>Cooking time not listed</span>
+                )}
+              </div>
+            </div>
+            <FeatureCard eyebrow="Unmodified Paprika text" title="Original ingredients">
+              <div className="import-original-text">{savedRecipe.ingredients || "No ingredients listed."}</div>
+            </FeatureCard>
+            <FeatureCard title="Original instructions">
+              <div className="import-original-text">{savedRecipe.directions || "No instructions listed."}</div>
+            </FeatureCard>
+            {savedRecipe.notes && (
+              <FeatureCard title="Original notes">
+                <div className="import-original-text">{savedRecipe.notes}</div>
+              </FeatureCard>
+            )}
+            {(savedRecipe.source || savedRecipe.sourceUrl || savedRecipe.categories.length > 0) && (
+              <FeatureCard title="Original source and categories">
+                {savedRecipe.source && <p>Source: {savedRecipe.source}</p>}
+                {savedRecipe.sourceUrl && <p className="import-original-text">Source URL: {savedRecipe.sourceUrl}</p>}
+                {savedRecipe.categories.length > 0 && (
+                  <p>Categories: {savedRecipe.categories.join(", ")}</p>
+                )}
+              </FeatureCard>
+            )}
+            <p className="library-note">
+              Browsing only: Find Dinner does not match imported recipes yet.
+              Check original ingredients and labels for dietary needs.
+            </p>
+          </>
+        ) : (
+          <FeatureCard title="Imported recipe not found">
+            <p>{readError || "This recipe is not saved in this browser."}</p>
+            <Link className="text-link" to="/library">Return to the library →</Link>
+          </FeatureCard>
+        )
+      ) : recipe ? (
         <>
           <div className="page-intro page-intro--details">
             <p className="eyebrow">Sample recipe</p>
