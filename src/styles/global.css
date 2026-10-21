@@ -425,3 +425,85 @@ h1 {
   .profile-restriction-editor .profile-field:first-child,
   .profile-remove-restriction { grid-column: 1; }
 }
+
+/* Milestone 1D — mobile-first Find Dinner search and results */
+.dinner-search-form { display: flex; flex-direction: column; gap: 22px; }
+.dinner-fieldset {
+  min-width: 0; padding: 17px 0 0; border: 0;
+  border-top: 1px solid var(--border); margin: 0;
+}
+.dinner-fieldset legend {
+  padding-right: 7px; font-size: 15px; font-weight: 760; color: var(--forest);
+}
+.dinner-time-options { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 11px; }
+.dinner-time-choice {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 12px; border: 1px solid #d9e4d5; border-radius: 13px;
+  background: #f7faf5; color: var(--forest); font-size: 14px; font-weight: 680;
+  min-height: 46px; cursor: pointer;
+}
+.dinner-time-choice--active { background: var(--sage-soft); border-color: var(--sage); }
+.dinner-time-choice input, .dinner-mode-choice input, .dinner-diner-person input {
+  width: 17px; height: 17px; accent-color: var(--sage); margin: 0; flex-shrink: 0;
+}
+.dinner-diner-options { display: flex; flex-wrap: wrap; gap: 10px 19px; margin-top: 12px; }
+.dinner-mode-choice { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; font-size: 14px; }
+.dinner-mode-choice:has(input:disabled) { opacity: .55; cursor: default; }
+.dinner-diner-list {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px;
+  background: #fafbf8; padding: 9px; border-radius: 14px;
+}
+.dinner-diner-person {
+  display: inline-flex; align-items: center; gap: 9px; min-height: 44px;
+  border: 1px solid #dde6d9; background: white; border-radius: 11px;
+  padding: 9px 12px; cursor: pointer; font-size: 14px;
+}
+.dinner-diner-person:has(input:disabled) { background: #f0f2ed; cursor: default; }
+.dinner-search-submit { width: 100%; min-height: 52px; font-size: 15px; }
+.dinner-results { margin: 31px 0; }
+.dinner-results-heading h2 {
+  margin: 0 0 10px; font-size: 28px; letter-spacing: -.7px; color: var(--forest);
+}
+.dinner-results-caveat {
+  margin: 15px 0 0; padding: 14px; border: 1px solid #e4dcc8;
+  background: #fbf7eb; color: #5d5947; border-radius: 14px;
+  font-size: 13px; line-height: 1.6;
+}
+.dinner-result-section { margin-top: 25px; }
+.dinner-result-section > h3 { margin: 0 0 7px; font-size: 20px; color: var(--forest); }
+.dinner-result-section > .helper-text { margin: 0 0 15px; }
+.dinner-result-card {
+  margin-bottom: 14px; background: var(--paper); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px;
+  overflow-wrap: anywhere;
+}
+.dinner-result-card--review { border-color: #e4d9c4; }
+.dinner-result-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.dinner-result-category {
+  background: var(--sage-soft); color: #34593e; border-radius: 999px;
+  padding: 6px 11px; font-size: 12px; font-weight: 720; line-height: 1.35;
+}
+.dinner-result-card--review .dinner-result-category { background: #f7edda; color: #69542a; }
+.dinner-result-card h3 { font-size: 22px; letter-spacing: -.5px; margin: 16px 0 9px; }
+.dinner-result-description { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 15px; }
+.dinner-match-line { margin: 9px 0; font-size: 13px; line-height: 1.5; color: var(--forest); }
+.dinner-result-review, .dinner-result-notes {
+  margin-top: 15px; padding: 15px; border-radius: 14px;
+  background: #fbf6eb; font-size: 13px; line-height: 1.65;
+}
+.dinner-result-review strong, .dinner-result-notes strong { font-size: 14px; color: var(--forest); }
+.dinner-result-notes { background: #f3f6f0; }
+.dinner-result-review ul, .dinner-result-notes ul { margin: 7px 0; padding-left: 21px; }
+.dinner-result-review li, .dinner-result-notes li { margin: 4px 0; }
+.dinner-result-review p { margin: 9px 0 0; }
+.dinner-result-footer {
+  margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; color: var(--muted); font-size: 12px;
+}
+@media (max-width: 460px) {
+  .dinner-result-card { padding: 17px; }
+  .dinner-time-options { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .dinner-time-choice { justify-content: flex-start; }
+  .dinner-diner-options { display: flex; flex-direction: column; gap: 1px; }
+}
