@@ -72,3 +72,23 @@ A repository can contain source files without having passed a build or being acc
 
 ### First code-change scope
 Milestone 1A deliberately provides screens and navigation only. The apparent input fields are labeled previews, not functional forms. **PM takeaway:** placeholder interfaces should never mislead testers about implemented functionality.
+
+## Milestone 1B — New concepts
+
+### JSON and structured data
+JSON stores a recipe as named fields such as `title`, `ingredients` and `instructions`. Each sample is one file. **PM takeaway:** a consistent data schema makes imports, searching and AI processing easier later.
+
+### Data types (TypeScript interfaces)
+The `Recipe` interface specifies fields the UI expects. **PM takeaway:** application features depend on a defined data contract, which engineers can validate and evolve.
+
+### Data access layer
+The `cookbook.ts` module offers `getAllRecipes` and `getRecipeById` to UI pages. **PM takeaway:** replacing static files with a future database should not require rewriting presentation code.
+
+### Dynamic routes
+`/recipes/:recipeId` uses a parameter to show the selected recipe. **PM takeaway:** one details page can render many records and handle invalid IDs gracefully.
+
+### Testable milestones
+A completed GitHub commit still needs build and device verification. **PM takeaway:** require observed behavior and record whether testing has occurred.
+
+### Sample content versus generated AI
+Sample descriptions, times and original instructions are hand-authored demo content, not AI outputs or allergen checks. **PM takeaway:** label prototypes honestly and avoid creating misleading trust.

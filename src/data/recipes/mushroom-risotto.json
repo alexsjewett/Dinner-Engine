@@ -1,0 +1,31 @@
+{
+  "id": "mushroom-risotto",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Creamy Mushroom Risotto",
+  "estimatedMinutes": 50,
+  "servings": 4,
+  "tags": [
+    "Vegetarian",
+    "Stovetop"
+  ],
+  "description": "Slow-stirred Arborio rice with golden mushrooms, warm broth and Parmesan.",
+  "ingredients": [
+    "1 1/2 cups Arborio rice",
+    "8 oz cremini mushrooms, sliced",
+    "1 small shallot, diced",
+    "2 tbsp olive oil",
+    "2 tbsp unsalted butter",
+    "5 cups vegetable broth",
+    "1/2 cup grated Parmesan",
+    "1/2 tsp kosher salt",
+    "Black pepper"
+  ],
+  "instructions": [
+    "Keep vegetable broth warm in a saucepan.",
+    "Sauté mushrooms in olive oil and 1 tbsp butter for 6–8 minutes until browned. Move them to a bowl.",
+    "Cook shallot in the same pan for 2 minutes, then stir in Arborio rice for 1 minute.",
+    "Add warm broth gradually, stirring frequently and waiting for most of each ladle to absorb; continue for about 20–25 minutes until creamy and just tender.",
+    "Stir mushrooms, remaining butter and Parmesan back in, then season and serve."
+  ]
+}

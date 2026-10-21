@@ -1,0 +1,28 @@
+{
+  "id": "lemon-garlic-pasta",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Lemon Garlic Pasta",
+  "estimatedMinutes": 20,
+  "servings": 4,
+  "tags": [
+    "Quick",
+    "Pasta"
+  ],
+  "description": "Bright lemon, garlic and Parmesan coat spaghetti in this easy stovetop favorite.",
+  "ingredients": [
+    "12 oz spaghetti",
+    "3 tbsp olive oil",
+    "4 garlic cloves, sliced",
+    "1 lemon, zest and 2 tbsp juice",
+    "1/2 cup grated Parmesan",
+    "1/4 cup chopped parsley",
+    "Salt and black pepper"
+  ],
+  "instructions": [
+    "Boil salted water and cook spaghetti according to package directions; reserve 1 cup pasta water before draining.",
+    "Gently cook garlic in olive oil over medium-low heat for 1–2 minutes until fragrant, not browned.",
+    "Toss cooked pasta with garlic oil, lemon zest, juice, and a splash of pasta water.",
+    "Remove from heat, add Parmesan and parsley, and season to taste."
+  ]
+}

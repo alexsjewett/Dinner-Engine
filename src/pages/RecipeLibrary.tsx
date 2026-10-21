@@ -1,5 +1,8 @@
-import { Link } from "react-router";
+import { RecipeCard } from "../components/RecipeCard";
 import { FeatureCard } from "../components/FeatureCard";
+import { getAllRecipes } from "../data/cookbook";
+
+const recipes = getAllRecipes();
 
 export function RecipeLibrary() {
   return (
@@ -7,26 +10,29 @@ export function RecipeLibrary() {
       <div className="page-intro">
         <p className="eyebrow">A collection worth keeping</p>
         <h1>Your recipe library</h1>
-        <p className="lead">A home for the meals you already love, with a little help choosing among them.</p>
+        <p className="lead">
+          Explore ten sample dinners. Your own Paprika recipes will come later.
+        </p>
       </div>
-
-      <FeatureCard eyebrow="Library preview" title="Your cookbook starts here">
-        <div className="illustration-circle" aria-hidden="true">◒</div>
-        <p>
-          We'll add ten sample recipes next. Each will have its own original ingredient
-          list, instructions, estimated time, and short description.
-        </p>
-      </FeatureCard>
-
-      <FeatureCard eyebrow="Coming soon" title="Add your own recipes">
-        <p>
-          Paprika imports and other recipe formats are planned for later phases.
-          Original recipes will be preserved.
-        </p>
-        <Link className="text-link" to="/recipes/preview" state={{ from: "/library" }}>
-          Preview recipe details <span aria-hidden="true">→</span>
-        </Link>
-      </FeatureCard>
+      <div className="library-heading">
+        <h2>Sample cookbook</h2>
+        <span className="recipe-count">{recipes.length} recipes</span>
+      </div>
+      <p className="library-note">
+        Demo content only. Cooking times and summaries are illustrative, not AI-generated.
+        Ingredients have not been checked against dietary restrictions.
+      </p>
+      <div className="recipe-grid">
+        {recipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}
+      </div>
+      <div className="library-future">
+        <FeatureCard eyebrow="Coming soon" title="Add your own recipes">
+          <p>
+            Paprika importing and adding other formats are planned for later phases.
+            Original ingredients and instructions will be preserved.
+          </p>
+        </FeatureCard>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,31 @@
+{
+  "id": "roasted-vegetable-couscous",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Roasted Vegetable Couscous",
+  "estimatedMinutes": 35,
+  "servings": 4,
+  "tags": [
+    "Vegetarian",
+    "Grain bowl"
+  ],
+  "description": "Roasted zucchini, peppers and chickpeas folded into lemony, herbed couscous.",
+  "ingredients": [
+    "1 zucchini, diced",
+    "1 red bell pepper, diced",
+    "1 small red onion, in wedges",
+    "2 tbsp olive oil",
+    "1/2 tsp kosher salt",
+    "1 cup dry couscous",
+    "1 cup vegetable broth",
+    "1 can (15 oz) chickpeas, drained",
+    "2 tbsp lemon juice",
+    "1/4 cup chopped parsley"
+  ],
+  "instructions": [
+    "Heat oven to 425°F (220°C). Toss zucchini, pepper and onion with olive oil and salt.",
+    "Roast vegetables on a tray 20–25 minutes, turning halfway through.",
+    "Bring broth to a boil; remove from heat, stir in couscous, cover and rest 5 minutes. Fluff.",
+    "Toss couscous with roasted vegetables, drained chickpeas, lemon juice and parsley."
+  ]
+}

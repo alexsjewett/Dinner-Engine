@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1 planning and foundation. No application code implemented yet.
+**Status:** Phase 1, Milestone 1B source committed. First foundation build confirmed by product owner; new library changes require testing.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -38,7 +38,7 @@ Phase numbers describe planning sequence, not delivery commitments.
 - [Key learnings](docs/KEY_LEARNINGS.md)
 
 ## Current development state
-Documentation setup only. No React app, backend, recipe database, or deployment is present. Hosting, persistence, API provider, authentication, and final implementation architecture remain to be confirmed in a technical design checkpoint.
+React/TypeScript frontend foundation and ten static sample recipes are present. No backend, production recipe database, AI integration, or deployment is present. Hosting, persistence, API provider, authentication, and final implementation architecture remain to be confirmed in a technical design checkpoint.
 
 ## Milestone 1A — Application foundation (October 20, 2026, Pacific time)
 The React + TypeScript + Vite app foundation, page placeholders, fixed mobile bottom navigation, and CSS theme have been added. This is source code, **not a deployed website**. No recipe data, profile editing, recipe matching, AI, backend, or hosting were implemented.
@@ -49,4 +49,12 @@ The React + TypeScript + Vite app foundation, page placeholders, fixed mobile bo
 3. Run `npm run dev` and open the local address it prints.
 4. Run `npm run build` to type-check and generate a production build.
 
-Build and browser testing must still be completed in an environment with npm package access. Publishing and iPhone access are separate future steps.
+The product owner verified the Milestone 1A build and preview successfully using GitHub Codespaces. Milestone 1B changes must be rebuilt and tested. Publishing and iPhone access are separate future steps.
+
+## Milestone 1B — Sample Recipe Library (October 20, 2026, Pacific time)
+- Ten sample dinner recipes are stored as separate JSON files in `src/data/recipes/`.
+- Recipe cards and details screens now show cooking time, description, original ingredients and instructions.
+- A placeholder explains that AI substitutions are not active, and importing recipes remains a coming-soon feature.
+- A small `cookbook.ts` data-access module keeps the UI independent of the future storage layer.
+- Samples are demonstration content, not Paprika exports. No ingredient safety certification or AI analysis has occurred.
+- Run `git pull` and `npm run build` in your existing Codespace to verify this milestone. The repository has not been deployed.

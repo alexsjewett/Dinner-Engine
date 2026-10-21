@@ -1,0 +1,34 @@
+{
+  "id": "sweet-potato-lentil-curry",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Sweet Potato & Lentil Curry",
+  "estimatedMinutes": 45,
+  "servings": 4,
+  "tags": [
+    "Vegetarian",
+    "One pot"
+  ],
+  "description": "Red lentils and diced sweet potato simmer in coconut milk with warming curry spices.",
+  "ingredients": [
+    "1 tbsp neutral oil",
+    "1 small yellow onion, diced",
+    "2 garlic cloves, minced",
+    "1 tbsp grated ginger",
+    "2 tbsp mild curry powder",
+    "1 medium sweet potato, peeled and diced",
+    "3/4 cup dry red lentils, rinsed",
+    "1 can (13.5 oz) coconut milk",
+    "1 1/2 cups water",
+    "1/2 tsp kosher salt",
+    "1 lime, juiced",
+    "2 tbsp chopped cilantro"
+  ],
+  "instructions": [
+    "Heat oil in a pot and cook onion 5 minutes until soft.",
+    "Add garlic, ginger and curry powder and stir 30 seconds.",
+    "Add sweet potato, lentils, coconut milk, water and salt; bring to a gentle boil.",
+    "Turn down heat and simmer, loosely covered, 20–25 minutes, stirring occasionally, until soft; add water if needed.",
+    "Finish with lime juice and cilantro."
+  ]
+}

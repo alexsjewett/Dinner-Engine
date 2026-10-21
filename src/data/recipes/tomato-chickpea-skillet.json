@@ -1,0 +1,31 @@
+{
+  "id": "tomato-chickpea-skillet",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Tomato & Chickpea Skillet",
+  "estimatedMinutes": 25,
+  "servings": 4,
+  "tags": [
+    "Vegetarian",
+    "One pan"
+  ],
+  "description": "Chickpeas simmer in a garlicky tomato sauce with spinach; good with bread.",
+  "ingredients": [
+    "2 tbsp olive oil",
+    "1 small yellow onion, diced",
+    "3 garlic cloves, minced",
+    "1 can (15 oz) chickpeas, drained",
+    "1 can (14 oz) crushed tomatoes",
+    "3 cups baby spinach",
+    "1 tsp dried oregano",
+    "1/2 tsp kosher salt",
+    "Black pepper",
+    "Crusty bread to serve"
+  ],
+  "instructions": [
+    "Heat olive oil in a skillet; cook onion over medium heat for about 5 minutes until softened.",
+    "Add garlic and oregano and stir 30 seconds.",
+    "Add chickpeas, crushed tomatoes, salt and pepper. Simmer uncovered 10 minutes.",
+    "Stir in spinach until wilted, 2–3 minutes; serve with bread."
+  ]
+}

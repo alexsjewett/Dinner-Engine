@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import { FeatureCard } from "../components/FeatureCard";
 
 export function FindDinner() {
@@ -11,7 +10,6 @@ export function FindDinner() {
           Dinner ideas shaped by what you have, who's eating, and how much time you have.
         </p>
       </div>
-
       <FeatureCard eyebrow="Coming in a later Phase 1 milestone" title="Find your dinner">
         <div className="preview-field">
           <span>What ingredients do you have?</span>
@@ -39,7 +37,6 @@ export function FindDinner() {
           recipes arrives in a subsequent milestone.
         </p>
       </FeatureCard>
-
       <div className="gentle-note">
         <span className="note-symbol" aria-hidden="true">✦</span>
         <div>
@@ -47,10 +44,6 @@ export function FindDinner() {
           <p>Future swap suggestions will be clearly separated from original recipes and require review.</p>
         </div>
       </div>
-
-      <Link className="quiet-link" to="/recipes/preview" state={{ from: "/" }}>
-        Preview recipe details <span aria-hidden="true">→</span>
-      </Link>
     </div>
   );
 }

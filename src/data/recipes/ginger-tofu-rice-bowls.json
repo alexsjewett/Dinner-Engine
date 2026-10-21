@@ -1,0 +1,33 @@
+{
+  "id": "ginger-tofu-rice-bowls",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Ginger Tofu Rice Bowls",
+  "estimatedMinutes": 30,
+  "servings": 4,
+  "tags": [
+    "Vegetarian",
+    "Rice bowl"
+  ],
+  "description": "Golden tofu and tender-crisp veggies meet a ginger-soy glaze over jasmine rice.",
+  "ingredients": [
+    "1 cup dry jasmine rice",
+    "14 oz firm tofu, drained and cubed",
+    "1 red bell pepper, sliced",
+    "2 cups broccoli florets",
+    "2 tbsp neutral cooking oil",
+    "2 tbsp soy sauce",
+    "1 tbsp honey",
+    "1 tbsp grated fresh ginger",
+    "1 garlic clove, minced",
+    "1 tsp cornstarch",
+    "2 tbsp water"
+  ],
+  "instructions": [
+    "Cook rice according to package directions.",
+    "Mix soy sauce, honey, ginger, garlic, cornstarch and water in a bowl.",
+    "Pat tofu dry. Heat half the oil in a skillet and cook tofu 6–8 minutes, turning until browned; set aside.",
+    "Cook pepper and broccoli in remaining oil for 5–6 minutes.",
+    "Return tofu to the skillet, pour in sauce and stir for 1–2 minutes until slightly thickened. Spoon over rice."
+  ]
+}

@@ -40,3 +40,14 @@ Initial agreements were made during product discussions on October 20, 2026 (Pac
 | DEC-021 | Open | Choose deployment path and test the build in an environment with npm package access. | Private repository does not imply private deployment; no site is published yet. |
 
 **Implementation note:** The recipe details preview is accessible from both Find Dinner and Recipe Library. It returns to the origin using navigation state when provided, otherwise to Recipe Library. Preserving *actual search input/results* is still a later milestone because no search exists yet.
+
+## Milestone 1B decisions — October 20, 2026 (Pacific time)
+
+| ID | Status | Decision | Rationale |
+|---|---|---|---|
+| DEC-022 | Approved and implemented | Store 10 demonstration recipes as individual JSON files with stable recipe IDs and a sample household ID. | Simple, inexpensive Phase 1 catalog that can later be imported into durable storage. |
+| DEC-023 | Approved and implemented | Implement Recipe Library cards and full original recipe details with a reusable card and separate cookbook service. | Preserve source content while avoiding coupling UI to storage. |
+| DEC-024 | Approved and implemented | Display a plain disclaimer and leave possible swaps empty until the AI phase. | Avoid implying that mock data or unverified AI substitutions are safe. |
+| DEC-025 | Open | Confirm Milestone 1B build and actual mobile UX in Codespaces. | Saving code is not the same as validating it. |
+
+**Note:** Recipe descriptions and cooking times are illustrative sample values, not AI-generated. `demo-household` is an organizational field, not access control. Find Dinner matching, profile editing, backend, AI and deployment are not included in this milestone.

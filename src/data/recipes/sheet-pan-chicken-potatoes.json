@@ -1,0 +1,30 @@
+{
+  "id": "sheet-pan-chicken-potatoes",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Sheet-Pan Chicken & Potatoes",
+  "estimatedMinutes": 45,
+  "servings": 4,
+  "tags": [
+    "Sheet pan",
+    "Chicken"
+  ],
+  "description": "Juicy seasoned chicken thighs roast with tender potatoes and broccoli on one tray.",
+  "ingredients": [
+    "1 1/2 lb boneless, skinless chicken thighs",
+    "1 lb baby potatoes, halved",
+    "1 large head broccoli, cut into florets",
+    "3 tbsp olive oil",
+    "1 tsp smoked paprika",
+    "1 tsp dried oregano",
+    "1/2 tsp garlic powder",
+    "3/4 tsp kosher salt",
+    "Black pepper"
+  ],
+  "instructions": [
+    "Heat oven to 425°F (220°C). Toss halved potatoes with 1 tbsp olive oil and some of the salt; roast on a sheet pan 15 minutes.",
+    "Season chicken with 1 tbsp olive oil, paprika, oregano, garlic powder and pepper. Add to the pan and roast 10 minutes.",
+    "Toss broccoli with remaining olive oil and salt; add to pan and roast another 12–15 minutes, until potatoes are tender and chicken reaches 165°F (74°C) internally.",
+    "Rest chicken briefly, then serve."
+  ]
+}

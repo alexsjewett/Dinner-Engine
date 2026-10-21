@@ -1,44 +1,58 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
 import { FeatureCard } from "../components/FeatureCard";
+import { getRecipeById } from "../data/cookbook";
 
-interface DetailsLocationState {
-  from?: string;
-}
+interface DetailsLocationState { from?: string; }
 
 export function RecipeDetails() {
-  const location = useLocation();
-  const state = location.state as DetailsLocationState | null;
-  const backToFind = state?.from === "/";
-  const backTo = backToFind ? "/" : "/library";
-  const backLabel = backToFind ? "Find Dinner" : "Recipe Library";
+  const { recipeId } = useParams<{ recipeId: string }>();
+  const { state } = useLocation();
+  const origin = state as DetailsLocationState | null;
+  const backTo = origin?.from === "/" ? "/" : "/library";
+  const backLabel = backTo === "/" ? "Find Dinner" : "Recipe Library";
+  const recipe = getRecipeById(recipeId ?? "");
 
   return (
     <div className="page-content">
       <Link className="back-link" to={backTo}>
         <span aria-hidden="true">←</span> Back to {backLabel}
       </Link>
-      <div className="page-intro page-intro--details">
-        <p className="eyebrow">Recipe details preview</p>
-        <h1>A closer look at dinner</h1>
-        <p className="lead">
-          This screen is a placeholder. We'll display real original recipes
-          when we add the sample cookbook.
-        </p>
-      </div>
-
-      <FeatureCard title="Original recipe">
-        <p className="helper-text">Ingredients, original instructions, and cooking time will appear here.</p>
-      </FeatureCard>
-
-      <FeatureCard eyebrow="Always reviewed separately" title="Possible swaps to review">
-        <p>
-          Any future substitution ideas will be clearly marked as suggestions,
-          with reasons and uncertainties. They will never replace the original recipe.
-        </p>
-        <p className="helper-text">
-          No substitutions have been generated or evaluated in this milestone.
-        </p>
-      </FeatureCard>
+      {recipe ? (
+        <>
+          <div className="page-intro page-intro--details">
+            <p className="eyebrow">Sample recipe</p>
+            <h1>{recipe.title}</h1>
+            <p className="lead">{recipe.description}</p>
+            <div className="recipe-facts">
+              <span>About {recipe.estimatedMinutes} minutes</span>
+              <span>Serves {recipe.servings}</span>
+            </div>
+          </div>
+          <FeatureCard eyebrow="Unmodified demo recipe" title="Original ingredients">
+            <ul className="ingredients-list">
+              {recipe.ingredients.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
+          </FeatureCard>
+          <FeatureCard title="Original instructions">
+            <ol className="instructions-list">
+              {recipe.instructions.map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </FeatureCard>
+          <FeatureCard eyebrow="Not yet available" title="Possible swaps to review">
+            <p>No swaps have been suggested. Later, Dinner Engine will show proposed
+              changes here separately without altering the original recipe.</p>
+            <p className="helper-text">
+              Always verify labels and restrictions. AI suggestions will never certify
+              a recipe as allergy-safe.
+            </p>
+          </FeatureCard>
+        </>
+      ) : (
+        <FeatureCard title="Recipe not found">
+          <p>That recipe isn't in the sample cookbook.</p>
+          <Link className="text-link" to="/library">Browse the library →</Link>
+        </FeatureCard>
+      )}
     </div>
   );
 }

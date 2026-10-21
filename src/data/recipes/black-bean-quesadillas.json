@@ -1,0 +1,28 @@
+{
+  "id": "black-bean-quesadillas",
+  "householdId": "demo-household",
+  "source": "sample",
+  "title": "Black Bean Quesadillas",
+  "estimatedMinutes": 15,
+  "servings": 4,
+  "tags": [
+    "Vegetarian",
+    "Quick"
+  ],
+  "description": "Crispy flour tortillas filled with cumin-spiced black beans, cheddar and scallions.",
+  "ingredients": [
+    "4 medium flour tortillas",
+    "1 can (15 oz) black beans, drained",
+    "1 cup shredded cheddar cheese",
+    "2 scallions, sliced",
+    "1/2 tsp ground cumin",
+    "1 tsp olive oil",
+    "1/2 cup salsa"
+  ],
+  "instructions": [
+    "Mash about half the beans with cumin; fold in the remaining whole beans and scallions.",
+    "Spread bean mixture on half of each tortilla, top with cheddar, and fold closed.",
+    "Heat a little oil in a skillet over medium heat. Cook each folded tortilla for 2–3 minutes per side until golden and cheese melts.",
+    "Cut into wedges and serve with salsa."
+  ]
+}
