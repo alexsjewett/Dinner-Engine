@@ -94,3 +94,16 @@ The product owner confirmed Milestone 1C's original CRUD interactions functioned
 | DEC-040 | Verification pending | Confirm production build, GitHub Pages deploy and mobile CRUD/migration regression checks. | Builds do not replace user testing of existing browser data. |
 
 The public repo contains only implementation and generic requirements, never real profile values. This milestone does not add recipe matching, AI or a backend.
+
+## Milestone 1D — Find Dinner decisions (October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-041 | Approved and implemented | Replace the Find Dinner preview with working ingredient inputs, time options and whole-household or individual profile selection. | Makes the primary app workflow functional without an AI service. |
+| DEC-042 | Approved and implemented | Create a separate curated ingredient/dietary index for ten fictional demo recipes. Preserve original recipe ingredients and instructions. | More explainable and reliable than raw substring matching, without implying a complete medical/allergen database. |
+| DEC-043 | Approved and implemented | Apply per-selected-diner rules: Must avoid matches and dietary conflicts go to Needs adjustment/review; Should/Prefer lower ranking. | Strict restrictions cannot be traded away by ranking, yet household adaptations can be considered by a knowledgeable cook. |
+| DEC-044 | Approved and implemented | Show up to three explained results, preferring straightforward suggestions with space for a review alternative. Explicitly unavailable items and over-budget recipes require review. | Makes trade-offs visible; does not assert recipes are safe or ready without assessment. |
+| DEC-045 | Approved and implemented | Preserve draft and last-submitted search state in per-tab sessionStorage and navigate back from recipe details to Find Dinner. | Supports low-friction recipe browsing without a database. |
+| DEC-046 | Verification pending | Validate final build/deploy and run mobile scenario-based testing of profile-specific hard constraints, synonyms, and navigation. | Automated build is not proof of nutritional accuracy or on-device UX quality. |
+
+**Safety and scope:** This is a transparent ten-recipe demo matcher, not allergy-safe recipe certification. Free-text ingredient matching can miss composite, hidden or ambiguous ingredients; advise manual checks of products and cross-contact. The algorithm does not create AI substitutions, enforce real-world food safety or infer that a separate topping is safe.

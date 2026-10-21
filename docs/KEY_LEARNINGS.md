@@ -157,3 +157,23 @@ Must avoid refers to one person's portion; other household members could eat som
 
 ### Transparent priorities, no diagnosis collection
 Three user-selected avoidance levels capture prioritization without requesting a medical reason. The Gluten-free option is not a claim that a recipe or kitchen is suitable for celiac disease. **PM takeaway:** collect only data needed for the feature, and don't imply certifications the system cannot verify.
+
+## Milestone 1D — Search, explainability and constraints
+
+### Deterministic matching
+The first Find Dinner engine uses authored rules rather than a language model. **PM takeaway:** use simple, transparent rules as a baseline before spending money on AI; they are cheap to test and explain.
+
+### Curated metadata versus original content
+Demo recipes remain unchanged. A second data index stores normalized ingredient labels, synonyms and dietary review flags for matching. **PM takeaway:** keep original source fidelity separate from derived or annotated metadata.
+
+### A strict constraint is different from a ranking penalty
+Must avoid and selected dietary conflicts cause a recipe to be labeled Needs adjustment/review, while softer restrictions reduce its ranking. **PM takeaway:** hard constraints should not silently turn into soft preferences for the sake of better-looking results.
+
+### Per-person portions versus a family dinner
+A recipe containing an unsuitable ingredient may inspire a separately prepared portion after human assessment; it is never thereby certified safe. **PM takeaway:** model who actually eats each item, not just whether it appears anywhere in an original recipe.
+
+### Search session and browser state
+The form and last submitted search live in per-tab sessionStorage so returning from Recipe Details does not wipe search progress. **PM takeaway:** choose the persistence lifetime deliberately; per-tab temporary state is different from cloud synchronization or long-term storage.
+
+### Limits of hand-curated synonyms
+The sample matcher knows a few ingredient aliases and categories (e.g. milk/dairy versus coconut milk), but cannot infer every hidden ingredient, food label or cross-contact scenario. **PM takeaway:** describe uncertainty and limitations honestly, especially for high-stakes choices.

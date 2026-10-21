@@ -40,7 +40,7 @@
 - **Milestone 1A — App foundation:** Completed; product owner verified build and preview in GitHub Codespaces. Deployment is still deferred.
 - **Milestone 1B — Recipe Library:** Source committed: ten JSON demo recipes, working library cards, ingredient lists and original instructions. Product owner reviewed the updated library; automated build verification remains pending.
 - **Milestone 1C — Profiles:** CRUD, inline edits, browser-only persistence and deletion confirmation implemented and tested by product owner; Milestone 1C.2 expands the profile schema.
-- **Milestone 1D — Find Dinner:** Search inputs, multi-select eaters, rule-based ranking, recommendation cards and state preservation.
+- **Milestone 1D — Find Dinner:** Functional ingredient/time/eater input, rule-based ranking of ten manually indexed demo recipes, up to three explained results, separate review category and session search restoration; final user acceptance pending.
 - **GitHub Pages hosting:** Public repository and automatic Pages workflow chosen; verify published URL and iPhone navigation after configuring Pages Settings.
 
 Increment sequence is proposed for the remainder of Phase 1; each code change still requires separate approval.
@@ -112,3 +112,11 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 - Existing profile IDs and legacy foods are preserved; all historical avoids convert to **Must avoid**, never a softer level. Storage payload version becomes 2 on successful user save.
 - **Deferred:** using those selections for rule-based recipe filtering, household eater selection, evaluating separate toppings/sides, or AI. These need a separately approved Find Dinner / AI milestone.
 - Confirm on iPhone that older avoids, new choices, editing in place, Cancel, reload and deletion still work; new entries should not appear on another device.
+
+## Milestone 1D acceptance and next-step backlog
+
+**Source implemented; mobile validation pending.** Try shopping-ingredient matching, Must vs Should/Prefer ranking, vegan/vegetarian/gluten-free flagging, whole-household vs selected diners, and search restoration through recipe details. Build and successful GitHub Pages publishing must be independently checked.
+
+**Next possible improvements (not authorized yet):** richer ingredient equivalence and exclusions; explicit ranking rationale or sort controls; more complete ingredient taxonomy for imports; confidence/unknown ingredient notices; a structured and cook-reviewed way to indicate which person gets an adjusted portion; stronger testing fixtures and automated unit tests.
+
+The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions remains deferred. It will require an explicit approval, secure server, cost controls and food-safety review.

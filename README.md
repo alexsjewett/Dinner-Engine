@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1 Milestone 1C.2: dietary needs and per-food avoidance levels implemented in the prototype; deployment and device acceptance checks tracked separately.
+**Status:** Phase 1 Milestone 1D: Find Dinner rule-based search, household profile selection and explained demo recipe recommendations implemented; final deployment and mobile acceptance checks tracked separately.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -79,7 +79,7 @@ If we later switch hosting or make the repository private, review the GitHub Pag
 - Profile data is stored in the current browser using `localStorage` (key `dinner-engine:household-profiles:v1`), not checked into GitHub or synchronized between browsers.
 - The form reports errors if the browser cannot save, and deleting requires an explicit second confirmation.
 - Do not treat local browser storage as encrypted, backed up or appropriate for sensitive medical details. Use fictional test profiles until we have private household accounts and secure storage.
-- Find Dinner matching and the selection of profiles are **not implemented** as part of 1C; that is planned for Milestone 1D.
+- Find Dinner matching and profile selection are implemented separately in Milestone 1D, using limited deterministic demo rules.
 - No backend, AI integration, API keys or private user authentication were added.
 - After GitHub Actions finishes, test adding, editing, refreshing and deleting a fictional profile on both mobile and desktop.
 
@@ -103,3 +103,30 @@ After confirming the original CRUD behavior worked, the product owner identified
 - A **Must avoid** classification will guide future per-person matching; it is not yet an implemented exclusion rule. Future meal suggestions may discuss cooking or serving ingredients separately, but must never claim allergy or gluten safety. Ambiguity requires human review.
 - **Out of scope:** Find Dinner matching, AI, allergy certifications, account security, cloud storage and cross-device sync.
 - Acceptance testing: verify existing profiles still appear with Must avoid entries, add/edit priority and checkbox selections, Cancel editing, remove rows, refresh persistence and delete confirmation on mobile.
+
+## Milestone 1D — Find Dinner search (October 21, 2026)
+
+Find Dinner now accepts comma-separated ingredients **on hand** and **unavailable**, a 15/30/45/60+ minute target, and either the whole set of saved household profiles or a selected subset. Click **Find Dinner Ideas** for up to three recommendations from the ten fictional recipes. One potential review/adjustment option is shown if available; straightforward matches are otherwise prioritized.
+
+**How matching works:** `src/data/recipeFacts.ts` adds hand-curated demo ingredient labels, synonyms, and dietary indicators without rewriting original recipe text. `src/services/dinnerMatcher.ts` uses those facts to compare pantry terms, recipe times and only the selected diners' dietary needs and per-food restriction priorities.
+
+- **Must avoid:** a known match or dietary conflict puts the recipe in the *Needs adjustment or review* group, never a conflict-free group. This does **not** automatically reject a possible household meal where a knowledgeable cook can make different portions.
+- **Should avoid / Prefer to avoid:** known ingredient matches are clearly listed and lower the score, rather than automatically excluding the recipe.
+- **Time over budget or explicitly unavailable ingredients:** classified as *Needs adjustment or review*, not presented as straightforward.
+- **Vegetarian, Vegan, Gluten-free:** hand-checked sample rules indicate apparent conflicts or areas requiring review; the app cannot certify suitability, gluten safety, or cross-contact safety.
+- **Ingredients on hand:** positive matches help ranking. If a user supplies an on-hand list, all other demo ingredients are reported as *not marked on hand*, NOT necessarily missing. Users can leave the list empty.
+- **Demo synonyms:** comparisons use manually selected aliases and avoidance groups (e.g., dairy cheese is different from coconut milk); unrecognized terms, hidden ingredients and packaged-food details may be missed.
+
+A recipe with identified conflicts may still inspire an adaptation, but **the user must evaluate the original recipe, individual portion, labels and preparation**. No algorithm-generated substitution is approved or provided here. The site's language never certifies food safety.
+
+**State retention:** `src/services/searchSession.ts` stores draft/last-submitted criteria in this tab's `sessionStorage`, allowing search results to reappear after navigating to a recipe and back. This is local browser state, not a backend, sync or permanent saved search.
+
+**Out of scope:** AI, backend services, importer, account authentication, new real recipe data or allergy certification.
+
+### Test checklist
+1. Search with `chicken, potatoes, broccoli` on hand and 45 min; confirm sensible sample matches and matched-ingredient explanations.
+2. Mark `chicken` unavailable; check a chicken recipe moves to review.
+3. Select a profile with `milk` marked Must avoid; confirm recipes with cheese/yogurt/butter are flagged rather than called conflict-free. Coconut milk should not be classified as dairy milk.
+4. Try Gluten-free and Vegan checkboxes on sample profiles and inspect review reasons; labels and cross-contact still require human verification.
+5. Open a suggested recipe, tap Back to Find Dinner; check input and results remain.
+6. Repeat on iPhone; remember household profiles and searches are browser-local.
