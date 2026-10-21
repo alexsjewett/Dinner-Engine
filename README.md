@@ -144,3 +144,7 @@ The **public-facing app name** is now **Find Dinner** (app header, browser title
 - No changes were made to profile storage, recipe source data, ingredient classifications, dietary matching/ranking rules, AI/backend architecture, or GitHub URL.
 
 **iPhone acceptance test:** open Find Dinner, run a search, expand and collapse results, open a recipe from lower in the list and verify its title appears at the top, return and verify search criteria and expanded status, scroll to the bottom on Find Dinner, Library, Profiles and Details, and confirm every final button and paragraph remains visible above the nav.
+
+### Deployment verification — October 21, 2026
+
+A later GitHub Actions run unexpectedly published an earlier commit after the Milestone 1D.1 build had already succeeded. To ensure the live GitHub Pages website includes the latest `Share what's in your kitchen...` copy and expandable up-to-ten matches, a documentation-only main-branch commit re-triggers the deployment using the latest source tree. Verify the **last successful deployment's SHA** equals the current `main` SHA; a successful build by itself does not guarantee the latest version remains published. Safari may also cache the old page, so refresh or open the published URL in a new tab after the correct deployment completes.
