@@ -39,7 +39,7 @@
 ## Phase 1 increment tracker
 - **Milestone 1A — App foundation:** Completed; product owner verified build and preview in GitHub Codespaces. Deployment is still deferred.
 - **Milestone 1B — Recipe Library:** Source committed: ten JSON demo recipes, working library cards, ingredient lists and original instructions. Product owner reviewed the updated library; automated build verification remains pending.
-- **Milestone 1C — Profiles:** Create/edit profiles and local persistence, with clear household affiliation.
+- **Milestone 1C — Profiles:** Implemented add/edit/delete, versioned browser-local persistence, stable IDs, storage error reporting and delete confirmation. Automated build and user testing pending.
 - **Milestone 1D — Find Dinner:** Search inputs, multi-select eaters, rule-based ranking, recommendation cards and state preservation.
 - **GitHub Pages hosting:** Public repository and automatic Pages workflow chosen; verify published URL and iPhone navigation after configuring Pages Settings.
 
@@ -63,3 +63,11 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 - Review logging for recipe/profile privacy and avoid storing sensitive food restrictions unnecessarily.
 - Verify safety messaging for substitutions: never certify allergy safety from model output alone.
 - Reassess public repository visibility and hosting before introducing personal records or secret configuration.
+
+## Milestone 1C review checklist
+- Create a fictional profile with comma-separated avoids; verify its name and distinct avoidance chips display.
+- Create a second profile and confirm both remain after a page reload in the same browser.
+- Edit an existing profile; verify the stable ID persists and saves on refresh.
+- Delete a profile; check the confirmation and cancel behaviors.
+- Check the same site on a different device: no profile sync is expected.
+- Keep real dietary/health records and cloud synchronization out of scope until the future authentication and privacy/security checkpoint.

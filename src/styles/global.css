@@ -251,3 +251,88 @@ h1 {
 .ingredients-list li, .instructions-list li { padding-left: 5px; margin-bottom: 13px; line-height: 1.65; }
 .ingredients-list li:last-child, .instructions-list li:last-child { margin-bottom: 0; }
 @media (max-width: 620px) { .recipe-grid { grid-template-columns: 1fr; } }
+
+/* Milestone 1C: browser-local household profiles */
+.local-storage-note {
+  margin: 0 0 18px; padding: 15px 18px; line-height: 1.6;
+  font-size: 13px; color: #49604d; background: var(--sage-soft);
+  border: 1px solid #d6e5d4; border-radius: 15px;
+}
+.profile-form { display: flex; flex-direction: column; gap: 17px; }
+.profile-field { display: flex; flex-direction: column; gap: 7px; }
+.profile-field label {
+  color: var(--forest); font-size: 14px; font-weight: 750;
+}
+.profile-field input, .profile-field textarea {
+  display: block; width: 100%; min-width: 0; min-height: 48px;
+  padding: 13px 14px; border: 1px solid #ccd8cc; border-radius: 13px;
+  color: var(--forest); background: #fff; font: inherit; font-size: 16px;
+  line-height: 1.5;
+}
+.profile-field textarea { resize: vertical; }
+.profile-field input::placeholder, .profile-field textarea::placeholder { color: #87958a; }
+.profile-field input:focus-visible, .profile-field textarea:focus-visible {
+  outline: 3px solid #b9d0b6; outline-offset: 1px;
+}
+.profile-field .helper-text { margin: 0; }
+.profile-form-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+.profile-primary-button, .profile-secondary-button,
+.profile-danger-button, .profile-text-danger-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 46px; padding: 10px 17px; border-radius: 13px;
+  border: 1px solid transparent; font: inherit; font-size: 14px;
+  font-weight: 750; cursor: pointer;
+}
+.profile-primary-button { background: var(--sage); color: white; }
+.profile-primary-button:hover { background: #46634b; }
+.profile-secondary-button { background: #f1f5ef; color: #36523b; border-color: #e0e8db; }
+.profile-secondary-button:hover { background: #e6efe3; }
+.profile-text-danger-button { background: transparent; color: #8d4441; }
+.profile-text-danger-button:hover { background: #fbf1f0; }
+.profile-danger-button { background: #a14b46; color: white; }
+.profile-danger-button:hover { background: #883c37; }
+.profile-alert, .profile-success {
+  border-radius: 13px; padding: 12px 15px;
+  font-size: 13px; line-height: 1.6;
+}
+.profile-alert { background: #fff1ee; color: #8b3b36; border: 1px solid #f1d0c9; }
+.profile-success { background: #edf5e9; color: #35583d; border: 1px solid #d6e7ce; }
+.profile-list-heading { margin-top: 28px; margin-bottom: 17px; }
+.profile-empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; background: var(--paper);
+  border: 1px dashed #d3decf; border-radius: var(--radius);
+  padding: 28px 20px; color: var(--forest); gap: 5px;
+}
+.profile-empty-icon { font-size: 29px; color: var(--sage); margin-bottom: 3px; }
+.profile-empty-state p { color: var(--muted); font-size: 14px; margin: 0; }
+.household-profile-list { display: flex; flex-direction: column; gap: 13px; }
+.household-profile-card {
+  padding: 19px; background: var(--paper);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.household-profile-info { display: flex; gap: 13px; align-items: flex-start; }
+.household-profile-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.household-profile-copy h3 { margin: 0 0 7px; font-size: 19px; line-height: 1.3; color: var(--forest); }
+.household-profile-copy p { margin: 0; }
+.household-avoid-title {
+  margin: 0 0 8px !important; color: var(--muted); font-size: 12px; font-weight: 700;
+}
+.household-avoid-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.household-avoid-chip {
+  padding: 5px 10px; font-size: 12px; color: #385640;
+  border-radius: 999px; background: var(--sage-soft);
+}
+.profile-action-row {
+  margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+}
+.profile-delete-confirm {
+  padding: 13px; margin-top: 15px; border-radius: 13px;
+  background: #fff7f5; border: 1px solid #f0d4ce;
+}
+.profile-delete-confirm p { margin: 0; color: #793b38; font-size: 14px; }
+@media (max-width: 420px) {
+  .profile-form-actions > button { flex: 1 1 auto; }
+  .household-profile-card { padding: 16px; }
+}

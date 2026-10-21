@@ -112,3 +112,23 @@ A public repo exposes code, documentation and commit metadata. You can change vi
 
 ### API-security gate
 Public React code cannot safely store secret AI credentials. Future billable model requests will need a secure backend, authenticated access, authorization, quotas, rate limits and spending safeguards. **PM takeaway:** a deliberate milestone gate is safer than adding security after launch.
+
+## Milestone 1C — New concepts
+
+### CRUD operations
+CRUD stands for **Create, Read, Update, Delete**. The Profiles page now supports each operation. **PM takeaway:** a data-management feature is not complete merely because a form can add records; it must support maintenance and correction.
+
+### Browser localStorage
+`localStorage` saves small amounts of text data in one browser for the website's origin. It usually persists across refreshes but does not sync devices or provide encryption, authentication, backups or medical-data safeguards. **PM takeaway:** choose storage according to sensitivity, scale and device requirements.
+
+### Stable identifiers
+Each profile gets a unique random ID, separate from its display name. Editing the name does not change that ID. **PM takeaway:** refer to entities by stable IDs, not labels that users can change.
+
+### Schema versioning
+We store profiles with a `version: 1` marker and basic validation so future data formats can be migrated intentionally. **PM takeaway:** plan for evolution and handle unexpectedly formatted data.
+
+### Error and deletion states
+The UI asks for confirmation before deletion and reports if saving fails. **PM takeaway:** acceptance criteria should cover failure and recovery, not just the ideal flow.
+
+### A public frontend is not a privacy system
+This experiment stores locally entered profile data in the browser, not GitHub, but browser data is not inherently protected from shared-device users or scripts executing on the site. **PM takeaway:** use fictitious examples until authenticated storage and policy decisions have been made.

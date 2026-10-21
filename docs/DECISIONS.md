@@ -62,3 +62,14 @@ Initial agreements were made during product discussions on October 20, 2026 (Pac
 | DEC-029 | Approved security requirement for future development | Before AI API/backend deployment, perform a separate security review: backend-only secrets, household authentication/authorization, rate limits and quota enforcement, spending controls and abuse monitoring. | Prevent paid-model misuse and leaks on a public website. **No AI/API implementation is authorized by this decision.** |
 
 The project owner explicitly opted into public GitHub hosting and requested a reminder when paid AI/API development approaches. The repository is currently public; GitHub Pages publication requires Pages Settings and successful workflow execution.
+
+## Milestone 1C decisions — October 21, 2026
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-030 | Approved and implemented | Add, edit and delete household profiles with name and comma-separated food avoids. | Makes the Profiles page functional while preserving limited Phase 1 scope. |
+| DEC-031 | Approved and implemented | Store profiles in versioned browser `localStorage`, with stable random IDs and a prototype household identifier. | No server cost; device-specific and neither encrypted nor cross-device synchronized. |
+| DEC-032 | Approved and implemented | Start with no seeded people; require a confirmation step to delete and show errors when storage cannot save. | Avoid committing personal data, inadvertent deletions and misleading persistence claims. |
+| DEC-033 | Open testing checkpoint | Confirm GitHub Actions build, live publication and profile CRUD on phone/desktop. | A successful commit is not equivalent to complete user acceptance testing. |
+
+**Privacy and safety:** Dinner Engine remains a public static website. Browser-local profiles are not committed to GitHub, but this is not a secure healthcare-data storage mechanism. Use fictional entries for testing. Never infer allergy safety from an empty avoids list. Real multi-household data requires authenticated backend isolation in a later phase.

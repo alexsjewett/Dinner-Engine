@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1 sample Recipe Library implemented and viewed by the product owner; GitHub Pages automatic-deployment configuration added, deployment confirmation pending.
+**Status:** Phase 1 Milestone 1C: browser-local household profiles added; automated build and deployment verification pending.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -38,7 +38,7 @@ Phase numbers describe planning sequence, not delivery commitments.
 - [Key learnings](docs/KEY_LEARNINGS.md)
 
 ## Current development state
-React/TypeScript frontend foundation and ten static sample recipes are present. No backend, production recipe database, or AI integration is present. GitHub Pages workflow is configured; verify deployment in GitHub Actions and Pages Settings. GitHub Pages hosting is being configured; persistence, API provider, authentication, and final implementation architecture remain to be confirmed.
+React/TypeScript frontend foundation and ten static sample recipes are present. No backend, production recipe database, or AI integration is present. GitHub Pages workflow is configured; verify deployment in GitHub Actions and Pages Settings. GitHub Pages is deployed. Phase 1 profile persistence uses only the current browser; cloud data storage, authentication and AI API provider are still future work.
 
 ## Milestone 1A — Application foundation (October 20, 2026, Pacific time)
 The React + TypeScript + Vite app foundation, page placeholders, fixed mobile bottom navigation, and CSS theme have been added. This is source code, **not a deployed website**. No recipe data, profile editing, recipe matching, AI, backend, or hosting were implemented.
@@ -71,3 +71,14 @@ If we later switch hosting or make the repository private, review the GitHub Pag
 
 ### Security gate before AI/backend work
 **Do not deploy a paid AI API until an explicit security review and approval.** Store provider credentials only in backend-managed secrets; add identity/authorization controls before private household data or billable endpoints are exposed; require request validation, usage quotas, rate limits, spending budgets/alerts, and abuse protections. A public static page can connect to a secure backend later. See `docs/FUTURE_FEATURES.md`.
+
+## Milestone 1C — Household Profiles (October 21, 2026)
+
+- Profiles can be created, edited and deleted from the Profiles tab using a name and comma-separated food avoids.
+- Each profile gets a stable random ID and the prototype household ID `demo-household`.
+- Profile data is stored in the current browser using `localStorage` (key `dinner-engine:household-profiles:v1`), not checked into GitHub or synchronized between browsers.
+- The form reports errors if the browser cannot save, and deleting requires an explicit second confirmation.
+- Do not treat local browser storage as encrypted, backed up or appropriate for sensitive medical details. Use fictional test profiles until we have private household accounts and secure storage.
+- Find Dinner matching and the selection of profiles are **not implemented** as part of 1C; that is planned for Milestone 1D.
+- No backend, AI integration, API keys or private user authentication were added.
+- After GitHub Actions finishes, test adding, editing, refreshing and deleting a fictional profile on both mobile and desktop.
