@@ -1,20 +1,25 @@
 import assert from "node:assert/strict";
-import { build } from "esbuild";
+import { readFile, writeFile, unlink } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
+import { join } from "node:path";
+import ts from "typescript";
 import { gzipSync, strToU8, zipSync } from "fflate";
 
-// Bundle the actual TypeScript implementation; all inputs below are invented.
-const compiled = await build({
-  entryPoints: ["src/services/paprikaImport.ts"],
-  bundle: true,
-  platform: "node",
-  format: "esm",
-  write: false,
-  logLevel: "silent",
-});
-const source = compiled.outputFiles[0].text;
-const { parsePaprikaFile } = await import(
-  "data:text/javascript;base64," + Buffer.from(source).toString("base64")
-);
+// Transpile the real parser using the TypeScript compiler already in this app.
+// Its type-only local import is removed; the compiled file resolves installed
+// fflate from the repository root. No new test dependency is necessary.
+const source = await readFile("src/services/paprikaImport.ts", "utf8");
+const code = ts.transpileModule(source, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const testModule = join(process.cwd(), ".paprika-smoke-" + process.pid + ".mjs");
+let parsePaprikaFile;
+try {
+  await writeFile(testModule, code, { flag: "wx" });
+  ({ parsePaprikaFile } = await import(pathToFileURL(testModule).href));
+} finally {
+  await unlink(testModule).catch(() => {});
+}
 
 const sourceRecipe = {
   uid: "test-recipe-abc",
