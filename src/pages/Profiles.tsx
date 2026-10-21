@@ -8,85 +8,245 @@ import {
 } from "../services/profileStorage";
 import type { HouseholdProfile } from "../types/profile";
 
+type ProfileCardProps = {
+  profile: HouseholdProfile;
+  onUpdate: (id: string, name: string, foodAvoids: string[]) => boolean;
+  onDelete: (id: string) => boolean;
+};
+
+/** Each profile owns its edit draft, so editing stays inside the tapped card. */
+function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftName, setDraftName] = useState(profile.name);
+  const [draftAvoids, setDraftAvoids] = useState(profile.foodAvoids.join(", "));
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [error, setError] = useState("");
+  const [updated, setUpdated] = useState(false);
+
+  function beginEdit() {
+    setDraftName(profile.name);
+    setDraftAvoids(profile.foodAvoids.join(", "));
+    setIsEditing(true);
+    setConfirmDelete(false);
+    setUpdated(false);
+    setError("");
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setError("");
+  }
+
+  function handleUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = draftName.trim();
+    if (!name) {
+      setError("Please enter a name.");
+      return;
+    }
+    if (!onUpdate(profile.id, name, parseFoodAvoids(draftAvoids))) {
+      setError(
+        "Your browser couldn't save this change. Please check its storage settings and try again.",
+      );
+      return;
+    }
+    setIsEditing(false);
+    setError("");
+    setUpdated(true);
+  }
+
+  function handleDelete() {
+    if (!onDelete(profile.id)) {
+      setError("Your browser couldn't delete this profile. Please try again.");
+    }
+  }
+
+  return (
+    <article className={"household-profile-card" + (isEditing ? " household-profile-card--editing" : "")}>
+      <div className="household-profile-info">
+        <span className="profile-avatar" aria-hidden="true">
+          {profile.name.trim().charAt(0).toLocaleUpperCase()}
+        </span>
+        <div className="household-profile-copy">
+          <h3>{profile.name}</h3>
+          {!isEditing && (profile.foodAvoids.length ? (
+            <>
+              <p className="household-avoid-title">Foods avoided</p>
+              <div className="household-avoid-chips">
+                {profile.foodAvoids.map((food) => (
+                  <span className="household-avoid-chip" key={food}>{food}</span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="helper-text">No foods listed as avoided.</p>
+          ))}
+        </div>
+      </div>
+
+      {isEditing ? (
+        <form className="profile-form profile-inline-form" onSubmit={handleUpdate}>
+          <p className="profile-inline-title">Edit this person</p>
+          <div className="profile-field">
+            <label htmlFor={"profile-edit-name-" + profile.id}>Name</label>
+            <input
+              id={"profile-edit-name-" + profile.id}
+              type="text"
+              autoComplete="off"
+              maxLength={80}
+              value={draftName}
+              onChange={(event) => {
+                setDraftName(event.target.value);
+                setError("");
+              }}
+              required
+            />
+          </div>
+          <div className="profile-field">
+            <label htmlFor={"profile-edit-avoids-" + profile.id}>Foods they avoid</label>
+            <textarea
+              id={"profile-edit-avoids-" + profile.id}
+              rows={3}
+              maxLength={1000}
+              placeholder="e.g. peanuts, shellfish, sesame"
+              value={draftAvoids}
+              onChange={(event) => {
+                setDraftAvoids(event.target.value);
+                setError("");
+              }}
+              aria-describedby={"profile-edit-help-" + profile.id}
+            />
+            <p id={"profile-edit-help-" + profile.id} className="helper-text">
+              Separate foods with commas. Leave blank if none.
+            </p>
+          </div>
+          {error && <p className="profile-alert" role="alert">{error}</p>}
+          <div className="profile-form-actions">
+            <button className="profile-primary-button" type="submit">
+              Save changes
+            </button>
+            <button
+              className="profile-secondary-button"
+              type="button"
+              onClick={cancelEdit}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : confirmDelete ? (
+        <div className="profile-delete-confirm">
+          <p>Delete {profile.name}'s profile from this device?</p>
+          {error && <p className="profile-alert" role="alert">{error}</p>}
+          <div className="profile-action-row">
+            <button
+              type="button"
+              className="profile-danger-button"
+              onClick={handleDelete}
+            >
+              Delete profile
+            </button>
+            <button
+              type="button"
+              className="profile-secondary-button"
+              onClick={() => {
+                setConfirmDelete(false);
+                setError("");
+              }}
+            >
+              Keep profile
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {updated && (
+            <p className="profile-inline-success" role="status">
+              Changes saved on this device.
+            </p>
+          )}
+          <div className="profile-action-row">
+            <button
+              className="profile-secondary-button"
+              type="button"
+              onClick={beginEdit}
+            >
+              Edit
+            </button>
+            <button
+              className="profile-text-danger-button"
+              type="button"
+              onClick={() => {
+                setConfirmDelete(true);
+                setError("");
+                setUpdated(false);
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </>
+      )}
+    </article>
+  );
+}
+
 export function Profiles() {
   const [saved, setSaved] = useState(loadProfiles);
   const [name, setName] = useState("");
   const [avoidsText, setAvoidsText] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [formError, setFormError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [addError, setAddError] = useState("");
+  const [addNotice, setAddNotice] = useState("");
 
   const profiles = saved.profiles;
-  const editing = editingId !== null;
 
-  function resetEditor() {
-    setEditingId(null);
-    setName("");
-    setAvoidsText("");
-    setFormError("");
-  }
-
-  function beginEdit(profile: HouseholdProfile) {
-    setEditingId(profile.id);
-    setName(profile.name);
-    setAvoidsText(profile.foodAvoids.join(", "));
-    setPendingDeleteId(null);
-    setFormError("");
-    setNotice("");
-  }
-
-  function handleSave(event: FormEvent<HTMLFormElement>) {
+  function handleAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanedName = name.trim();
     if (!cleanedName) {
-      setFormError("Please enter a name.");
+      setAddError("Please enter a name.");
       return;
     }
 
-    const foodAvoids = parseFoodAvoids(avoidsText);
-    const next: HouseholdProfile[] = editingId
-      ? profiles.map((person) =>
-          person.id === editingId
-            ? { ...person, name: cleanedName, foodAvoids }
-            : person,
-        )
-      : [
-          ...profiles,
-          {
-            id: crypto.randomUUID(),
-            householdId: DEMO_HOUSEHOLD_ID,
-            name: cleanedName,
-            foodAvoids,
-          },
-        ];
+    const next: HouseholdProfile[] = [
+      ...profiles,
+      {
+        id: crypto.randomUUID(),
+        householdId: DEMO_HOUSEHOLD_ID,
+        name: cleanedName,
+        foodAvoids: parseFoodAvoids(avoidsText),
+      },
+    ];
 
     if (!saveProfiles(next)) {
-      setFormError(
-        "Your browser couldn't save this change. Please check browser storage settings and try again.",
+      setAddError(
+        "Your browser couldn't save this profile. Please check its storage settings and try again.",
       );
+      setAddNotice("");
       return;
     }
 
     setSaved({ profiles: next, warning: null });
-    setNotice(editing ? "Profile updated on this device." : "Profile saved on this device.");
-    resetEditor();
-    setPendingDeleteId(null);
+    setAddNotice("Profile added on this device.");
+    setAddError("");
+    setName("");
+    setAvoidsText("");
   }
 
-  function handleDelete(id: string) {
-    const next = profiles.filter((profile) => profile.id !== id);
-    if (!saveProfiles(next)) {
-      setFormError("Your browser couldn't delete this profile. Please try again.");
-      setNotice("");
-      return;
-    }
-
+  function handleUpdate(id: string, newName: string, foodAvoids: string[]): boolean {
+    const next = profiles.map((person) =>
+      person.id === id ? { ...person, name: newName, foodAvoids } : person,
+    );
+    if (!saveProfiles(next)) return false;
     setSaved({ profiles: next, warning: null });
-    if (editingId === id) resetEditor();
-    setPendingDeleteId(null);
-    setNotice("Profile deleted from this device.");
-    setFormError("");
+    return true;
+  }
+
+  function handleDelete(id: string): boolean {
+    const next = profiles.filter((person) => person.id !== id);
+    if (!saveProfiles(next)) return false;
+    setSaved({ profiles: next, warning: null });
+    return true;
   }
 
   return (
@@ -110,13 +270,9 @@ export function Profiles() {
       {saved.warning && (
         <p className="profile-alert" role="alert">{saved.warning}</p>
       )}
-      {notice && <p className="profile-success" role="status">{notice}</p>}
 
-      <FeatureCard
-        eyebrow={editing ? "Editing a household member" : "A seat at the table"}
-        title={editing ? "Edit profile" : "Add a profile"}
-      >
-        <form className="profile-form" onSubmit={handleSave}>
+      <FeatureCard eyebrow="A seat at the table" title="Add a profile">
+        <form className="profile-form" onSubmit={handleAdd}>
           <div className="profile-field">
             <label htmlFor="profile-name">Name</label>
             <input
@@ -128,7 +284,8 @@ export function Profiles() {
               value={name}
               onChange={(event) => {
                 setName(event.target.value);
-                setFormError("");
+                setAddError("");
+                setAddNotice("");
               }}
               required
             />
@@ -143,7 +300,8 @@ export function Profiles() {
               value={avoidsText}
               onChange={(event) => {
                 setAvoidsText(event.target.value);
-                setFormError("");
+                setAddError("");
+                setAddNotice("");
               }}
               aria-describedby="profile-avoids-help"
             />
@@ -151,16 +309,12 @@ export function Profiles() {
               Separate foods with commas. Leave blank if there are none to list.
             </p>
           </div>
-          {formError && <p className="profile-alert" role="alert">{formError}</p>}
+          {addError && <p className="profile-alert" role="alert">{addError}</p>}
+          {addNotice && <p className="profile-success" role="status">{addNotice}</p>}
           <div className="profile-form-actions">
             <button className="profile-primary-button" type="submit">
-              {editing ? "Save changes" : "Save profile"}
+              Save profile
             </button>
-            {editing && (
-              <button className="profile-secondary-button" type="button" onClick={resetEditor}>
-                Cancel editing
-              </button>
-            )}
           </div>
         </form>
       </FeatureCard>
@@ -181,65 +335,12 @@ export function Profiles() {
       ) : (
         <div className="household-profile-list">
           {profiles.map((person) => (
-            <article className="household-profile-card" key={person.id}>
-              <div className="household-profile-info">
-                <span className="profile-avatar" aria-hidden="true">
-                  {person.name.trim().charAt(0).toLocaleUpperCase()}
-                </span>
-                <div className="household-profile-copy">
-                  <h3>{person.name}</h3>
-                  {person.foodAvoids.length ? (
-                    <>
-                      <p className="household-avoid-title">Foods avoided</p>
-                      <div className="household-avoid-chips">
-                        {person.foodAvoids.map((food) => (
-                          <span className="household-avoid-chip" key={food}>{food}</span>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="helper-text">No foods listed as avoided.</p>
-                  )}
-                </div>
-              </div>
-              {pendingDeleteId === person.id ? (
-                <div className="profile-delete-confirm">
-                  <p>Delete {person.name}'s profile from this device?</p>
-                  <div className="profile-action-row">
-                    <button
-                      type="button"
-                      className="profile-danger-button"
-                      onClick={() => handleDelete(person.id)}
-                    >
-                      Delete profile
-                    </button>
-                    <button
-                      type="button"
-                      className="profile-secondary-button"
-                      onClick={() => setPendingDeleteId(null)}
-                    >
-                      Keep profile
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="profile-action-row">
-                  <button className="profile-secondary-button" type="button" onClick={() => beginEdit(person)}>
-                    Edit
-                  </button>
-                  <button
-                    className="profile-text-danger-button"
-                    type="button"
-                    onClick={() => {
-                      setPendingDeleteId(person.id);
-                      setNotice("");
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </article>
+            <ProfileCard
+              key={person.id}
+              profile={person}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}

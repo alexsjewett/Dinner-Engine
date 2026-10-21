@@ -82,3 +82,13 @@ If we later switch hosting or make the repository private, review the GitHub Pag
 - Find Dinner matching and the selection of profiles are **not implemented** as part of 1C; that is planned for Milestone 1D.
 - No backend, AI integration, API keys or private user authentication were added.
 - After GitHub Actions finishes, test adding, editing, refreshing and deleting a fictional profile on both mobile and desktop.
+
+## Milestone 1C follow-up — Inline editing (October 21, 2026)
+
+After confirming the original CRUD behavior worked, the product owner identified a mobile usability problem: tapping Edit brought existing profile data into the separate form at the top of the page, requiring an upward scroll. The approved fix opens name and food-avoidance fields **inside the corresponding profile card**, with local Save changes and Cancel buttons.
+
+- The Add a profile form stays exclusively for creating new people.
+- Each profile card owns its temporary edit draft; Cancel discards unsaved changes and Save updates that person's existing ID and data.
+- Deletion still requires confirmation, and errors appear in the affected card instead of at the top.
+- Browser storage schema, keys, existing profiles, and security scope are unchanged. No migration is necessary.
+- Acceptance check: on iPhone, tap Edit for a profile near the bottom; the editable fields appear in the same card with no upward jump. Confirm Save persists after refresh and Cancel preserves the previous values.

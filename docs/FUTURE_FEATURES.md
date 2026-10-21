@@ -71,3 +71,10 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 - Delete a profile; check the confirmation and cancel behaviors.
 - Check the same site on a different device: no profile sync is expected.
 - Keep real dietary/health records and cloud synchronization out of scope until the future authentication and privacy/security checkpoint.
+
+## Milestone 1C inline-edit follow-up
+
+- **Approved and implemented:** Tap Edit on a household profile card to reveal name and comma-separated food avoids directly within that card. Save changes updates the existing profile; Cancel discards the draft.
+- **Preserved:** Add form, existing local browser profiles, stable profile IDs and two-step delete behavior.
+- **Acceptance test pending on device:** Edit a profile near the bottom on iPhone without scrolling to the top; Cancel and Save; refresh to check persistence; confirm deletion still requires confirmation.
+- **Not authorized:** Profile sync, cloud backend, AI and Find Dinner matching are later milestones.

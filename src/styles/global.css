@@ -336,3 +336,29 @@ h1 {
   .profile-form-actions > button { flex: 1 1 auto; }
   .household-profile-card { padding: 16px; }
 }
+
+/* Milestone 1C mobile polish: edits stay in their own profile card. */
+.household-profile-card--editing {
+  border-color: #c5d9c4;
+  box-shadow: 0 7px 24px rgba(54, 82, 59, 0.10);
+}
+.profile-inline-form {
+  margin-top: 16px;
+  padding-top: 17px;
+  border-top: 1px solid var(--border);
+}
+.profile-inline-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--sage);
+}
+.profile-inline-success {
+  margin: 14px 0 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: #35583d;
+}
+@media (max-width: 420px) {
+  .profile-inline-form .profile-form-actions > button { flex: 1 1 auto; }
+}

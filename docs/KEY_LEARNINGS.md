@@ -132,3 +132,14 @@ The UI asks for confirmation before deletion and reports if saving fails. **PM t
 
 ### A public frontend is not a privacy system
 This experiment stores locally entered profile data in the browser, not GitHub, but browser data is not inherently protected from shared-device users or scripts executing on the site. **PM takeaway:** use fictitious examples until authenticated storage and policy decisions have been made.
+
+## Milestone 1C follow-up — Inline editing and mobile usability
+
+### In-context editing
+The first working version reused the Create form for Edit, requiring a phone user to scroll to the top. The updated interface reveals an editing form in the relevant card. **PM takeaway:** functional correctness is not sufficient; task flow and scroll position strongly affect mobile usability.
+
+### Component-local draft state
+Each profile card owns its unsaved edit fields. Saving applies the changes to existing browser-stored data; Cancel closes the editor without changing stored values. **PM takeaway:** separate temporary user input from persisted records, and keep UI state close to the part of the screen that needs it.
+
+### Regression testing
+A UX refinement must not break add, delete, reload persistence, existing IDs or data. **PM takeaway:** acceptance tests should cover both the new behavior and previously working paths.

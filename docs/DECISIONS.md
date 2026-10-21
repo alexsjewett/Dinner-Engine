@@ -73,3 +73,12 @@ The project owner explicitly opted into public GitHub hosting and requested a re
 | DEC-033 | Open testing checkpoint | Confirm GitHub Actions build, live publication and profile CRUD on phone/desktop. | A successful commit is not equivalent to complete user acceptance testing. |
 
 **Privacy and safety:** Dinner Engine remains a public static website. Browser-local profiles are not committed to GitHub, but this is not a secure healthcare-data storage mechanism. Use fictional entries for testing. Never infer allergy safety from an empty avoids list. Real multi-household data requires authenticated backend isolation in a later phase.
+
+## Milestone 1C mobile UX follow-up — October 21, 2026
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-034 | Approved and implemented; device retest pending | Edit a profile inline within its own card instead of reusing the Add form at the top of the page. Keep Save and Cancel in the card. | Eliminates unnecessary scrolling on iPhone, keeps interaction in context and separates creating from editing. |
+| DEC-035 | Approved and implemented | Preserve the existing `localStorage` schema, profile IDs and delete confirmation while changing only the presentation of editing. | Avoids migration or data loss and contains this iteration to mobile UX polish. |
+
+The product owner confirmed Milestone 1C's original CRUD interactions functioned before requesting this refinement. Recheck inline editing and deployment; those are independent verification steps.
