@@ -138,3 +138,9 @@ The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions re
 **Approved and implemented; deployment and phone acceptance tracked separately.** Header changed to “Find dinner.” with a sage steaming-bowl icon and alignment to the page content column. The rest of the app was reviewed in a limited static UX checklist, with no broader redesign or unrelated feature work.
 
 **Next:** Once the user confirms the revised header looks right, propose and separately approve the next functional feature milestone. Avoid polishing indefinitely without clear usability issues. Do not infer user acceptance from a successful GitHub Pages build.
+
+## Milestone 2A — Local Paprika import (October 21, 2026)
+
+**Approved and implemented; deploy and device acceptance tracked separately.** Users can select a Paprika Recipe Format export, preview titles and import up to 25 chosen recipes per batch into browser-only IndexedDB; My recipes browsing shows unmodified text and metadata. Duplicate Paprika IDs are skipped. Original sample cookbook remains accessible. No photos, cloud uploads, matching of imported recipes, AI or backend.
+
+**Next proposal, not approved yet:** Build trustworthy matching for imported recipes. That requires explicit handling of unknown cooking times, ingredient normalization, ambiguous ingredient labels and per-person restriction review without certifying allergy safety. Keep original Paprika text immutable and derived matching facts distinct.

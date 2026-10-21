@@ -90,6 +90,15 @@ export async function parsePaprikaFile(file: File): Promise<ImportPreview> {
   for (const compressed of Object.values(extracted)) {
     try {
       // GZIP is the inner Paprika format; an unusual or oversized entry is skipped.
+      // GZIP footer stores the decompressed byte count modulo 2^32.
+      // Reject oversized records BEFORE allocating the decompressed JSON.
+      if (compressed.length < 18) { skipped += 1; continue; }
+      const tail = compressed.length - 4;
+      const estimatedSize = (compressed[tail] |
+        (compressed[tail + 1] << 8) |
+        (compressed[tail + 2] << 16) |
+        (compressed[tail + 3] << 24)) >>> 0;
+      if (estimatedSize > MAX_JSON_BYTES) { skipped += 1; continue; }
       const jsonBytes = gunzipSync(compressed);
       if (jsonBytes.length > MAX_JSON_BYTES) { skipped += 1; continue; }
       const recipe = toImported(JSON.parse(strFromU8(jsonBytes)));

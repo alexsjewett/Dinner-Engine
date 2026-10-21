@@ -140,3 +140,16 @@ This approval covers visual/layout polish only; no matching, recipe, profile, st
 | DEC-058 | Review complete; mobile acceptance pending | Perform a scoped static UX checklist for navigation, route scroll, results expansion and profile inputs, without unrelated rewrites. | Preserve core workflow while ensuring small polish does not overshadow the next functional increment. |
 
 No changes to matching, profile storage, recipe content, AI, backend or public repository identifier.
+
+## Milestone 2A — Paprika import (October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-059 | Approved and implemented | Read Paprika bulk `.paprikarecipes` exports in the browser, with ZIP members containing GZIP-compressed JSON. | Officially documented portable, machine-readable Paprika export; no server or account integration required. |
+| DEC-060 | Approved and implemented | Preview all readable titles, require explicit checkbox selection of up to 25 per save; expose duplicates and import warnings. | Prevents unintentional bulk writes and makes each import reviewable. |
+| DEC-061 | Approved and implemented | Store text-oriented Paprika records in browser IndexedDB, with Paprika UID-based duplicate prevention. Keep sample cookbook and profile storage untouched. | Enables local recipe browsing without public repo leakage, but provides no backup or sync. |
+| DEC-062 | Approved and implemented | Preserve original text, timing as strings and metadata without invented durations; do not persist photo payloads. | Maintains source fidelity for displayed cooking information and limits browser storage needs. |
+| DEC-063 | Explicitly deferred | Imported recipes are NOT eligible for Find Dinner matching until separate metadata/risk review. | Avoids unsafe or misleading results from unclassified imported ingredients. |
+| DEC-064 | Verification pending | Check final GitHub build/deploy and real iPhone testing with a representative Paprika export. | A compiling importer is not proof of compatibility with every export or iOS storage state. |
+
+**Privacy:** The app is still a publicly hosted static page. Browser-local IndexedDB is neither authenticated nor encrypted. Importing real household data should be an informed user choice; initial testing should use non-sensitive recipes. Never send Paprika exports to GitHub, a logging endpoint, or an AI service.

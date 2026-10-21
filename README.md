@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1 Milestone 1D.1: mobile UX polish implemented, with final deployment and iPhone acceptance checks tracked separately.
+**Status:** Milestone 2A: browser-local Paprika import, preview, IndexedDB storage, and My recipes browsing implemented; production build and iPhone acceptance verified separately.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -165,3 +165,32 @@ A later GitHub Actions run unexpectedly published an earlier commit after the Mi
 - Reviewed the three core pages and recipe details for the final UX pass: route scroll-to-top, separate scrollable main pane and non-overlapping footer, existing editable profile controls, recipe links, and three-plus-expandable results. **Static code review does not establish on-device visual or interaction success.** No other application edits were necessary within this pass.
 - **iPhone acceptance test:** confirm the icon looks aligned and visible, “Find dinner.” lines up with page content, no heading or header tagline crowds it on phone, view a recipe from the bottom of expanded results and return, and verify the white navigation footer does not cover the last item on any page.
 - After acceptance, prioritize the **next functional product milestone** rather than open-ended aesthetic polishing. A separate explicit scope approval is required for the next feature.
+
+## Milestone 2A — Paprika import and local recipe library (October 21, 2026)
+
+**Scope approved:** import and browse your original recipes before attempting recommendation matching.
+
+### How to use
+1. In Paprika, open **Settings → Export Recipes**, select a category or All Recipes, and use **Paprika Recipe Format** (not HTML). Save the `.paprikarecipes` export where your device's browser can pick it. Paprika officially describes this export as a ZIP containing individually GZIP-compressed JSON recipe files.
+2. In Find Dinner, open **Recipe Library → My recipes** and choose the export file. The app reads it **locally**, with no upload to a server.
+3. Preview recipe names and select up to **25 new recipes per batch** (or use Select first 25 new). Already imported Paprika UIDs are identified and disabled. Nothing is stored until Save selected recipes is tapped.
+4. Browse your saved recipes under My recipes, and open original ingredients/instructions, notes, sources, categories, servings and original time strings. Sample recipes remain available in their own tab.
+
+### Storage and fidelity
+- Imported recipes are stored only in this browser's **IndexedDB**, separate from sample JSON files and profile `localStorage`. The repository remains public and contains **no actual household recipes**.
+- The app retains original plain-text ingredients, directions, description, notes, servings, prep time, cook time, total time, categories, and source fields when present. It does not invent a cooking duration or claim any nutrition/allergy verification.
+- Recipe photo/base64 fields are **not imported** in this initial release. Images are omitted to reduce persistent storage size. Paprika itself remains the source/backup.
+- The app uses original Paprika `uid` as an internal duplicate key when available; a deterministic content fingerprint is used as fallback. Existing saved records are never overwritten when importing again.
+- Import is capped at a **35 MB outer archive**, **2,000 entries**, and bounded per-entry compressed/uncompressed sizes to avoid excessive work on mobile. Export smaller Paprika categories if the limit is reached. Invalid/oversize entries are skipped with a warning.
+- Clearing site data, using private browsing, reinstalling a browser or switching devices may delete local recipes. There is **no sync, backup, account, or cloud storage**.
+
+### Deliberately postponed
+- Find Dinner continues to recommend from the **ten fictional demo recipes** only. Imported recipes do not participate in ranking, restriction analysis or claimed cooking times yet; that will require a separately approved matching/verification milestone.
+- AI, substitutions, Paprika sync, editing imported recipes, photos, exports and a private backend remain deferred.
+
+### Mobile acceptance checks
+- Test with a small, fictional or non-sensitive Paprika export first; verify preview names, selection limit, Save, My recipes cards, exact original ingredients/directions/notes, and reload persistence.
+- Re-import the same file: existing recipe IDs should display as Already imported and not duplicate.
+- Select another export/category to add recipes; sample recipe browsing and Find Dinner demo results should remain unchanged.
+- Ensure the file picker, preview list and cards fit on iPhone, and that errors for unreadable/too-large files are understandable.
+- Confirm imports are **not** present on a different device or in an incognito window.

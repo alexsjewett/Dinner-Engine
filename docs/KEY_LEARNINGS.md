@@ -209,3 +209,20 @@ A tiny inline SVG using existing sage color tokens avoids emoji rendering differ
 
 ### When to resume feature work
 Product feedback identified concrete defects and visual distractions; this milestone addresses the last reported header concern. **PM takeaway:** declare a polish stopping point and resume validated user-value work. Build success, code review and real-device acceptance are different levels of evidence.
+
+## Milestone 2A — Browser file imports and IndexedDB
+
+### Portable source file and a private browser
+Paprika's bulk format is a ZIP archive of GZIP-compressed JSON entries. Browser-side decoding can preview an export without sending it to a server. **PM takeaway:** confirm the real interchange format and keep untrusted file parsing bounded, especially on memory-limited phones.
+
+### Preview before commit
+Users choose up to 25 items before an IndexedDB write. Re-importing the same Paprika UID cannot overwrite the local copy. **PM takeaway:** separate inspecting data from making a durable change, and make duplicates visible rather than silently importing them.
+
+### Structured long-term browser storage
+IndexedDB supports larger structured records than localStorage, but shares local browser limitations: storage clearing, private mode, lack of backups, no account or cross-device sync. **PM takeaway:** storage location and durability promises must be clearly distinguished.
+
+### Original recipe versus matching facts
+Store original ingredients, instructions and textual durations as written; do not infer missing time values. The existing sample-only matcher excludes all imported recipes until enrichment/matching is separately designed and approved. **PM takeaway:** getting data into a library is distinct from having reliable metadata to make recommendations.
+
+### Sensitive source payloads
+Paprika exports can contain photos and other data that were never intended for publication. This first version omits photo data from the stored records and avoids transmitting any import data to a backend. **PM takeaway:** minimize what an early prototype stores and never treat public hosting as a private user-data backend.
