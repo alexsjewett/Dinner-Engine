@@ -38,10 +38,10 @@
 
 ## Phase 1 increment tracker
 - **Milestone 1A — App foundation:** Completed; product owner verified build and preview in GitHub Codespaces. Deployment is still deferred.
-- **Milestone 1B — Recipe Library:** Source committed: ten JSON demo recipes, working library cards, ingredient lists and original instructions. Build/mobile review still pending.
+- **Milestone 1B — Recipe Library:** Source committed: ten JSON demo recipes, working library cards, ingredient lists and original instructions. Product owner reviewed the updated library; automated build verification remains pending.
 - **Milestone 1C — Profiles:** Create/edit profiles and local persistence, with clear household affiliation.
 - **Milestone 1D — Find Dinner:** Search inputs, multi-select eaters, rule-based ranking, recommendation cards and state preservation.
-- **Later checkpoint — Hosting and iPhone testing:** Confirm privacy implications and plan eligibility before selecting deployment approach.
+- **GitHub Pages hosting:** Public repository and automatic Pages workflow chosen; verify published URL and iPhone navigation after configuring Pages Settings.
 
 Increment sequence is proposed for the remainder of Phase 1; each code change still requires separate approval.
 
@@ -51,3 +51,15 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 - Confirm unknown recipe links display a friendly not-found state.
 - Verify mobile layout and that sample/AI disclaimers are visible.
 - Keep hosting decisions separate from this code increment.
+
+## Mandatory security gate — before AI APIs or private household data
+
+**Status: Future / blocked until reviewed and explicitly approved.** A reminder is scheduled for the AI/API milestone.
+
+- Never place AWS/OpenAI/other provider keys in GitHub, `.env` files committed to Git, public frontend environment variables, React bundles, or mobile browser storage.
+- Introduce a trusted backend to invoke AI using securely managed credentials.
+- Prevent anonymous use of billable endpoints; design authentication, server-enforced household authorization and data isolation.
+- Validate requests; enforce per-user/household rate limits and AI quotas, maximum input size, monthly budgets and alerts; monitor misuse.
+- Review logging for recipe/profile privacy and avoid storing sensitive food restrictions unnecessarily.
+- Verify safety messaging for substitutions: never certify allergy safety from model output alone.
+- Reassess public repository visibility and hosting before introducing personal records or secret configuration.

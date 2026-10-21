@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1, Milestone 1B source committed. First foundation build confirmed by product owner; new library changes require testing.
+**Status:** Phase 1 sample Recipe Library implemented and viewed by the product owner; GitHub Pages automatic-deployment configuration added, deployment confirmation pending.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -25,7 +25,7 @@ Never claim a recipe is allergy-safe from AI reasoning alone. Exclude known rest
 Phase numbers describe planning sequence, not delivery commitments.
 
 ## Engineering principles
-- Use a private GitHub repository during initial development.
+- Repository was initially private and is now public by the product owner's choice. Source code, project documentation and demo recipes are visible to anyone; do not commit personal household information or credentials.
 - Prefer low ongoing costs; preserve the option to compare AWS Bedrock (boto3/InvokeModel) with other AI APIs.
 - Separate frontend, backend and AI-provider concerns as the app evolves.
 - Model recipes/profiles as belonging to a household; a household ID alone is **not** an authorization/security boundary.
@@ -38,7 +38,7 @@ Phase numbers describe planning sequence, not delivery commitments.
 - [Key learnings](docs/KEY_LEARNINGS.md)
 
 ## Current development state
-React/TypeScript frontend foundation and ten static sample recipes are present. No backend, production recipe database, AI integration, or deployment is present. Hosting, persistence, API provider, authentication, and final implementation architecture remain to be confirmed in a technical design checkpoint.
+React/TypeScript frontend foundation and ten static sample recipes are present. No backend, production recipe database, or AI integration is present. GitHub Pages workflow is configured; verify deployment in GitHub Actions and Pages Settings. GitHub Pages hosting is being configured; persistence, API provider, authentication, and final implementation architecture remain to be confirmed.
 
 ## Milestone 1A — Application foundation (October 20, 2026, Pacific time)
 The React + TypeScript + Vite app foundation, page placeholders, fixed mobile bottom navigation, and CSS theme have been added. This is source code, **not a deployed website**. No recipe data, profile editing, recipe matching, AI, backend, or hosting were implemented.
@@ -58,3 +58,16 @@ The product owner verified the Milestone 1A build and preview successfully using
 - A small `cookbook.ts` data-access module keeps the UI independent of the future storage layer.
 - Samples are demonstration content, not Paprika exports. No ingredient safety certification or AI analysis has occurred.
 - Run `git pull` and `npm run build` in your existing Codespace to verify this milestone. The repository has not been deployed.
+
+## GitHub Pages auto-deployment — October 21, 2026
+
+The site source is public; GitHub Actions is configured to build and publish the Vite `dist/` output when code is pushed to `main`. GitHub Pages must be enabled under **Settings → Pages → Build and deployment → Source: GitHub Actions**. Review the workflow run in **Actions** to verify a successful deployment.
+
+**Expected URL after a successful deployment:** https://alexsjewett.github.io/Dinner-Engine/
+
+The Vite `base` is `/Dinner-Engine/`. The frontend uses `HashRouter` for reliable static hosting, so internal pages have URLs such as `.../Dinner-Engine/#/library`. You can bookmark the main link on a phone or laptop and refresh after approved commits deploy.
+
+If we later switch hosting or make the repository private, review the GitHub Pages and routing settings. Publishing a site or its repository makes its content accessible; do not place API keys, real household profiles, or other private data in frontend source files.
+
+### Security gate before AI/backend work
+**Do not deploy a paid AI API until an explicit security review and approval.** Store provider credentials only in backend-managed secrets; add identity/authorization controls before private household data or billable endpoints are exposed; require request validation, usage quotas, rate limits, spending budgets/alerts, and abuse protections. A public static page can connect to a secure backend later. See `docs/FUTURE_FEATURES.md`.

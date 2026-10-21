@@ -92,3 +92,23 @@ A completed GitHub commit still needs build and device verification. **PM takeaw
 
 ### Sample content versus generated AI
 Sample descriptions, times and original instructions are hand-authored demo content, not AI outputs or allergen checks. **PM takeaway:** label prototypes honestly and avoid creating misleading trust.
+
+## GitHub Pages deployment — October 21, 2026
+
+### GitHub Pages
+A service that hosts *static* website files at a GitHub URL. It can serve Dinner Engine's React frontend, but not the future Python backend. **PM takeaway:** public frontend availability and private customer data are separate security concerns.
+
+### Continuous deployment (GitHub Actions)
+A workflow starts when approved code is committed to `main`. It installs packages, builds the website and publishes the output. **PM takeaway:** automatic delivery reduces manual work but requires build status checks.
+
+### Vite base path
+Dinner Engine's project Pages URL lives below `/Dinner-Engine/`. Vite must generate asset URLs using that prefix. **PM takeaway:** hosting configuration affects paths even when features have not changed.
+
+### Hash-based routing
+`HashRouter` uses the `#` portion of a URL, e.g. `.../Dinner-Engine/#/library`, so GitHub Pages can refresh nested routes without special server rewrites. **PM takeaway:** routing strategy has deployment trade-offs.
+
+### Public repository visibility
+A public repo exposes code, documentation and commit metadata. You can change visibility later, but cannot undo external copies or forks. **PM takeaway:** review commit history, secrets and sample versus private data before publication.
+
+### API-security gate
+Public React code cannot safely store secret AI credentials. Future billable model requests will need a secure backend, authenticated access, authorization, quotas, rate limits and spending safeguards. **PM takeaway:** a deliberate milestone gate is safer than adding security after launch.
