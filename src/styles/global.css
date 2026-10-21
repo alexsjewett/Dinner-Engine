@@ -16,15 +16,23 @@
   --shadow: 0 10px 34px rgba(42, 54, 43, 0.055);
 }
 * { box-sizing: border-box; }
-html { min-width: 320px; }
-body { margin: 0; min-width: 320px; }
+html { min-width: 320px; height: 100%; }
+body { margin: 0; min-width: 320px; height: 100%; }
+#root { height: 100%; }
 a { color: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a:focus-visible, button:focus-visible {
   outline: 3px solid #91b392;
   outline-offset: 4px;
 }
-.app-shell { min-height: 100dvh; }
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .top-header {
   max-width: 950px;
   margin: 0 auto;
@@ -32,6 +40,7 @@ a:focus-visible, button:focus-visible {
   display: flex;
   align-items: center;
   gap: 9px;
+  flex: 0 0 auto;
 }
 .brand-symbol { color: var(--sage); font-size: 28px; line-height: 1; }
 .brand-name { font-size: 19px; font-weight: 800; letter-spacing: -0.7px; }
@@ -42,9 +51,16 @@ a:focus-visible, button:focus-visible {
   letter-spacing: .03em;
 }
 .main-content {
+  width: 100%;
   max-width: 950px;
   margin: 0 auto;
-  padding: 22px 22px calc(126px + env(safe-area-inset-bottom, 0px));
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 22px 22px 24px;
 }
 .page-content { max-width: 710px; margin: 0 auto; }
 .page-intro { padding: 27px 4px 25px; }
@@ -167,10 +183,9 @@ h1 {
   font-size: 27px;
 }
 .bottom-nav {
-  position: fixed;
-  left: 50%;
-  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0 auto calc(12px + env(safe-area-inset-bottom, 0px));
   display: flex;
   justify-content: space-between;
   gap: 5px;
@@ -507,3 +522,14 @@ h1 {
   .dinner-time-choice { justify-content: flex-start; }
   .dinner-diner-options { display: flex; flex-direction: column; gap: 1px; }
 }
+
+/* 1D.1: show additional ranked recipes on demand. */
+.dinner-more-button {
+  display: block; width: 100%; min-height: 50px;
+  margin: 21px 0 14px; padding: 12px 18px;
+  border: 1px solid #cbdccb; border-radius: 14px;
+  background: var(--sage-soft); color: #35583d;
+  font: inherit; font-size: 14px; font-weight: 760; cursor: pointer;
+}
+.dinner-more-button:hover { background: #dcebd9; }
+.dinner-more-button:focus-visible { outline: 3px solid #91b392; outline-offset: 3px; }

@@ -39,7 +39,7 @@ export function RecipeDetails() {
             </ol>
           </FeatureCard>
           <FeatureCard eyebrow="Not yet available" title="Possible swaps to review">
-            <p>No swaps have been suggested. Later, Dinner Engine will show proposed
+            <p>No swaps have been suggested. Later, Find Dinner will show proposed
               changes here separately without altering the original recipe.</p>
             <p className="helper-text">
               Always verify labels and restrictions. AI suggestions will never certify

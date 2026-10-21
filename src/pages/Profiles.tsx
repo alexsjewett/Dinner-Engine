@@ -236,7 +236,7 @@ export function Profiles() {
     <div className="page-content">
       <div className="page-intro">
         <p className="eyebrow">Made for your table</p>
-        <h1>Who's coming to dinner?</h1>
+        <h1>Who's eating dinner today?</h1>
         <p className="lead">
           Save dietary needs and foods to avoid for each person. Find Dinner
           will use this information in a future milestone.
