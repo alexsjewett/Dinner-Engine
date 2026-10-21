@@ -81,22 +81,27 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 
 ## New idea backlog — dietary needs, restriction levels and serving options (October 21, 2026)
 
-**All three are proposed / not yet approved for implementation.** The product owner reported successful testing of Milestone 1C inline editing and shared these ideas. Do not change app logic or storage until the design and scope are agreed separately.
+**Product direction refined, implementation still pending explicit approval.** These ideas are not live features. Do not change profile schemas, matching rules or AI logic without a separate approved milestone. Keep personal household stories and health specifics out of this public repository.
 
 ### IDEA-001 — Profile dietary needs and eating patterns (consider before Milestone 1D)
-- Add selectable, clearly labeled choices when adding/editing profiles, such as vegetarian, vegan and a medically motivated gluten-avoidance/celiac option.
-- Prefer a label such as **Dietary needs and eating patterns** rather than calling all items preferences. Celiac disease is a medical restriction, not a preference.
-- Design matching rules per selected category; never treat a simple checkbox or AI inference as certification that a dish is safe for someone with celiac disease, an allergy or cross-contact risk.
-- Decide which initial choices to support and whether the UI needs explanatory text before implementing.
+- Offer simple checkboxes labeled **Dietary needs and eating patterns**, initially **Vegetarian**, **Vegan**, and **Gluten-free**. Use one Gluten-free selection, not separate celiac/voluntary preference checkboxes.
+- A checkbox describes a dietary constraint for matching; it is **not** certification of food safety, absence of gluten, or absence of cross-contact. The interface should not infer why a user selected it.
+- Confirm exact initial choices and the detailed recommendation behavior before implementation.
 
-### IDEA-002 — Per-food restriction priority and optional reason (consider before Milestone 1D)
-- Potential per-food priority: **Must avoid**, **Try to avoid**, **Prefer not to eat**. A medical condition, intolerance or personal dislike could be captured separately as an optional reason; do not infer safety from a user's reason or automatically assign a priority.
-- A Must avoid entry must be treated as a hard exclusion in recommendation candidate selection, not as a score to trade off against taste or convenience. Softer preferences may influence ranking, but only after safety-related hard rules.
-- Structured records would replace simple `foodAvoids: string[]` when approved. A versioned migration must conservatively preserve existing avoids and ask the user to review classifications rather than silently relaxing a restriction.
-- Open decisions: naming, default priority, special treatment for ambiguous ingredients and compound foods, and whether to add these controls to profiles before implementing Find Dinner.
+### IDEA-002 — Per-food avoidance priority (consider before Milestone 1D)
+- Proposed per-food classifications: **Must avoid**, **Should avoid**, and **Prefer to avoid**. **Do not add an optional reason or allergy/intolerance/dislike field.**
+- Treat **Must avoid** as a strict constraint for the particular eater's portion, not merely a scoring factor. Household-level recipe assessment must distinguish an ingredient in the recipe from an ingredient that a specific person would actually be served.
+- An otherwise relevant recipe might be adaptable through omitting an ingredient or serving it separately, if a knowledgeable cook determines the preparation and serving arrangement is appropriate. Do **not** imply that separation alone eliminates allergen or cross-contact risks; ambiguous cases should require review, not be labeled safe.
+- Existing `foodAvoids: string[]` entries must be carried forward conservatively (proposed default: Must avoid) under a versioned migration, without silently relaxing restrictions.
+- Confirm entry UI, field names, migration rules, and behavior for uncertain ingredients before implementation.
 
 ### IDEA-003 — AI alternatives beyond substitutions (Phase 2)
-- In addition to substituting an ingredient, propose **omit**, **serve separately as an optional topping/side**, or **choose another dish**, each with a reason, preparation implications and uncertainty.
-- Serving an ingredient separately may be convenient for personal dislikes, but does **not** by itself make a dish safe for allergies or celiac disease. Shared utensils, ovens, preparation surfaces and cross-contact need careful handling; never claim allergy safety from AI output.
-- Keep original recipe instructions unchanged; distinguish suggested modifications from source text.
-- Defer all AI implementation until the already documented secure-backend and usage-cost checkpoint.
+- Beyond ingredient swaps, AI could suggest **omit**, **offer separately as an optional side/topping**, or **choose another dish**, accounting for different household members being served different portions.
+- AI should explain preparation trade-offs and uncertainty. A suggested separate topping/side is not automatically an allergy-safe solution; the cook is responsible for evaluating preparation, utensils and cross-contact for their circumstances.
+- Preserve original recipe text and keep AI-proposed modifications clearly separate.
+- Defer implementation until the secure-backend, model-cost and safety review gates.
+
+### Product principle — household flexibility with user control
+- Dinner Engine should not presume everyone at the table must receive an identical version of a meal, nor reject every household recipe solely because one ingredient is unsuitable for one person.
+- Distinguish **ingredient exists in original recipe**, **ingredient is in a specific person's portion**, and **whether an adaptation can be responsibly evaluated by the cook**. Never present automated recommendations as a guarantee of allergy safety.
+- Store only generic product requirements in this public roadmap; do not document identifiable family health details.
