@@ -78,3 +78,25 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 - **Preserved:** Add form, existing local browser profiles, stable profile IDs and two-step delete behavior.
 - **Acceptance test pending on device:** Edit a profile near the bottom on iPhone without scrolling to the top; Cancel and Save; refresh to check persistence; confirm deletion still requires confirmation.
 - **Not authorized:** Profile sync, cloud backend, AI and Find Dinner matching are later milestones.
+
+## New idea backlog — dietary needs, restriction levels and serving options (October 21, 2026)
+
+**All three are proposed / not yet approved for implementation.** The product owner reported successful testing of Milestone 1C inline editing and shared these ideas. Do not change app logic or storage until the design and scope are agreed separately.
+
+### IDEA-001 — Profile dietary needs and eating patterns (consider before Milestone 1D)
+- Add selectable, clearly labeled choices when adding/editing profiles, such as vegetarian, vegan and a medically motivated gluten-avoidance/celiac option.
+- Prefer a label such as **Dietary needs and eating patterns** rather than calling all items preferences. Celiac disease is a medical restriction, not a preference.
+- Design matching rules per selected category; never treat a simple checkbox or AI inference as certification that a dish is safe for someone with celiac disease, an allergy or cross-contact risk.
+- Decide which initial choices to support and whether the UI needs explanatory text before implementing.
+
+### IDEA-002 — Per-food restriction priority and optional reason (consider before Milestone 1D)
+- Potential per-food priority: **Must avoid**, **Try to avoid**, **Prefer not to eat**. A medical condition, intolerance or personal dislike could be captured separately as an optional reason; do not infer safety from a user's reason or automatically assign a priority.
+- A Must avoid entry must be treated as a hard exclusion in recommendation candidate selection, not as a score to trade off against taste or convenience. Softer preferences may influence ranking, but only after safety-related hard rules.
+- Structured records would replace simple `foodAvoids: string[]` when approved. A versioned migration must conservatively preserve existing avoids and ask the user to review classifications rather than silently relaxing a restriction.
+- Open decisions: naming, default priority, special treatment for ambiguous ingredients and compound foods, and whether to add these controls to profiles before implementing Find Dinner.
+
+### IDEA-003 — AI alternatives beyond substitutions (Phase 2)
+- In addition to substituting an ingredient, propose **omit**, **serve separately as an optional topping/side**, or **choose another dish**, each with a reason, preparation implications and uncertainty.
+- Serving an ingredient separately may be convenient for personal dislikes, but does **not** by itself make a dish safe for allergies or celiac disease. Shared utensils, ovens, preparation surfaces and cross-contact need careful handling; never claim allergy safety from AI output.
+- Keep original recipe instructions unchanged; distinguish suggested modifications from source text.
+- Defer all AI implementation until the already documented secure-backend and usage-cost checkpoint.
