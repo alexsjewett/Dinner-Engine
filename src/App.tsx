@@ -26,7 +26,9 @@ function AppLayout() {
       <main ref={mainRef} className="main-content" id="main-content">
         <Outlet />
       </main>
-      <BottomNav />
+      <footer className="bottom-nav-shell">
+        <BottomNav />
+      </footer>
     </div>
   );
 }

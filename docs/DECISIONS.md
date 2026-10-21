@@ -121,3 +121,12 @@ The public repo contains only implementation and generic requirements, never rea
 | DEC-053 | Deployment and mobile regression verification pending | Verify build/deployment, long-page scroll endpoints, top-of-recipe navigation, result expansion/collapse, and state retention on iPhone. | Build success alone does not prove in-device scrolling or ergonomics. |
 
 No ingredient/dietary rule, recipe, household data, or AI changes were authorized by this milestone.
+
+## Milestone 1D.2 — Bottom navigation visual polish (October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-054 | Approved and implemented | Place the existing three-tab navigation in a full-width white footer with a fine top border, no floating card border or outer corner radius, and reduced shadow. Keep the selected tab rounded. | Avoids the awkward cream wedges and competing rounded cards reported in real iPhone testing, while retaining clear navigation. |
+| DEC-055 | Pending device check | Preserve the 1D.1 dedicated footer space and content scrolling, including iOS safe-area coverage. | A visual refinement must not reintroduce overlapping navigation or clipped controls. |
+
+This approval covers visual/layout polish only; no matching, recipe, profile, storage, or AI changes.

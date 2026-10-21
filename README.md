@@ -148,3 +148,11 @@ The **public-facing app name** is now **Find Dinner** (app header, browser title
 ### Deployment verification — October 21, 2026
 
 A later GitHub Actions run unexpectedly published an earlier commit after the Milestone 1D.1 build had already succeeded. To ensure the live GitHub Pages website includes the latest `Share what's in your kitchen...` copy and expandable up-to-ten matches, a documentation-only main-branch commit re-triggers the deployment using the latest source tree. Verify the **last successful deployment's SHA** equals the current `main` SHA; a successful build by itself does not guarantee the latest version remains published. Safari may also cache the old page, so refresh or open the published URL in a new tab after the correct deployment completes.
+
+## Milestone 1D.2 — Bottom navigation visual polish (October 21, 2026)
+
+- The bottom tabs sit inside a full-width, lightly separated **white footer**, rather than a floating, doubly rounded card surrounded by cream background.
+- The three tabs and selected sage highlight remain, with slightly softer individual tab corners and minimal footer shadow.
+- The footer (including the iPhone bottom safe area) occupies dedicated flex layout space; the main page scrolls independently and cannot pass underneath the navigation.
+- **Only appearance/layout was changed:** no change to search results, recipe detail behavior, profile data, persistence, or AI.
+- Mobile acceptance: on iPhone, inspect the boundary between cream content and white footer while scrolling and on long cards; confirm all final buttons and text are reachable above the footer.

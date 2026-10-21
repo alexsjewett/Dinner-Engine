@@ -182,26 +182,33 @@ h1 {
   color: var(--sage);
   font-size: 27px;
 }
-.bottom-nav {
-  position: relative;
+/* Full-width footer has its own layout height, so main content never
+   scrolls behind the tabs. The white background covers iPhone's safe area. */
+.bottom-nav-shell {
   flex: 0 0 auto;
-  margin: 0 auto calc(12px + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  background: var(--paper);
+  border-top: 1px solid #e0e5d9;
+  padding: 7px 14px calc(8px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 16px rgba(36, 55, 40, .035);
+}
+.bottom-nav {
   display: flex;
   justify-content: space-between;
-  gap: 5px;
-  width: min(calc(100% - 28px), 520px);
-  padding: 8px;
-  background: #fffefbf5;
-  border: 1px solid #e0e5d9;
-  border-radius: 25px;
-  box-shadow: 0 10px 34px rgba(36, 55, 40, .17);
-  z-index: 10;
+  gap: 7px;
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 .nav-item {
   text-decoration: none;
   color: #6a7b6d;
-  border-radius: 18px;
-  min-height: 62px;
+  border-radius: 15px;
+  min-height: 58px;
   flex: 1;
   display: flex;
   align-items: center;

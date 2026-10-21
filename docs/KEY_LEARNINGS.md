@@ -194,3 +194,7 @@ The displayed product name and tab title can be rebranded without renaming a Git
 
 ### User testing drives quality
 This iteration comes directly from mobile feedback after the core Find Dinner flow worked. **PM takeaway:** acceptance testing should include where the page scrolls, how many recommendations feel manageable, and whether actions remain reachable above persistent navigation.
+
+## Milestone 1D.2 — A layout fix still needs visual refinement
+
+The first structural footer fix kept content from sliding behind navigation but retained a rounded floating card against cream page background. The next iteration uses a full-width surface with a clean dividing line and preserves rounded affordances for individual tabs. **PM takeaway:** usability correctness and visual cohesion are separate acceptance criteria. Mobile safe-area backgrounds must also be considered, not just the clickable tab controls.

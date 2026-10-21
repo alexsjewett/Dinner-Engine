@@ -128,3 +128,7 @@ The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions re
 **Regression test on phone:** Open Recipe Details from the bottom of Find Dinner and Library; check the recipe title appears at the top. Return and expand/collapse results; confirm top three remain unchanged, review cards keep their warnings, and submitted filters survive. Scroll to the bottom of each long screen and verify navigation never covers actions/text. Recheck visible branding, Profiles heading, and mobile safe area.
 
 **Future only / not authorized:** a separate naming exercise, full app icon/identity redesign, deeper kitchen matching, ingredient substitution AI, user accounts or API/backend features.
+
+## Milestone 1D.2 — Footer polish
+
+**Approved and implemented, awaiting phone visual acceptance:** A full-width white footer now backs the existing bottom navigation. The earlier floating-nav rounded container and pronounced shadow are removed, leaving softer rounding only on individual tab states. Main content still scrolls independently and stays above the footer. No other feature changes.
