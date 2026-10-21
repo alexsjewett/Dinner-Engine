@@ -40,16 +40,20 @@ export function FindDinner() {
       return;
     }
     const submitted = { ...search.draft, selectedProfileIds: selected };
-    setSearch({ draft: submitted, submitted });
+    setSearch({ draft: submitted, submitted, expanded: false });
     setError("");
   }
 
   const draft = search.draft;
   const submitted = search.submitted;
   const diners = submitted ? selectDiners(profiles, submitted) : [];
-  const results = submitted ? recommendDinners(getAllRecipes(), submitted, profiles) : [];
-  const direct = results.filter((item) => item.category === "straightforward");
-  const review = results.filter((item) => item.category === "review");
+  const results = submitted ? recommendDinners(getAllRecipes(), submitted, profiles, 10) : [];
+  const firstThree = results.slice(0, 3);
+  const extras = results.slice(3);
+  const direct = firstThree.filter((item) => item.category === "straightforward");
+  const review = firstThree.filter((item) => item.category === "review");
+  const extraDirect = extras.filter((item) => item.category === "straightforward");
+  const extraReview = extras.filter((item) => item.category === "review");
 
   return (
     <div className="page-content">
@@ -57,8 +61,8 @@ export function FindDinner() {
         <p className="eyebrow">A little less deciding, a lot more dinner</p>
         <h1>What sounds good tonight?</h1>
         <p className="lead">
-          Choose what's in your kitchen, your available time, and who's eating.
-          Find up to three ideas from our sample cookbook.
+          Share what's in your kitchen, how much time you have, and who's eating.
+          We'll suggest a few ideas from our sample cookbook.
         </p>
       </div>
 
@@ -177,7 +181,7 @@ export function FindDinner() {
             <p className="eyebrow">From your sample cookbook</p>
             <h2 id="dinner-results-heading">Dinner ideas</h2>
             <p className="helper-text">
-              Showing {results.length} idea{results.length === 1 ? "" : "s"} from your last search.
+              Showing {search.expanded ? results.length : firstThree.length} of {results.length} recipe ideas from your last search.
               {diners.length > 0
                 ? " Considering " + diners.map((person) => person.name).join(", ") + "."
                 : " No saved profiles selected: dietary restrictions were not checked."}
@@ -208,6 +212,45 @@ export function FindDinner() {
               </p>
               {review.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
             </div>
+          )}
+
+          {search.expanded && extras.length > 0 && (
+            <div className="dinner-result-section" id="additional-dinner-matches">
+              <h3>Additional matches</h3>
+              <p className="helper-text">
+                More ranked ideas from the same cookbook. Review notices and food restrictions
+                still apply to each recipe.
+              </p>
+              {extraDirect.length > 0 && (
+                <div className="dinner-additional-group">
+                  <h4>More straightforward options</h4>
+                  {extraDirect.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
+                </div>
+              )}
+              {extraReview.length > 0 && (
+                <div className="dinner-additional-group">
+                  <h4>More options needing adjustment or review</h4>
+                  {extraReview.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {extras.length > 0 && (
+            <button
+              className="dinner-more-button"
+              type="button"
+              aria-expanded={search.expanded}
+              aria-controls="additional-dinner-matches"
+              onClick={() => setSearch((previous) => ({
+                ...previous,
+                expanded: !previous.expanded,
+              }))}
+            >
+              {search.expanded
+                ? "Show fewer matches"
+                : "Show more matches (" + extras.length + " more)"}
+            </button>
           )}
         </section>
       )}

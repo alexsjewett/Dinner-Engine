@@ -12,6 +12,8 @@ export const initialCriteria: SearchCriteria = {
 export type SavedSearch = {
   draft: SearchCriteria;
   submitted: SearchCriteria | null;
+  /** Whether the results list is expanded in this browser tab. */
+  expanded: boolean;
 };
 
 function validCriteria(value: unknown): value is SearchCriteria {
@@ -28,7 +30,7 @@ function validCriteria(value: unknown): value is SearchCriteria {
 export function readSearchSession(): SavedSearch {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
-    if (!raw) return { draft: initialCriteria, submitted: null };
+    if (!raw) return { draft: initialCriteria, submitted: null, expanded: false };
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== "object" || parsed === null) throw Error("Invalid session");
     const object = parsed as Partial<SavedSearch>;
@@ -36,9 +38,9 @@ export function readSearchSession(): SavedSearch {
       !(object.submitted === null || validCriteria(object.submitted))) {
       throw Error("Invalid search");
     }
-    return { draft: object.draft, submitted: object.submitted };
+    return { draft: object.draft, submitted: object.submitted, expanded: object.expanded === true };
   } catch {
-    return { draft: initialCriteria, submitted: null };
+    return { draft: initialCriteria, submitted: null, expanded: false };
   }
 }
 

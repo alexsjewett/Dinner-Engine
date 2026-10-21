@@ -144,13 +144,14 @@ export function evaluateRecipe(
 }
 
 /**
- * Returns up to three suggestions, preferring straightforward options while
- * reserving one slot for a review case to show possible household flexibility.
+ * Keep the original first three suggestions, then optionally append other
+ * candidates without softening or changing the matching/ranking rules.
  */
 export function recommendDinners(
   recipes: Recipe[],
   criteria: SearchCriteria,
   profiles: HouseholdProfile[],
+  limit = 3,
 ): MatchResult[] {
   const diners = selectDiners(profiles, criteria);
   const results = recipes.map((recipe) => evaluateRecipe(recipe, criteria, diners));
@@ -159,5 +160,12 @@ export function recommendDinners(
   const direct = results.filter((item) => item.category === "straightforward").sort(byScore);
   const review = results.filter((item) => item.category === "review").sort(byScore);
   const chosen = direct.slice(0, review.length > 0 ? 2 : 3);
-  return [...chosen, ...review.slice(0, 3 - chosen.length)];
+  const topThree = [...chosen, ...review.slice(0, 3 - chosen.length)];
+  if (limit <= 3) return topThree.slice(0, Math.max(0, limit));
+
+  // First three match the original behavior. Extra options are appended after
+  // them, preserving each candidate's conflict/review classification.
+  const topIds = new Set(topThree.map((item) => item.recipe.id));
+  const additional = [...direct, ...review].filter((item) => !topIds.has(item.recipe.id));
+  return [...topThree, ...additional].slice(0, Math.min(10, limit));
 }
