@@ -39,3 +39,14 @@ Phase numbers describe planning sequence, not delivery commitments.
 
 ## Current development state
 Documentation setup only. No React app, backend, recipe database, or deployment is present. Hosting, persistence, API provider, authentication, and final implementation architecture remain to be confirmed in a technical design checkpoint.
+
+## Milestone 1A — Application foundation (October 20, 2026, Pacific time)
+The React + TypeScript + Vite app foundation, page placeholders, fixed mobile bottom navigation, and CSS theme have been added. This is source code, **not a deployed website**. No recipe data, profile editing, recipe matching, AI, backend, or hosting were implemented.
+
+### How to run locally (once Node.js 22.12+ is installed)
+1. Open a terminal in the repository folder.
+2. Run `npm install` to install dependencies (this generates a package lock file).
+3. Run `npm run dev` and open the local address it prints.
+4. Run `npm run build` to type-check and generate a production build.
+
+Build and browser testing must still be completed in an environment with npm package access. Publishing and iPhone access are separate future steps.

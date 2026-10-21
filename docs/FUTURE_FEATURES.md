@@ -35,3 +35,12 @@
 - Record ideas here before adding them to active phase scope.
 - Each future feature needs a user benefit, risks, dependencies and acceptance criteria before implementation.
 - New ideas do not imply approval to write code.
+
+## Phase 1 increment tracker
+- **Milestone 1A — App foundation:** Source structure, placeholder screens, navigation and mobile theme added; build/browser verification and deployment are not yet completed.
+- **Milestone 1B — Recipe Library:** Add ten individual placeholder recipe records, list cards and original recipe details.
+- **Milestone 1C — Profiles:** Create/edit profiles and local persistence, with clear household affiliation.
+- **Milestone 1D — Find Dinner:** Search inputs, multi-select eaters, rule-based ranking, recommendation cards and state preservation.
+- **Later checkpoint — Hosting and iPhone testing:** Confirm privacy implications and plan eligibility before selecting deployment approach.
+
+Increment sequence is proposed for the remainder of Phase 1; each code change still requires separate approval.

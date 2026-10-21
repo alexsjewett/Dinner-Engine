@@ -49,3 +49,26 @@ Keeping AI calls behind an application service can make it easier to change prov
 
 ## Update convention
 After each milestone, add: **Concept**, **Plain-English explanation**, **Where used in Dinner Engine**, and **What I learned / next question**. Keep unresolved questions visible.
+
+## Milestone 1A — New concepts
+
+### Vite (build tool)
+A development tool that runs the website locally and packages it for production. Dinner Engine now has `npm run dev` and `npm run build` scripts. **PM takeaway:** writing source code and publishing a working website are different steps.
+
+### React Router (navigation)
+Maps an address such as `/profiles` to its corresponding screen. The bottom tabs use links with an active state; recipe details uses a back link. **PM takeaway:** navigation behavior is part of the acceptance criteria, even before data is implemented.
+
+### Reusable components
+A single `FeatureCard` component is used on multiple pages. **PM takeaway:** consistent UI elements lower maintenance costs and make design changes easier.
+
+### CSS design variables (design tokens)
+Named variables for cream, sage, text, borders and card rounding provide consistent styling. **PM takeaway:** a small shared design system can improve quality without a major UI library.
+
+### Mobile safe areas
+Phones may have a bottom gesture bar or top notch. The navigation uses safe-area insets to avoid overlapping the bottom of the screen. **PM takeaway:** test layouts on real devices, not just desktop-sized browser windows.
+
+### Verification versus deployment
+A repository can contain source files without having passed a build or being accessible as a website. **PM takeaway:** clearly distinguish saved code, a successful automated build, device testing, and production deployment.
+
+### First code-change scope
+Milestone 1A deliberately provides screens and navigation only. The apparent input fields are labeled previews, not functional forms. **PM takeaway:** placeholder interfaces should never mislead testers about implemented functionality.
