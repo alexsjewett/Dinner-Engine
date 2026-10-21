@@ -39,7 +39,7 @@
 ## Phase 1 increment tracker
 - **Milestone 1A — App foundation:** Completed; product owner verified build and preview in GitHub Codespaces. Deployment is still deferred.
 - **Milestone 1B — Recipe Library:** Source committed: ten JSON demo recipes, working library cards, ingredient lists and original instructions. Product owner reviewed the updated library; automated build verification remains pending.
-- **Milestone 1C — Profiles:** Implemented add/edit/delete, versioned browser-local persistence, stable IDs, storage error reporting and delete confirmation. Automated build and user testing pending.
+- **Milestone 1C — Profiles:** CRUD, inline edits, browser-only persistence and deletion confirmation implemented and tested by product owner; Milestone 1C.2 expands the profile schema.
 - **Milestone 1D — Find Dinner:** Search inputs, multi-select eaters, rule-based ranking, recommendation cards and state preservation.
 - **GitHub Pages hosting:** Public repository and automatic Pages workflow chosen; verify published URL and iPhone navigation after configuring Pages Settings.
 
@@ -105,3 +105,10 @@ Increment sequence is proposed for the remainder of Phase 1; each code change st
 - Dinner Engine should not presume everyone at the table must receive an identical version of a meal, nor reject every household recipe solely because one ingredient is unsuitable for one person.
 - Distinguish **ingredient exists in original recipe**, **ingredient is in a specific person's portion**, and **whether an adaptation can be responsibly evaluated by the cook**. Never present automated recommendations as a guarantee of allergy safety.
 - Store only generic product requirements in this public roadmap; do not document identifiable family health details.
+
+## Milestone 1C.2 implementation note — October 21, 2026
+
+- **Approved and implemented, user acceptance pending:** Dietary needs checkboxes (Vegetarian, Vegan, Gluten-free) and individual food avoidance levels (Must/Should/Prefer), without a reason field.
+- Existing profile IDs and legacy foods are preserved; all historical avoids convert to **Must avoid**, never a softer level. Storage payload version becomes 2 on successful user save.
+- **Deferred:** using those selections for rule-based recipe filtering, household eater selection, evaluating separate toppings/sides, or AI. These need a separately approved Find Dinner / AI milestone.
+- Confirm on iPhone that older avoids, new choices, editing in place, Cancel, reload and deletion still work; new entries should not appear on another device.

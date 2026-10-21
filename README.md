@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Phase 1 Milestone 1C: browser-local household profiles added; automated build and deployment verification pending.
+**Status:** Phase 1 Milestone 1C.2: dietary needs and per-food avoidance levels implemented in the prototype; deployment and device acceptance checks tracked separately.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -92,3 +92,14 @@ After confirming the original CRUD behavior worked, the product owner identified
 - Deletion still requires confirmation, and errors appear in the affected card instead of at the top.
 - Browser storage schema, keys, existing profiles, and security scope are unchanged. No migration is necessary.
 - Acceptance check: on iPhone, tap Edit for a profile near the bottom; the editable fields appear in the same card with no upward jump. Confirm Save persists after refresh and Cancel preserves the previous values.
+
+## Milestone 1C.2 — Dietary needs and avoidance levels (October 21, 2026)
+
+- Create or edit a person with checkboxes for **Vegetarian**, **Vegan**, **Gluten-free**; there is one Gluten-free option, not a medical-reason selector.
+- Enter individual foods in rows, each with **Must avoid**, **Should avoid**, or **Prefer to avoid**. No reason is requested. Blank rows are ignored; duplicate food entries must be resolved before saving.
+- The Add form stays separate, and existing persons can still be edited inline. Food rows can be added or removed.
+- Existing version-1 browser profiles are **read without changing localStorage**, and their saved `foodAvoids` are interpreted as **Must avoid**. The first successful add/edit/delete writes the version-2 profile structure under the **same browser key**, preserving IDs and existing avoided foods.
+- The original storage key name retains its `v1` suffix for backwards compatibility; the payload now declares `version: 2`. No profile data is committed to GitHub.
+- A **Must avoid** classification will guide future per-person matching; it is not yet an implemented exclusion rule. Future meal suggestions may discuss cooking or serving ingredients separately, but must never claim allergy or gluten safety. Ambiguity requires human review.
+- **Out of scope:** Find Dinner matching, AI, allergy certifications, account security, cloud storage and cross-device sync.
+- Acceptance testing: verify existing profiles still appear with Must avoid entries, add/edit priority and checkbox selections, Cancel editing, remove rows, refresh persistence and delete confirmation on mobile.

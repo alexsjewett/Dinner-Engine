@@ -362,3 +362,66 @@ h1 {
 @media (max-width: 420px) {
   .profile-inline-form .profile-form-actions > button { flex: 1 1 auto; }
 }
+
+/* Milestone 1C.2: checkbox dietary needs and per-food priority rows */
+.profile-choice-fieldset {
+  margin: 0;
+  min-width: 0;
+  padding: 17px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+.profile-choice-fieldset legend {
+  padding: 0 6px 0 0;
+  font-size: 15px;
+  font-weight: 760;
+  color: var(--forest);
+}
+.profile-choice-fieldset > .helper-text { margin: 4px 0 12px; }
+.dietary-option-list { display: flex; gap: 9px; flex-wrap: wrap; }
+.dietary-option {
+  display: inline-flex; align-items: center; gap: 10px;
+  min-height: 46px; padding: 11px 14px;
+  border: 1px solid #dbe6d8; border-radius: 13px;
+  color: var(--forest); background: #f7faf5;
+  font-size: 14px; font-weight: 650; cursor: pointer;
+}
+.dietary-option input { width: 19px; height: 19px; margin: 0; accent-color: var(--sage); }
+.profile-restriction-list { display: flex; flex-direction: column; gap: 11px; }
+.profile-restrictions-empty { color: var(--muted); margin: 0 0 7px; font-size: 13px; }
+.profile-restriction-editor {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(145px, .7fr) auto;
+  align-items: end; gap: 10px; padding: 12px;
+  border: 1px solid var(--border); border-radius: 14px; background: #fafbf8;
+}
+.profile-restriction-editor .profile-field { min-width: 0; }
+.profile-field select {
+  display: block; width: 100%; min-width: 0; min-height: 48px;
+  padding: 12px 9px; border: 1px solid #ccd8cc; border-radius: 13px;
+  font: inherit; font-size: 16px; color: var(--forest);
+  background: #fff;
+}
+.profile-remove-restriction {
+  min-height: 46px; padding: 9px 11px;
+  background: transparent; color: #8d4441;
+  font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
+  border: 0; border-radius: 12px;
+}
+.profile-remove-restriction:hover { background: #fbf1f0; }
+.profile-add-restriction { margin-top: 13px; }
+.profile-dietary-summary { margin-bottom: 11px; }
+.profile-dietary-chip {
+  background: #edf0fa; color: #435b7a;
+  padding: 5px 10px; font-size: 12px;
+  font-weight: 650; border-radius: 999px;
+}
+@media (max-width: 590px) {
+  .profile-restriction-editor { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .profile-restriction-editor .profile-field:first-child { grid-column: 1 / -1; }
+  .profile-remove-restriction { grid-column: 2; justify-self: end; }
+}
+@media (max-width: 370px) {
+  .profile-restriction-editor { grid-template-columns: minmax(0, 1fr); }
+  .profile-restriction-editor .profile-field:first-child,
+  .profile-remove-restriction { grid-column: 1; }
+}

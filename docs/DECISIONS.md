@@ -82,3 +82,15 @@ The project owner explicitly opted into public GitHub hosting and requested a re
 | DEC-035 | Approved and implemented | Preserve the existing `localStorage` schema, profile IDs and delete confirmation while changing only the presentation of editing. | Avoids migration or data loss and contains this iteration to mobile UX polish. |
 
 The product owner confirmed Milestone 1C's original CRUD interactions functioned before requesting this refinement. Recheck inline editing and deployment; those are independent verification steps.
+
+## Milestone 1C.2 — October 21, 2026
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-036 | Approved and implemented | Profiles offer exactly Vegetarian, Vegan and Gluten-free checkboxes under Dietary needs and eating patterns; no reason or diagnosis field. | Meets user-requested simplicity. A checkbox is not food-safety certification. |
+| DEC-037 | Approved and implemented | Store each food as a separate entry with Must avoid / Should avoid / Prefer to avoid. Avoid reasons are not captured. | Supports future rule-based matching and softer ranking without forcing users to explain the restriction. |
+| DEC-038 | Approved and implemented | Preserve original profile IDs and browser storage key; read legacy version-1 `foodAvoids` as Must avoid, then write payload version 2 on the next successful user save. | Conservative migration; no unnecessary rewrite on page load. Existing avoids are never silently softened. |
+| DEC-039 | Future, not authorized | Implement household matching that distinguishes a person's plate from the original recipe and supports cook-reviewed separate toppings/sides. | Must avoid is a strict requirement for the affected eater, but not automatic household-recipe rejection; never imply AI/allergy certification. |
+| DEC-040 | Verification pending | Confirm production build, GitHub Pages deploy and mobile CRUD/migration regression checks. | Builds do not replace user testing of existing browser data. |
+
+The public repo contains only implementation and generic requirements, never real profile values. This milestone does not add recipe matching, AI or a backend.

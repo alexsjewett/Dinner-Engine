@@ -143,3 +143,17 @@ Each profile card owns its unsaved edit fields. Saving applies the changes to ex
 
 ### Regression testing
 A UX refinement must not break add, delete, reload persistence, existing IDs or data. **PM takeaway:** acceptance tests should cover both the new behavior and previously working paths.
+
+## Milestone 1C.2 — Data design and conservative migration
+
+### Structured restrictions
+Previously `foodAvoids: string[]` could only say a food was avoided. Version 2 uses objects with `food` and `level` fields, plus selected `dietaryNeeds`. **PM takeaway:** richer requirements can change the data contract before a recommendation algorithm is built.
+
+### Non-destructive migration
+The app understands both old and new profile formats. Existing avoided foods become Must avoid in memory, preserving stable IDs; only a later successful user save writes version 2. **PM takeaway:** never quietly downgrade a restriction or delete stored user information just to update a schema.
+
+### A constraint belongs to an eater
+Must avoid refers to one person's portion; other household members could eat something different. Whether a recipe can be safely adapted remains subject to a knowledgeable cook's judgment. **PM takeaway:** separate hard eligibility constraints from preference ranking and from claims of medical safety.
+
+### Transparent priorities, no diagnosis collection
+Three user-selected avoidance levels capture prioritization without requesting a medical reason. The Gluten-free option is not a claim that a recipe or kitchen is suitable for celiac disease. **PM takeaway:** collect only data needed for the feature, and don't imply certifications the system cannot verify.

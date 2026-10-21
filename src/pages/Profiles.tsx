@@ -1,39 +1,45 @@
 import { useState, type FormEvent } from "react";
 import { FeatureCard } from "../components/FeatureCard";
+import { ProfileFields } from "../components/ProfileFields";
 import {
   DEMO_HOUSEHOLD_ID,
   loadProfiles,
-  parseFoodAvoids,
   saveProfiles,
+  validateFoodRestrictions,
 } from "../services/profileStorage";
-import type { HouseholdProfile } from "../types/profile";
+import {
+  avoidanceLevelLabel,
+  dietaryNeedLabel,
+  type DietaryNeed,
+  type FoodRestriction,
+  type HouseholdProfile,
+} from "../types/profile";
 
+type UpdateFields = Pick<HouseholdProfile, "name" | "dietaryNeeds" | "foodRestrictions">;
 type ProfileCardProps = {
   profile: HouseholdProfile;
-  onUpdate: (id: string, name: string, foodAvoids: string[]) => boolean;
+  onUpdate: (id: string, fields: UpdateFields) => boolean;
   onDelete: (id: string) => boolean;
 };
 
-/** Each profile owns its edit draft, so editing stays inside the tapped card. */
 function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState(profile.name);
-  const [draftAvoids, setDraftAvoids] = useState(profile.foodAvoids.join(", "));
+  const [draftNeeds, setDraftNeeds] = useState<DietaryNeed[]>(profile.dietaryNeeds);
+  const [draftRestrictions, setDraftRestrictions] = useState<FoodRestriction[]>(
+    profile.foodRestrictions,
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
   const [updated, setUpdated] = useState(false);
 
   function beginEdit() {
     setDraftName(profile.name);
-    setDraftAvoids(profile.foodAvoids.join(", "));
+    setDraftNeeds([...profile.dietaryNeeds]);
+    setDraftRestrictions(profile.foodRestrictions.map((item) => ({ ...item })));
     setIsEditing(true);
     setConfirmDelete(false);
     setUpdated(false);
-    setError("");
-  }
-
-  function cancelEdit() {
-    setIsEditing(false);
     setError("");
   }
 
@@ -44,10 +50,15 @@ function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
       setError("Please enter a name.");
       return;
     }
-    if (!onUpdate(profile.id, name, parseFoodAvoids(draftAvoids))) {
-      setError(
-        "Your browser couldn't save this change. Please check its storage settings and try again.",
-      );
+    const validation = validateFoodRestrictions(draftRestrictions);
+    if (validation.error) {
+      setError(validation.error);
+      return;
+    }
+    if (!onUpdate(profile.id, {
+      name, dietaryNeeds: draftNeeds, foodRestrictions: validation.restrictions,
+    })) {
+      setError("Your browser couldn't save these changes. Please try again.");
       return;
     }
     setIsEditing(false);
@@ -56,9 +67,7 @@ function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
   }
 
   function handleDelete() {
-    if (!onDelete(profile.id)) {
-      setError("Your browser couldn't delete this profile. Please try again.");
-    }
+    if (!onDelete(profile.id)) setError("Your browser couldn't delete this profile. Please try again.");
   }
 
   return (
@@ -69,18 +78,33 @@ function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
         </span>
         <div className="household-profile-copy">
           <h3>{profile.name}</h3>
-          {!isEditing && (profile.foodAvoids.length ? (
+          {!isEditing && (
             <>
-              <p className="household-avoid-title">Foods avoided</p>
-              <div className="household-avoid-chips">
-                {profile.foodAvoids.map((food) => (
-                  <span className="household-avoid-chip" key={food}>{food}</span>
-                ))}
-              </div>
+              {profile.dietaryNeeds.length > 0 && (
+                <div className="household-avoid-chips profile-dietary-summary">
+                  {profile.dietaryNeeds.map((need) => (
+                    <span className="profile-dietary-chip" key={need}>
+                      {dietaryNeedLabel(need)}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {profile.foodRestrictions.length > 0 ? (
+                <>
+                  <p className="household-avoid-title">Foods to avoid</p>
+                  <div className="household-avoid-chips">
+                    {profile.foodRestrictions.map((restriction) => (
+                      <span className="household-avoid-chip" key={restriction.food.toLocaleLowerCase()}>
+                        {restriction.food} · {avoidanceLevelLabel(restriction.level)}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="helper-text">No individual foods listed.</p>
+              )}
             </>
-          ) : (
-            <p className="helper-text">No foods listed as avoided.</p>
-          ))}
+          )}
         </div>
       </div>
 
@@ -92,46 +116,28 @@ function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
             <input
               id={"profile-edit-name-" + profile.id}
               type="text"
-              autoComplete="off"
               maxLength={80}
-              value={draftName}
-              onChange={(event) => {
-                setDraftName(event.target.value);
-                setError("");
-              }}
+              autoComplete="off"
               required
+              value={draftName}
+              onChange={(event) => { setDraftName(event.target.value); setError(""); }}
             />
           </div>
-          <div className="profile-field">
-            <label htmlFor={"profile-edit-avoids-" + profile.id}>Foods they avoid</label>
-            <textarea
-              id={"profile-edit-avoids-" + profile.id}
-              rows={3}
-              maxLength={1000}
-              placeholder="e.g. peanuts, shellfish, sesame"
-              value={draftAvoids}
-              onChange={(event) => {
-                setDraftAvoids(event.target.value);
-                setError("");
-              }}
-              aria-describedby={"profile-edit-help-" + profile.id}
-            />
-            <p id={"profile-edit-help-" + profile.id} className="helper-text">
-              Separate foods with commas. Leave blank if none.
-            </p>
-          </div>
+          <ProfileFields
+            idPrefix={"profile-edit-" + profile.id}
+            dietaryNeeds={draftNeeds}
+            onDietaryNeedsChange={(needs) => { setDraftNeeds(needs); setError(""); }}
+            restrictions={draftRestrictions}
+            onRestrictionsChange={(rows) => { setDraftRestrictions(rows); setError(""); }}
+          />
           {error && <p className="profile-alert" role="alert">{error}</p>}
           <div className="profile-form-actions">
-            <button className="profile-primary-button" type="submit">
-              Save changes
-            </button>
+            <button className="profile-primary-button" type="submit">Save changes</button>
             <button
               className="profile-secondary-button"
               type="button"
-              onClick={cancelEdit}
-            >
-              Cancel
-            </button>
+              onClick={() => { setIsEditing(false); setError(""); }}
+            >Cancel</button>
           </div>
         </form>
       ) : confirmDelete ? (
@@ -139,51 +145,30 @@ function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
           <p>Delete {profile.name}'s profile from this device?</p>
           {error && <p className="profile-alert" role="alert">{error}</p>}
           <div className="profile-action-row">
-            <button
-              type="button"
-              className="profile-danger-button"
-              onClick={handleDelete}
-            >
+            <button className="profile-danger-button" type="button" onClick={handleDelete}>
               Delete profile
             </button>
             <button
-              type="button"
               className="profile-secondary-button"
-              onClick={() => {
-                setConfirmDelete(false);
-                setError("");
-              }}
-            >
-              Keep profile
-            </button>
+              type="button"
+              onClick={() => { setConfirmDelete(false); setError(""); }}
+            >Keep profile</button>
           </div>
         </div>
       ) : (
         <>
           {updated && (
-            <p className="profile-inline-success" role="status">
-              Changes saved on this device.
-            </p>
+            <p className="profile-inline-success" role="status">Changes saved on this device.</p>
           )}
           <div className="profile-action-row">
-            <button
-              className="profile-secondary-button"
-              type="button"
-              onClick={beginEdit}
-            >
+            <button className="profile-secondary-button" type="button" onClick={beginEdit}>
               Edit
             </button>
             <button
               className="profile-text-danger-button"
               type="button"
-              onClick={() => {
-                setConfirmDelete(true);
-                setError("");
-                setUpdated(false);
-              }}
-            >
-              Delete
-            </button>
+              onClick={() => { setConfirmDelete(true); setError(""); setUpdated(false); }}
+            >Delete</button>
           </div>
         </>
       )}
@@ -194,7 +179,8 @@ function ProfileCard({ profile, onUpdate, onDelete }: ProfileCardProps) {
 export function Profiles() {
   const [saved, setSaved] = useState(loadProfiles);
   const [name, setName] = useState("");
-  const [avoidsText, setAvoidsText] = useState("");
+  const [needs, setNeeds] = useState<DietaryNeed[]>([]);
+  const [restrictions, setRestrictions] = useState<FoodRestriction[]>([]);
   const [addError, setAddError] = useState("");
   const [addNotice, setAddNotice] = useState("");
 
@@ -203,10 +189,9 @@ export function Profiles() {
   function handleAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanedName = name.trim();
-    if (!cleanedName) {
-      setAddError("Please enter a name.");
-      return;
-    }
+    if (!cleanedName) { setAddError("Please enter a name."); return; }
+    const validation = validateFoodRestrictions(restrictions);
+    if (validation.error) { setAddError(validation.error); return; }
 
     const next: HouseholdProfile[] = [
       ...profiles,
@@ -214,14 +199,13 @@ export function Profiles() {
         id: crypto.randomUUID(),
         householdId: DEMO_HOUSEHOLD_ID,
         name: cleanedName,
-        foodAvoids: parseFoodAvoids(avoidsText),
+        dietaryNeeds: needs,
+        foodRestrictions: validation.restrictions,
       },
     ];
 
     if (!saveProfiles(next)) {
-      setAddError(
-        "Your browser couldn't save this profile. Please check its storage settings and try again.",
-      );
+      setAddError("Your browser couldn't save this profile. Please try again.");
       setAddNotice("");
       return;
     }
@@ -230,13 +214,12 @@ export function Profiles() {
     setAddNotice("Profile added on this device.");
     setAddError("");
     setName("");
-    setAvoidsText("");
+    setNeeds([]);
+    setRestrictions([]);
   }
 
-  function handleUpdate(id: string, newName: string, foodAvoids: string[]): boolean {
-    const next = profiles.map((person) =>
-      person.id === id ? { ...person, name: newName, foodAvoids } : person,
-    );
+  function handleUpdate(id: string, fields: UpdateFields): boolean {
+    const next = profiles.map((person) => person.id === id ? { ...person, ...fields } : person);
     if (!saveProfiles(next)) return false;
     setSaved({ profiles: next, warning: null });
     return true;
@@ -255,21 +238,18 @@ export function Profiles() {
         <p className="eyebrow">Made for your table</p>
         <h1>Who's coming to dinner?</h1>
         <p className="lead">
-          Keep track of the foods each person avoids. These profiles will be
-          available to select when we build Find Dinner.
+          Save dietary needs and foods to avoid for each person. Find Dinner
+          will use this information in a future milestone.
         </p>
       </div>
 
       <div className="local-storage-note" role="note">
         <strong>Saved on this device only.</strong>{" "}
-        Profiles stay in this browser, not in GitHub, and won't sync with
-        your phone or laptop. For now, use fictional test profiles rather
-        than sensitive medical details.
+        Profiles stay in this browser, not GitHub, and do not sync to other devices.
+        Please use fictional test profiles rather than sensitive medical details.
       </div>
 
-      {saved.warning && (
-        <p className="profile-alert" role="alert">{saved.warning}</p>
-      )}
+      {saved.warning && <p className="profile-alert" role="alert">{saved.warning}</p>}
 
       <FeatureCard eyebrow="A seat at the table" title="Add a profile">
         <form className="profile-form" onSubmit={handleAdd}>
@@ -278,43 +258,27 @@ export function Profiles() {
             <input
               id="profile-name"
               type="text"
-              autoComplete="off"
               maxLength={80}
+              autoComplete="off"
               placeholder="e.g. Sample Person"
               value={name}
               onChange={(event) => {
-                setName(event.target.value);
-                setAddError("");
-                setAddNotice("");
+                setName(event.target.value); setAddError(""); setAddNotice("");
               }}
               required
             />
           </div>
-          <div className="profile-field">
-            <label htmlFor="profile-avoids">Foods they avoid</label>
-            <textarea
-              id="profile-avoids"
-              rows={3}
-              maxLength={1000}
-              placeholder="e.g. peanuts, shellfish, sesame"
-              value={avoidsText}
-              onChange={(event) => {
-                setAvoidsText(event.target.value);
-                setAddError("");
-                setAddNotice("");
-              }}
-              aria-describedby="profile-avoids-help"
-            />
-            <p id="profile-avoids-help" className="helper-text">
-              Separate foods with commas. Leave blank if there are none to list.
-            </p>
-          </div>
+          <ProfileFields
+            idPrefix="profile-new"
+            dietaryNeeds={needs}
+            onDietaryNeedsChange={(items) => { setNeeds(items); setAddError(""); }}
+            restrictions={restrictions}
+            onRestrictionsChange={(rows) => { setRestrictions(rows); setAddError(""); }}
+          />
           {addError && <p className="profile-alert" role="alert">{addError}</p>}
           {addNotice && <p className="profile-success" role="status">{addNotice}</p>}
           <div className="profile-form-actions">
-            <button className="profile-primary-button" type="submit">
-              Save profile
-            </button>
+            <button className="profile-primary-button" type="submit">Save profile</button>
           </div>
         </form>
       </FeatureCard>
@@ -348,10 +312,11 @@ export function Profiles() {
       <div className="gentle-note">
         <span className="note-symbol" aria-hidden="true">♡</span>
         <div>
-          <strong>Food restrictions need careful review.</strong>
+          <strong>Restrictions are personal, not a guarantee of meal safety.</strong>
           <p>
-            Future recipe suggestions will combine selected people's avoids,
-            but AI won't certify recipes as allergy-safe.
+            Different people can receive different versions of a dish.
+            Future suggestions may flag possible adaptations for a cook's review;
+            the app won't certify allergy or gluten safety.
           </p>
         </div>
       </div>
