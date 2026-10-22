@@ -130,3 +130,28 @@ The next security milestone remains mandatory before enabling paid calls.
 
 Documentation: https://developers.cloudflare.com/workers/configuration/cloudflare-access/
 and https://developers.cloudflare.com/workers/ci-cd/builds/.
+
+## 3A.1 on-device auth debugging (October 21, 2026 Pacific)
+
+**Actual device feedback:** Worker `dinner-engine-ai` deployed successfully
+from the `backend` root with global All Workers Access protecting production
+and previews. Owner added Production `ALLOWED_EMAIL` secret. The Safari
+`/api/ai/health` request returned `403 access_denied`; the Access policy
+was confirmed active. Owner checked casing differences and they did not fix
+it (code compares lowercased emails).
+
+**Approved limited diagnostic increment:** add *temporary*, non-identifying
+failure codes on the authenticated health route's 403 response. Do not relax
+Access, share identifying email values, log recipe data, read request bodies,
+or activate OpenAI. Tests cover every diagnostic reason, forged headers,
+missing identity, case-insensitive comparison and disabled paid endpoint.
+
+**Acceptance:** After GitHub CI and Cloudflare Git auto-deploy are independently
+confirmed, owner reloads Worker `/api/ai/health` in Safari and shares **only**
+the returned `diagnostic` code. Determine precise next fix from that code;
+after a successful owner-only request, remove temporary diagnostics and
+repeat a fresh-Private-tab access test.
+
+**Still blocked:** any OpenAI model calls, key setup, cost risk, real recipe
+transmission or cross-origin frontend calls. Existing GitHub Pages recipe
+matching remains available.

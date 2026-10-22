@@ -239,3 +239,10 @@ or conversation.
 **AI account checkpoint:** Owner reports Cloudflare account and OpenAI API project `dinner-engine` created (October 21, 2026 Pacific). Not yet connected. Next: Zero Trust onboarding, budget alerts and protected disabled Worker; see `docs/AI_PILOT_PLAN.md`.
 
 **3A.1 preparation update (October 21, 2026 Pacific):** Cloudflare Zero Trust onboarding reported complete, and the owner approved using imported Paprika recipes for AI quality testing **after** authentication and budget gates are verified. `backend/wrangler.json` plus exact-owner Cloudflare Access authorization and CI tests are staged, not deployed. Next owner step: enable Protect all Workers > All traffic *before* connecting the GitHub repo in Cloudflare. Existing GitHub Pages frontend is unchanged; no AI secret or billable endpoint exists.
+
+**3A.1 device checkpoint:** Cloudflare Git Worker `dinner-engine-ai` has now
+been deployed from the `backend` root with global Access enabled.
+An iPhone health check was denied despite configuring the owner-only
+`ALLOWED_EMAIL` secret. Temporary health-route-only, non-identifying
+403 failure codes are being tested and deployed to isolate the issue.
+No auth bypass, API key, model calls or recipe transfer is involved.

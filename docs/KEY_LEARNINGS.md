@@ -282,3 +282,13 @@ Cloudflare's Git integration can deploy a new Worker upon importing a repository
 
 ### Testing with real recipes needs both consent and controls
 The owner has volunteered their Paprika recipes for AI quality testing. This removes the need for artificial content in later usefulness tests, but it does not eliminate the need for authorization, spending controls, minimized data sharing or opt-in request flow. **PM takeaway:** data consent and technical readiness are complementary, not interchangeable.
+
+### A generic 403 masks several different auth failures
+In the first real Safari test, an active Cloudflare All Workers Access policy
+and a configured `ALLOWED_EMAIL` secret still produced a generic 403. Email
+case changes cannot help when matching already normalizes case. A temporary
+health-only diagnostic code can separate missing trusted Access context,
+missing secret, identity lookup errors, unavailable email and identity
+mismatch without revealing credentials. **PM takeaway:** build a small,
+safe diagnostic checkpoint rather than guessing at security settings, and
+remove it when debugging is done.

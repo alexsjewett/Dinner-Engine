@@ -55,3 +55,28 @@ From repo root, `npm run test:ai-foundation` tests denied anonymous, wrong-user,
 missing-secret and forged-header requests; it confirms no recipe bodies are
 read and no API calls occur. GitHub Pages continues to build the frontend
 independently. See `docs/AI_PILOT_PLAN.md` for the rest of the pilot.
+
+## Temporary Access diagnostics (October 21, 2026 Pacific)
+
+The Worker is now connected and deployed behind account-wide All Workers
+Access. The owner configured the `ALLOWED_EMAIL` secret and reported an
+`{"error":"access_denied"}` result for `GET /api/ai/health`. Case-only
+changes of the configured email made no difference; case comparison was
+already insensitive.
+
+A **temporary** `diagnostic` field in the 403 JSON response for
+`GET /api/ai/health` identifies which fail-closed check rejected access:
+
+| Code | Interpretation | Safe next action |
+|---|---|---|
+| `access_context_missing` | Worker received no trusted Access context | Check Cloudflare Access application, Worker invocation and runtime docs; do NOT disable Access |
+| `allowlist_missing` | `ALLOWED_EMAIL` is missing/blank/invalid in this Worker environment | Confirm Secret exists in Production, redeploy secret if needed |
+| `identity_lookup_failed` | `ctx.access.getIdentity()` threw | Inspect Access configuration/identity service, no user data in logs |
+| `identity_email_missing` | Verified Access identity did not provide email | Inspect identity provider/policy configuration |
+| `identity_mismatch` | Email from verified Access differs from allowlist (case ignored) | Compare locally against `/cdn-cgi/access/get-identity`; do not share personal data |
+
+Only fixed error codes are returned. No email, claims, secret values,
+tokens, prompt data or request bodies are returned or logged.
+Every failure **still responds 403**. Other endpoints only respond with
+generic `access_denied`; AI remains disabled and unable to bill or transmit
+recipes. Remove the codes once the iPhone Access check is resolved.

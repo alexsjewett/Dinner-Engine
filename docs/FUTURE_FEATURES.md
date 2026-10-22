@@ -186,3 +186,8 @@ enhancement is deferred because current matching is already useful.
 **3A setup progress:** Both vendor accounts reported ready; OpenAI project called `dinner-engine`. Next: Cloudflare Zero Trust setup, soft API-budget notifications, Worker-level Access sign-in test on iPhone. No paid AI endpoint active.
 
 **3A.1 setup checkpoint:** Zero Trust onboarding reported ready; owner has approved quality testing against their imported Paprika recipes once security and budget checks are complete. Next: enable account-wide All traffic Worker Access before Git integration; connect disabled `dinner-engine-ai` Worker and test exact-user sign-in on iPhone. No AI calls or backend deployment yet. Quotas and billing gates remain incomplete.
+
+**3A.1 device/auth checkpoint:** Worker deployed and account-wide Cloudflare
+Access confirmed, but iPhone Safari health check still returns 403. A
+temporarily approved, non-identifying diagnostic is being used to isolate
+the fail-closed check before proceeding with AI. No API key or live model.

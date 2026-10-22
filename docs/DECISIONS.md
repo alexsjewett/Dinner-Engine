@@ -195,3 +195,12 @@ The prior future-AI security gate remains mandatory. See docs/AI_PILOT_PLAN.md.
 | DEC-081 | Source prepared, not connected | Worker named `dinner-engine-ai` configured under `backend/`; normal GitHub Pages workflow still publishes only existing frontend. | Avoid moving original app or creating a billable endpoint during authentication setup. |
 
 **External accounts:** OpenAI project `dinner-engine` and Cloudflare Zero Trust ready per owner. No Worker deployment, keys, personal data transfer or incurred AI usage has been claimed.
+
+## Milestone 3A.1 auth diagnostic increment (October 21, 2026 Pacific)
+
+| ID | Status | Decision | Rationale |
+|---|---|---|---|
+| DEC-082 | Approved, temporary | Return fixed, non-identifying 403 diagnostic codes **only** for `GET /api/ai/health`; never bypass auth or reveal identity, email or secret values. | Disambiguate missing Access context, missing allowlist, failed identity lookup, absent email, or mismatched identity after real Safari denial. |
+| DEC-083 | Approved tests | Verify each failure code and keep every rejected request unread (body not parsed), with all other endpoints returning generic denial. Retain paid endpoint's 503 disablement. | Isolate the root cause without creating a privacy, authentication or cost regression. |
+
+**Remove temporary health diagnostics once owner-only Safari auth succeeds; require independent CI, Cloudflare deployment and device verification.**
