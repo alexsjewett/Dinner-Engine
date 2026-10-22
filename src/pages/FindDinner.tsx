@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
 import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
-import { assessLocalAiReadiness, type LocalAiReadiness } from "../services/aiPaprikaReadiness";
+import { assessLocalCatalogReadiness, type CatalogReadiness } from "../services/aiPaprikaCatalogReadiness";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -22,7 +22,7 @@ export function FindDinner() {
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
   const [aiScopeReviewed, setAiScopeReviewed] = useState(false);
-  const [localAiReadiness, setLocalAiReadiness] = useState<LocalAiReadiness | null>(null);
+  const [localAiReadiness, setLocalAiReadiness] = useState<CatalogReadiness | null>(null);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
@@ -87,8 +87,7 @@ export function FindDinner() {
   function checkLocalAiPlan() {
     if (!submitted || !aiScopeReviewed || libraryStatus !== "ready") return;
     // Never send, store or log recipe content during this local-only action.
-    const draft = prepareLocalPaprikaRequest(localRecipes, submitted, diners, true);
-    setLocalAiReadiness(assessLocalAiReadiness(draft));
+    setLocalAiReadiness(assessLocalCatalogReadiness(localRecipes, submitted, diners, true));
   }
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
@@ -311,52 +310,53 @@ export function FindDinner() {
                 {aiFullRequest && (
                   <p className="helper-text" role="status">
                     {aiFullRequest.ok
-                      ? "First check passed: " + aiFullRequest.count +
+                      ? "The single-window check passed: " + aiFullRequest.count +
                         " complete recipes, " + aiFullRequest.bytes.toLocaleString() +
-                        " UTF-8 bytes. Selected dietary restrictions are summarized without diner names or IDs. No upload."
-                      : "Cannot prepare the full library (" + aiFullRequest.reason +
-                        "). " + aiFullRequest.count + " recipes, " +
-                        aiFullRequest.bytes.toLocaleString() +
-                        " bytes. No recipes will be quietly omitted."}
+                        " UTF-8 bytes. Multi-window local planning is available below."
+                      : "The single-window check is limited (" + aiFullRequest.reason +
+                        "). The offline planner below can still examine all " +
+                        localRecipes.length + " recipes. No upload."}
                   </p>
                 )}
-                {aiFullRequest?.ok && (
-                  <button type="button" className="profile-secondary-button"
-                    onClick={checkLocalAiPlan}>
-                    Check full-library AI plan locally — no upload
-                  </button>
-                )}
+                <button type="button" className="profile-secondary-button"
+                  onClick={checkLocalAiPlan}>
+                  Check full-library AI plan locally — no upload
+                </button>
                 {localAiReadiness && (
                   <div className="local-ai-readiness" role="status" aria-live="polite">
                     {localAiReadiness.ready ? (
                       <>
                         <strong>Local preparation checks passed (not activated).</strong>
                         <p>
-                          All {localAiReadiness.recipeCount} recipes fit in{" "}
-                          {localAiReadiness.batchCount} bounded batch
+                          All {localAiReadiness.recipeCount} recipes are accounted
+                          for in {localAiReadiness.windowCount} complete planning
+                          window{localAiReadiness.windowCount === 1 ? "" : "s"} and{" "}
+                          {localAiReadiness.batchCount} bounded model batch
                           {localAiReadiness.batchCount === 1 ? "" : "es"}.
                           {" "}{localAiReadiness.eligibleRecipeCount} recipe IDs remain eligible;
                           {" "}{localAiReadiness.knownConflictExcludedCount} have obvious
                           text conflicts with Must avoid terms and cannot be recommended.
                         </p>
                         <p>
-                          Recipe counts per batch: {localAiReadiness.batchRecipeCounts.join(", ")}.
-                          Largest planned input: {localAiReadiness.largestBatchBytes.toLocaleString()} bytes.
+                          Recipes per planning window: {localAiReadiness.windowRecipeCounts.join(", ")}.
+                          Model batches per window are limited separately.
+                          Largest staged input: {localAiReadiness.largestBatchBytes.toLocaleString()} bytes.
                           This is not a tokenizer, dietary certification or cost estimate.
                         </p>
                         <p>
-                          No AI suggestions have been generated. Nothing was uploaded,
-                          stored in a cloud account, or billed.
+                          No AI suggestions were generated or billed. This is
+                          a complete local-only catalog preview, not an active
+                          multi-window AI sending feature.
                         </p>
                       </>
                     ) : (
                       <>
                         <strong>Full-library AI preparation is blocked.</strong>
                         <p>
-                          Reason: {localAiReadiness.reason}. All {localAiReadiness.recipeCount}
-                          {" "}recipes must fit the approved limits; we will not
-                          silently send only a portion or remove a Must avoid rule.
-                          Your ordinary dinner suggestions still work.
+                          Reason: {localAiReadiness.reason}. We will not
+                          silently drop recipes, shorten the original recipe
+                          text, or remove Must avoid rules. Your normal dinner
+                          suggestions still work.
                         </p>
                       </>
                     )}

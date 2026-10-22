@@ -43,6 +43,8 @@ jobs:
         run: npm run test:ai-paprika-browser
       - name: Test local-only full-library AI readiness and consent
         run: npm run test:ai-readiness
+      - name: Validate larger catalog readiness
+        run: npm run test:ai-catalog
       - name: Test non-executing Paprika Responses adapter
         run: npm run test:ai-paprika-model
       - name: Test injected OpenAI transport without provider calls
