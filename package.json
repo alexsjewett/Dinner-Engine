@@ -13,7 +13,8 @@
     "test:ai-pilot": "node tests/ai-pilot-preflight.mjs",
     "test:ai-money": "node tests/ai-money-preflight.mjs",
     "test:ai-paprika": "node tests/paprika-ai-contract.mjs",
-    "test:ai-paprika-browser": "node tests/paprika-ai-browser.mjs"
+    "test:ai-paprika-browser": "node tests/paprika-ai-browser.mjs",
+    "test:ai-paprika-model": "node tests/paprika-ai-model.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",
