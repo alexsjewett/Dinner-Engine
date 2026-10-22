@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:import": "node tests/paprika-import-smoke.mjs",
     "test:matching": "node tests/dinner-matching-smoke.mjs",
-    "test:ai-foundation": "node tests/ai-foundation-smoke.mjs"
+    "test:ai-foundation": "node tests/ai-foundation-smoke.mjs",
+    "test:ai-pilot": "node tests/ai-pilot-preflight.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

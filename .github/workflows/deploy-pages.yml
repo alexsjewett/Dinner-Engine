@@ -35,6 +35,8 @@ jobs:
         run: npm run test:matching
       - name: Test disabled AI foundation
         run: npm run test:ai-foundation
+      - name: Test staged AI pilot safety
+        run: npm run test:ai-pilot
       - name: Validate Cloudflare Worker bundle without deploying
         run: |
           npm install --prefix backend --no-audit --no-fund
