@@ -344,18 +344,19 @@ export function FindDinner() {
                           This is not a tokenizer, dietary certification or cost estimate.
                         </p>
                         <p>
-                          No AI suggestions have been generated. Nothing was uploaded,
-                          stored in a cloud account, or billed.
+                          No AI suggestions were generated or billed. This is
+                          a complete local-only catalog preview, not an active
+                          multi-window AI sending feature.
                         </p>
                       </>
                     ) : (
                       <>
                         <strong>Full-library AI preparation is blocked.</strong>
                         <p>
-                          Reason: {localAiReadiness.reason}. All {localAiReadiness.recipeCount}
-                          {" "}recipes must fit the approved limits; we will not
-                          silently send only a portion or remove a Must avoid rule.
-                          Your ordinary dinner suggestions still work.
+                          Reason: {localAiReadiness.reason}. We will not
+                          silently drop recipes, shorten the original recipe
+                          text, or remove Must avoid rules. Your normal dinner
+                          suggestions still work.
                         </p>
                       </>
                     )}
