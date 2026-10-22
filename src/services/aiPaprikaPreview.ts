@@ -19,3 +19,19 @@ export function fullPaprikaLibraryPreview(recipes: readonly import("../types/imp
     transmitted: false as const,
   };
 }
+
+/**
+ * This is a local consent manifest, NOT a request body. The actual upload
+ * remains prohibited until separately approved and enabled on the server.
+ */
+export function localPaprikaConsentManifest(
+  recipes: readonly import("../types/importedRecipe").ImportedRecipe[],
+) {
+  return {
+    scope: "full-paprika-library" as const,
+    count: recipes.length,
+    includes: ["recipe names", "ingredients", "directions", "notes", "source links"] as const,
+    excludes: ["household profiles", "browser storage keys"] as const,
+    enabled: false as const,
+  };
+}
