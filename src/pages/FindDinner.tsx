@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
 import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
-import { assessLocalAiReadiness, type LocalAiReadiness } from "../services/aiPaprikaReadiness";
+import { assessLocalCatalogReadiness, type CatalogReadiness } from "../services/aiPaprikaCatalogReadiness";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -22,7 +22,7 @@ export function FindDinner() {
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
   const [aiScopeReviewed, setAiScopeReviewed] = useState(false);
-  const [localAiReadiness, setLocalAiReadiness] = useState<LocalAiReadiness | null>(null);
+  const [localAiReadiness, setLocalAiReadiness] = useState<CatalogReadiness | null>(null);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
@@ -87,8 +87,7 @@ export function FindDinner() {
   function checkLocalAiPlan() {
     if (!submitted || !aiScopeReviewed || libraryStatus !== "ready") return;
     // Never send, store or log recipe content during this local-only action.
-    const draft = prepareLocalPaprikaRequest(localRecipes, submitted, diners, true);
-    setLocalAiReadiness(assessLocalAiReadiness(draft));
+    setLocalAiReadiness(assessLocalCatalogReadiness(localRecipes, submitted, diners, true));
   }
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
