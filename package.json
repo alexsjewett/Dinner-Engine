@@ -11,7 +11,8 @@
     "test:matching": "node tests/dinner-matching-smoke.mjs",
     "test:ai-foundation": "node tests/ai-foundation-smoke.mjs",
     "test:ai-pilot": "node tests/ai-pilot-preflight.mjs",
-    "test:ai-money": "node tests/ai-money-preflight.mjs"
+    "test:ai-money": "node tests/ai-money-preflight.mjs",
+    "test:ai-paprika": "node tests/paprika-ai-contract.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",
