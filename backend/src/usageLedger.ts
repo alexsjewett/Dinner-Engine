@@ -9,7 +9,7 @@
  * model pricing and reservation/reconciliation changes.
  */
 import { DurableObject } from "cloudflare:workers";
-import { reservePaidBudget } from "./paidBudget";
+import { reservePaidBudget, reserveRequest, settleRequest } from "./paidBudget";
 
 export const LIMITS = {
   perHour: 10,
@@ -71,11 +71,36 @@ export class UsageLedger extends DurableObject {
   async fetch(request: Request): Promise<Response> {
     const pathname = new URL(request.url).pathname;
     if (request.method !== "POST" ||
-        !["/reserve-test", "/reserve-paid-preflight"].includes(pathname)) {
+        !["/reserve-test", "/reserve-paid-preflight", "/reserve-paid-id", "/settle-paid-id"].includes(pathname)) {
       return new Response("not_found", { status: 404 });
     }
     try {
       // No user data accepted or required by this internal ledger.
+      if (pathname === "/reserve-paid-id" || pathname === "/settle-paid-id") {
+        // Internal Durable Object method only: the public Worker has no route.
+        // Reject unbounded or malformed request bodies before parsing.
+        const raw = await request.text();
+        if (raw.length > 160) return Response.json({ error: "invalid" }, { status: 400 });
+        const value: unknown = JSON.parse(raw);
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+          return Response.json({ error: "invalid" }, { status: 400 });
+        }
+        const data = value as Record<string, unknown>;
+        if (typeof data.requestId !== "string" ||
+            !/^[a-zA-Z0-9_-]{16,80}$/.test(data.requestId)) {
+          return Response.json({ error: "invalid" }, { status: 400 });
+        }
+        if (pathname === "/reserve-paid-id") {
+          if (Object.keys(data).length !== 1) return Response.json({ error: "invalid" }, { status: 400 });
+          const result = reserveRequest(this.ctx.storage as LedgerContext["storage"], Date.now(), data.requestId);
+          return Response.json({ result }, { status: result === "reserved" ? 200 : 409 });
+        }
+        if (Object.keys(data).length !== 2 || typeof data.actualMicroUsd !== "number") {
+          return Response.json({ error: "invalid" }, { status: 400 });
+        }
+        const result = settleRequest(this.ctx.storage as LedgerContext["storage"], data.requestId, data.actualMicroUsd);
+        return Response.json({ result }, { status: result === "settled" ? 200 : 409 });
+      }
       if (pathname === "/reserve-paid-preflight") {
         const allowed = reservePaidBudget(this.ctx.storage as LedgerContext["storage"], Date.now());
         return Response.json({ allowed, testOnly: true }, { status: allowed ? 200 : 429 });
