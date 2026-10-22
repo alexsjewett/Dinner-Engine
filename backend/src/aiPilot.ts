@@ -93,3 +93,26 @@ export function estimateUsageMicroUsd(inputTokens: number, outputTokens: number)
   return Math.ceil((inputTokens * PRICE_INPUT_MICRO_USD_PER_MILLION +
     outputTokens * PRICE_OUTPUT_MICRO_USD_PER_MILLION) / 1_000_000);
 }
+
+/**
+ * Reject any candidate flagged for manual review or with dietary conflicts.
+ * This gate is intentionally stricter than the current matching UI.
+ * The client may propose candidates, but server-side safety cannot trust
+ * client-supplied classification: a trusted catalog or signed shortlist is
+ * required before live model invocation.
+ */
+export function canUseCandidateForAi(candidate: {
+  category: string; reviewReasons: readonly string[]; softNotes: readonly string[];
+}): boolean {
+  return candidate.category === "straightforward" &&
+    candidate.reviewReasons.length === 0 && candidate.softNotes.length === 0;
+}
+/** Explicitly require a trusted, server-derived eligibility decision. */
+export function validateTrustedEligibility(
+  candidateIds: readonly string[], trustedEligibleIds: readonly string[],
+): boolean {
+  if (candidateIds.length < 1 || candidateIds.length > 5) return false;
+  const trusted = new Set(trustedEligibleIds);
+  return new Set(candidateIds).size === candidateIds.length &&
+    candidateIds.every(id => trusted.has(id));
+}
