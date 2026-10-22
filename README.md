@@ -237,3 +237,5 @@ security and billing activation review. Never paste keys in the repository
 or conversation.
 
 **AI account checkpoint:** Owner reports Cloudflare account and OpenAI API project `dinner-engine` created (October 21, 2026 Pacific). Not yet connected. Next: Zero Trust onboarding, budget alerts and protected disabled Worker; see `docs/AI_PILOT_PLAN.md`.
+
+**3A.1 preparation update (October 21, 2026 Pacific):** Cloudflare Zero Trust onboarding reported complete, and the owner approved using imported Paprika recipes for AI quality testing **after** authentication and budget gates are verified. `backend/wrangler.json` plus exact-owner Cloudflare Access authorization and CI tests are staged, not deployed. Next owner step: enable Protect all Workers > All traffic *before* connecting the GitHub repo in Cloudflare. Existing GitHub Pages frontend is unchanged; no AI secret or billable endpoint exists.

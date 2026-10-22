@@ -184,3 +184,14 @@ No changes to matching, profile storage, recipe content, AI, backend or public r
 The prior future-AI security gate remains mandatory. See docs/AI_PILOT_PLAN.md.
 
 **3A account setup (October 21, 2026 Pacific):** Owner confirms OpenAI API project `dinner-engine` and Cloudflare account created. Neither connected; next: Cloudflare Zero Trust onboarding and OpenAI budget alerts. Worker-level Access with verified `ctx.access` is the preferred current authentication design.
+
+## Milestone 3A.1 preparation — October 21, 2026 Pacific
+
+| ID | Status | Decision | Rationale |
+|---|---|---|---|
+| DEC-078 | Approved, code staged, deployment pending | Use Cloudflare Worker-level verified `ctx.access` identity **and** an exact owner-email Worker secret for an independent fail-closed authorization check. | Missing or incorrect Access configuration must not allow personal data or billable calls. |
+| DEC-079 | Approved, deployment pending | Apply account-wide **All traffic** Access protection before connecting automatic GitHub deployments; protect both production and previews. | Git integration may deploy immediately; avoid an accidental publicly accessible Worker. |
+| DEC-080 | Approved testing preference, activation pending | Owner permits using their own imported Paprika recipes for the AI-quality pilot after login, durable quotas, explicit user-trigger and privacy/billing gates pass. Synthetic security tests still come first. | Test relevance with actual cookbook while preserving user consent and data minimization. |
+| DEC-081 | Source prepared, not connected | Worker named `dinner-engine-ai` configured under `backend/`; normal GitHub Pages workflow still publishes only existing frontend. | Avoid moving original app or creating a billable endpoint during authentication setup. |
+
+**External accounts:** OpenAI project `dinner-engine` and Cloudflare Zero Trust ready per owner. No Worker deployment, keys, personal data transfer or incurred AI usage has been claimed.

@@ -89,3 +89,44 @@ pass the security checkpoint.
 - Protect Workers with Access: https://developers.cloudflare.com/workers/configuration/cloudflare-access/
 - Signed Access token verification: https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/
 - Durable Object transactional storage: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
+
+
+## 3A.1 checkpoint — Zero Trust ready; protected Worker source prepared
+
+**Owner reported October 21, 2026 Pacific:** Cloudflare Zero Trust onboarding
+is complete. The owner explicitly approved using their locally imported
+Paprika recipes in AI quality tests once the security and spending gates
+have been verified. Data is still browser-local; no automatic upload or
+provider calls have occurred. Test the synthetic fixtures for authentication,
+limit enforcement and error handling first; the first *quality* test may use
+the approved Paprika recipes via a deliberate user action.
+
+**Repository implementation status:**
+- Added `backend/wrangler.json` specifying Worker `dinner-engine-ai`;
+  it is deployable from the `backend` root but NOT connected/deployed yet.
+- Worker returns HTTP 403 if Cloudflare-verified `ctx.access` is missing
+  or if the Access identity does not match the exact server-side
+  `ALLOWED_EMAIL` secret. Only a matching identity sees a disabled
+  status (GET health) or HTTP 503 (POST recommendations).
+- Synthetic CI checks authentication failure modes and verify request bodies
+  are never consumed; no provider SDK or secret is present.
+- **Before importing the GitHub repository into Cloudflare, activate
+  Workers & Pages > Protect all Workers > All traffic with an appropriate
+  owner-only policy.** This covers Worker production and preview URLs even
+  when Cloudflare's Git integration deploys immediately.
+- Then connect the GitHub project `alexsjewett/Dinner-Engine` as a
+  Worker, root `backend`, name `dinner-engine-ai`, deploy
+  `npx wrangler deploy`. Configure `ALLOWED_EMAIL` as a secret
+  directly in Cloudflare. Test authenticated and unauthenticated access
+  from iPhone Safari; never paste the identity or a token into chat.
+- Cloudflare account ownership or email-domain match alone is not a
+  substitute for the code's exact-email check. Do not choose Everyone,
+  Bypass or a Previews-only policy.
+
+**Not yet complete:** actual Worker deployment or on-device Access test,
+any spend reservations/quota logic, OpenAI key or model connection,
+GitHub Pages-to-Worker sign-in flow, or transmission of real recipes.
+The next security milestone remains mandatory before enabling paid calls.
+
+Documentation: https://developers.cloudflare.com/workers/configuration/cloudflare-access/
+and https://developers.cloudflare.com/workers/ci-cd/builds/.

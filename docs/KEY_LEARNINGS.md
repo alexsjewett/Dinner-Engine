@@ -276,3 +276,9 @@ so AI failures, billing setup or outage never break dinner search.
 
 ### Modern Cloudflare Worker-level Access
 Cloudflare's 2026 Worker-level Access integration attaches access control to the complete Worker and makes a platform-verified `ctx.access` identity available. We can verify it against a one-person allowlist, rather than maintain unnecessary custom JWT verification, while denying requests if Access is absent. **PM takeaway:** check current platform capabilities before implementing complex security primitives yourself.
+
+### Protect the Worker before connecting automated deployment
+Cloudflare's Git integration can deploy a new Worker upon importing a repository. Cloudflare's Protect all Workers policy can cover future Workers before that import, while the Worker also independently checks its verified Access identity and an owner-only secret. **PM takeaway:** deploy-time protection is a sequencing constraint; a code-level fail-closed check supplies a second defense.
+
+### Testing with real recipes needs both consent and controls
+The owner has volunteered their Paprika recipes for AI quality testing. This removes the need for artificial content in later usefulness tests, but it does not eliminate the need for authorization, spending controls, minimized data sharing or opt-in request flow. **PM takeaway:** data consent and technical readiness are complementary, not interchangeable.
