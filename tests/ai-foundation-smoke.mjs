@@ -12,6 +12,12 @@ const suffix = ".guardrail-smoke-" + process.pid + ".mjs";
 const paths = [
   "backend/src/guardrails.ts",
   "backend/src/paidBudget.ts",
+  "backend/src/paprikaContract.ts",
+  "backend/src/aiPilot.ts",
+  "backend/src/paprikaModelDraft.ts",
+  "backend/src/aiPilotOrchestrator.ts",
+  "backend/src/openAiTransport.ts",
+  "backend/src/pilotSynthetic.ts",
   "backend/src/usageLedger.ts",
   "backend/src/index.ts",
 ];
@@ -143,6 +149,100 @@ assert.equal(response.status, 503, "only exact test mode can open nonbillable va
 response = await worker.fetch(post(guardrails),
   { ...ownerEnv, AI_GUARDRAIL_MODE: "test" }, owner);
 assert.equal(response.status, 503, "missing Durable Object binding must fail closed");
+
+// 3B.2: fictional paid test stays disabled without exact runtime conditions.
+const testPage = "https://example.invalid/api/ai/test";
+const synthetic = "https://example.invalid/api/ai/test/synthetic";
+const fictionalPost = (opts = {}) => new Request(synthetic, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Origin": "https://example.invalid",
+    "X-Find-Dinner-Intent": "synthetic-test",
+    ...(opts.headers ?? {}),
+  },
+  body: opts.body ?? JSON.stringify({ confirmed: true }),
+});
+const testHtml = await worker.fetch(new Request(testPage), ownerEnv, owner);
+assert.equal(testHtml.status, 200);
+const html = await testHtml.text();
+assert.ok(html.includes("fictional lentil") || html.includes("invented lentil"));
+assert.ok(html.includes("disabled"));
+assert.ok(!html.includes("OPENAI_API_KEY"));
+assert.equal((await worker.fetch(
+  new Request("https://example.invalid/api/ai/test/client.js"), ownerEnv, owner
+)).status, 200);
+req = fictionalPost();
+response = await worker.fetch(req, testEnv, owner);
+assert.equal(response.status, 503);
+assert.equal(req.bodyUsed, false, "synthetic test kill switch blocks before body read");
+const testPilotEnv = {
+  ...ownerEnv, AI_PILOT_MODE: "synthetic",
+  OPENAI_API_KEY: "synthetic-api-key-for-offline-test-123456789",
+  USAGE_LEDGER: {
+    getByName(name) {
+      assert.equal(name, "pilot-owner-v1");
+      const ledger = new UsageLedger({ storage: storage() }, {});
+      return { fetch: request => ledger.fetch(request) };
+    },
+  },
+};
+req = fictionalPost();
+response = await worker.fetch(req, testPilotEnv, stranger);
+assert.equal(response.status, 403);
+assert.equal(req.bodyUsed, false, "wrong identity blocks paid calls");
+for (const headers of [
+  { Origin: "https://attacker.invalid" },
+  { "X-Find-Dinner-Intent": "wrong" },
+  { "Sec-Fetch-Site": "cross-site" },
+]) {
+  req = fictionalPost({ headers });
+  response = await worker.fetch(req, testPilotEnv, owner);
+  assert.equal(response.status, 403);
+  assert.equal(req.bodyUsed, false, "cross-site or missing intent blocks before body read");
+}
+for (const body of ['{"confirmed":false}', '{"confirmed":true,"extra":1}',
+  "not json", "x".repeat(140)]) {
+  response = await worker.fetch(fictionalPost({ body }), testPilotEnv, owner);
+  assert.equal(response.status, 400, "malformed synthetic confirmation rejected");
+}
+const originalFetch = globalThis.fetch;
+let providerCalls = 0;
+try {
+  globalThis.fetch = async (url, init) => {
+    providerCalls++;
+    assert.equal(url, "https://api.openai.com/v1/responses");
+    assert.equal(init.headers.Authorization,
+      "Bearer " + testPilotEnv.OPENAI_API_KEY);
+    assert.equal(JSON.parse(init.body).store, false);
+    return Response.json({
+      status: "completed",
+      usage: { input_tokens: 1000, output_tokens: 100 },
+      output: [{ type: "message", content: [{ type: "output_text",
+        text: JSON.stringify({ suggestions: [{
+          recipeId: "fictional-lentil-skillet",
+          explanation: "Synthetic demonstration only",
+          cautions: [],
+        }] }),
+      }] }],
+    });
+  };
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.ok, true);
+  assert.equal(result.testOnly, true);
+  assert.equal(result.requiresManualReview, true);
+  assert.equal(result.recipeId, "fictional-lentil-skillet");
+  assert.equal(providerCalls, 1);
+  req = post(recommend);
+  response = await worker.fetch(req, testPilotEnv, owner);
+  assert.equal(response.status, 503);
+  assert.equal(req.bodyUsed, false, "real Paprika endpoint stays disabled");
+  assert.equal(providerCalls, 1);
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
 const badInputs = [
   [{ ...good, version: 2 }, 400],
