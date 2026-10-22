@@ -85,7 +85,38 @@ try {
     ...draft.request, model: "other-model",
   } }, key, mock), null);
   assert.equal(calls, 1);
-  console.log("Injected-provider transport: no live calls, bounded errors, static model and store:false passed");
+  const diagnosed = [];
+  const report = code => diagnosed.push(code);
+  const noReasoning = { ...draft, request: {
+    ...draft.request, reasoning: { effort: "none" },
+  } };
+  const captured = [];
+  await callStagedOpenAi(noReasoning, key, async (_url, init) => {
+    captured.push(JSON.parse(init.body));
+    return Response.json(good);
+  }, report);
+  assert.deepEqual(captured[0].reasoning, { effort: "none" });
+  assert.equal(captured[0].max_output_tokens, 700);
+  assert.equal(captured[0].store, false);
+  assert.deepEqual(diagnosed, []);
+  assert.equal(await callStagedOpenAi({ ...draft, request: {
+    ...draft.request, reasoning: { effort: "medium" },
+  } }, key, mock, report), null);
+  assert.equal(diagnosed.pop(), "provider_preflight_rejected");
+  assert.equal(calls, 1, "wrong reasoning effort must not reach provider");
+  assert.equal(await callStagedOpenAi(draft, key, async () =>
+    new Response("untrusted error body", { status: 401 }), report), null);
+  assert.equal(diagnosed.pop(), "provider_auth_failed");
+  assert.equal(await callStagedOpenAi(draft, key, async () =>
+    new Response("untrusted error body", { status: 429 }), report), null);
+  assert.equal(diagnosed.pop(), "provider_rate_limited");
+  assert.equal(await callStagedOpenAi(draft, key, async () =>
+    new Response("not-json", { status: 200 }), report), null);
+  assert.equal(diagnosed.pop(), "provider_invalid_response");
+  assert.equal(await callStagedOpenAi(draft, key, async () =>
+    { throw Error("private test network error"); }, report), null);
+  assert.equal(diagnosed.pop(), "provider_network_error");
+  console.log("Injected-provider transport: no live calls, bounded errors, safe diagnostics and no-reasoning cap passed");
 } finally {
   await Promise.all(made.map(path => unlink(path).catch(() => {})));
 }

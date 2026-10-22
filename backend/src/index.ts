@@ -62,6 +62,21 @@ of OpenAI API credit and counts against the server-side $5 monthly allowance.</p
 const syntheticClientJs = `"use strict";
 const button = document.getElementById("run");
 const status = document.getElementById("result");
+const safeFailureDescriptions = {
+  provider_preflight_rejected: "The request did not pass safety checks.",
+  provider_auth_failed: "OpenAI rejected the server credentials or permissions.",
+  provider_request_rejected: "OpenAI rejected the request settings.",
+  provider_rate_limited: "OpenAI's request limit was reached.",
+  provider_unavailable: "The OpenAI service did not accept the request.",
+  provider_timeout: "The OpenAI request timed out.",
+  provider_network_error: "The OpenAI connection failed.",
+  provider_invalid_response: "OpenAI returned an unreadable response.",
+  budget_limit_reached: "The pilot spending or request limit was reached.",
+  budget_unavailable: "The pilot budget controls were unavailable.",
+  budget_settlement_failed: "The pilot budget could not reconcile the request.",
+  model_response_incomplete: "The model did not finish its answer.",
+  model_response_invalid: "The model answer failed validation.",
+};
 button?.addEventListener("click", async () => {
   button.disabled = true;
   status.textContent = "Testing the fictional recipe…";
@@ -72,8 +87,13 @@ button?.addEventListener("click", async () => {
       body: JSON.stringify({ confirmed: true }),
     });
     const data = await response.json();
-    if (!response.ok || !data.ok) status.textContent =
-      "Test unavailable (" + (data.error || response.status) + "). No retry was made.";
+    if (!response.ok || !data.ok) {
+      const code = typeof data.error === "string" ? data.error : String(response.status);
+      const description = Object.prototype.hasOwnProperty.call(safeFailureDescriptions, code)
+        ? safeFailureDescriptions[code] : "The test could not finish safely.";
+      status.textContent = "Test unavailable (" + code + "). " + description +
+        " No retry was made.";
+    }
     else status.textContent = "Fictional test succeeded. " +
       data.recipeId + ": " + data.explanation + "\\nManual review required. " +
       data.cautions.join("; ") + "\\nEstimated model cost: $" +

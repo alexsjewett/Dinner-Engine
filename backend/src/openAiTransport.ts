@@ -11,6 +11,13 @@ export const MAX_PROVIDER_BODY_BYTES = 20_480;
 export const PROVIDER_TIMEOUT_MS = 15_000;
 export const PROVIDER_URL = "https://api.openai.com/v1/responses";
 export type ProviderFetch = (url: string, init: RequestInit) => Promise<Response>;
+/** Fixed categories only: never return provider response bodies, headers or credentials. */
+export type ProviderFailureCode =
+  | "provider_preflight_rejected" | "provider_auth_failed"
+  | "provider_request_rejected" | "provider_rate_limited"
+  | "provider_unavailable" | "provider_timeout"
+  | "provider_network_error" | "provider_invalid_response";
+export type ProviderFailureReporter = (code: ProviderFailureCode) => void;
 
 /** Never read or log an unbounded provider response. */
 async function readBoundedJson(response: Response): Promise<unknown | null> {
@@ -49,11 +56,15 @@ export async function callStagedOpenAi(
   draft: StagedRequest,
   serverSecret: string,
   providerFetch: ProviderFetch,
+  reportFailure?: ProviderFailureReporter,
 ): Promise<unknown | null> {
   if (draft?.request?.model !== PILOT_MODEL ||
       draft.request.store !== false ||
       draft.request.tool_choice !== "none" ||
       draft.request.max_output_tokens !== MAX_OUTPUT_TOKENS ||
+      (draft.request.reasoning !== undefined &&
+        (draft.request.reasoning?.effort !== "none" ||
+          Object.keys(draft.request.reasoning).length !== 1)) ||
       draft.request.text?.format?.type !== "json_schema" ||
       draft.request.text.format.strict !== true ||
       !Number.isSafeInteger(draft.inputBytes) ||
@@ -61,9 +72,15 @@ export async function callStagedOpenAi(
       typeof serverSecret !== "string" ||
       serverSecret.length < 20 || serverSecret.length > 500 ||
       /\s/.test(serverSecret) ||
-      typeof providerFetch !== "function") return null;
+      typeof providerFetch !== "function") {
+    reportFailure?.("provider_preflight_rejected");
+    return null;
+  }
   const encoded = JSON.stringify(draft.request);
-  if (new TextEncoder().encode(encoded).byteLength > MAX_PROVIDER_BODY_BYTES) return null;
+  if (new TextEncoder().encode(encoded).byteLength > MAX_PROVIDER_BODY_BYTES) {
+    reportFailure?.("provider_preflight_rejected");
+    return null;
+  }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   try {
@@ -77,9 +94,20 @@ export async function callStagedOpenAi(
       body: encoded,
       signal: controller.signal,
     });
-    if (response.status !== 200) return null;
-    return await readBoundedJson(response);
+    if (response.status !== 200) {
+      reportFailure?.(response.status === 401 || response.status === 403
+        ? "provider_auth_failed"
+        : response.status === 429 ? "provider_rate_limited"
+        : response.status >= 400 && response.status < 500
+          ? "provider_request_rejected" : "provider_unavailable");
+      return null;
+    }
+    const data = await readBoundedJson(response);
+    if (data === null) reportFailure?.("provider_invalid_response");
+    return data;
   } catch {
+    reportFailure?.(controller.signal.aborted
+      ? "provider_timeout" : "provider_network_error");
     return null;
   } finally {
     clearTimeout(timeout);

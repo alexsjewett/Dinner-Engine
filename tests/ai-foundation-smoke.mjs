@@ -229,6 +229,9 @@ try {
     assert.equal(init.headers.Authorization,
       "Bearer " + testPilotEnv.OPENAI_API_KEY);
     assert.equal(JSON.parse(init.body).store, false);
+    assert.deepEqual(JSON.parse(init.body).reasoning, { effort: "none" });
+    assert.equal(JSON.parse(init.body).max_output_tokens, 700,
+      "reasoning change must not increase the output cap");
     return Response.json({
       status: "completed",
       usage: { input_tokens: 1000, output_tokens: 100 },
@@ -249,6 +252,40 @@ try {
   assert.equal(result.requiresManualReview, true);
   assert.equal(result.recipeId, "fictional-lentil-skillet");
   assert.equal(providerCalls, 1);
+  // Each is a mocked provider outcome: no more billable calls and no retries.
+  const rejectedMessage = "private-provider-message-must-not-reach-browser";
+  globalThis.fetch = async () => new Response(rejectedMessage, { status: 400 });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.equal(response.status, 503);
+  const rejectedBody = await response.text();
+  assert.deepEqual(JSON.parse(rejectedBody), { error: "provider_request_rejected" });
+  assert.ok(!rejectedBody.includes(rejectedMessage),
+    "provider error bodies must not be echoed");
+  globalThis.fetch = async () => new Response("rate limited", { status: 429 });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.deepEqual(await response.json(), { error: "provider_rate_limited" });
+  globalThis.fetch = async () => Response.json({
+    status: "incomplete", usage: { input_tokens: 377, output_tokens: 700 },
+    output: [],
+  });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.deepEqual(await response.json(), { error: "model_response_incomplete" });
+  globalThis.fetch = async () => Response.json({
+    status: "completed", usage: { input_tokens: 377, output_tokens: 50 },
+    output: [{ type: "message", content: [{ type: "output_text",
+      text: '{"suggestions":[{"recipeId":"invented-id","explanation":"no","cautions":[]}]}',
+    }] }],
+  });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.deepEqual(await response.json(), { error: "model_response_invalid" });
+  // A simulated budget rejection never reaches the model.
+  const limitedEnv = { ...testPilotEnv, USAGE_LEDGER: {
+    getByName() { return { fetch: async () =>
+      Response.json({ result: "limited" }, { status: 409 }) }; },
+  } };
+  globalThis.fetch = async () => { throw Error("provider must not be invoked"); };
+  response = await worker.fetch(fictionalPost(), limitedEnv, owner);
+  assert.deepEqual(await response.json(), { error: "budget_limit_reached" });
   req = post(recommend);
   response = await worker.fetch(req, testPilotEnv, owner);
   assert.equal(response.status, 503);

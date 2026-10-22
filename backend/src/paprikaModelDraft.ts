@@ -42,6 +42,7 @@ export interface StagedRequest {
     model: string;
     store: false;
     tool_choice: "none";
+    reasoning?: { effort: "none" }; // Explicit only for the fictional paid test.
     max_output_tokens: number;
     instructions: string;
     input: string;

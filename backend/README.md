@@ -130,3 +130,29 @@ The Durable Object now accepts an internal-only `/reserve-paid-preflight` operat
 ### Internal idempotent lifecycle (3B.1)
 
 The Durable Object now has internal-only `/reserve-paid-id` and `/settle-paid-id` operations. They accept opaque request IDs and verified integer micro-USD settlement amounts; duplicate reservations or settlements cannot double-count, and unsettled requests retain their full reservation. The public Worker still has **no route to these operations**, and no OpenAI provider calls are made. A real spending cap additionally requires server-generated unique IDs, verified provider usage, bounded model transport, conservative failure handling and final security review. The current state is nonbillable and incomplete.
+
+
+## 3B.2 fictional-test reliability diagnostics (October 22, 2026)
+
+For the **fictional one-recipe paid test only**, the OpenAI Responses request now
+explicitly sends `reasoning: { effort: "none" }` to `gpt-6-luna` to avoid
+spending the existing 700 output-token allowance on medium-effort reasoning.
+The hard 700 output-token bound, static model, `store:false`, one-attempt rule,
+owner authentication, Durable Object monetary reservations and $5/month ledger
+limit are unchanged. Full-library Paprika recommendation remains disabled.
+
+A failed test now returns one of a fixed set of non-sensitive errors:
+`provider_auth_failed`, `provider_request_rejected`,
+`provider_rate_limited`, `provider_unavailable`, `provider_timeout`,
+`provider_network_error`, `provider_invalid_response`,
+`provider_preflight_rejected`, `model_response_incomplete`,
+`model_response_invalid`, `budget_limit_reached`,
+`budget_unavailable`, or `budget_settlement_failed`.
+No provider error message, prompt, personal recipe, credential, token, or
+raw output is surfaced or logged. Timeout or other uncertain outcomes retain
+their full monetary reservation; the Worker makes **no automatic retries**.
+
+Mocked tests cover explicit reasoning effort, unmodified caps and privacy
+options, incomplete or invalid model results, provider errors and budget
+rejections. GitHub CI and Cloudflare Production deployments must be verified
+independently before running another single fictional paid test.
