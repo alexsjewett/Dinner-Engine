@@ -6,7 +6,11 @@
  */
 import { planPaprikaModelBatches } from "./paprikaModelDraft";
 import { exerciseStagedBatchPlan, type StagedLedger } from "./aiPilotOrchestrator";
-import { callStagedOpenAi, type ProviderFetch } from "./openAiTransport";
+import { callStagedOpenAi, type ProviderFailureCode, type ProviderFetch } from "./openAiTransport";
+
+type SyntheticDiagnostic = ProviderFailureCode | "budget_limit_reached" |
+  "budget_unavailable" | "budget_settlement_failed" |
+  "model_response_incomplete" | "model_response_invalid";
 
 export interface SyntheticPilotEnv {
   AI_PILOT_MODE?: string;
@@ -66,20 +70,31 @@ async function ledgerCall(
 }
 
 /** Server-only ledger, no recipe text, no user identity or client IDs. */
-function makeLedger(env: SyntheticPilotEnv): StagedLedger {
+function makeLedger(env: SyntheticPilotEnv, report: (code: SyntheticDiagnostic) => void): StagedLedger {
   const stub = env.USAGE_LEDGER!.getByName("pilot-owner-v1");
   return {
     async reserve(requestId: string) {
-      const value = await ledgerCall(stub, "reserve-paid-id", { requestId });
-      return value.status === 200 && value.result === "reserved" ? "reserved" :
-        value.status === 409 && value.result === "limited" ? "limited" : "duplicate";
+      try {
+        const value = await ledgerCall(stub, "reserve-paid-id", { requestId });
+        if (value.status === 200 && value.result === "reserved") return "reserved";
+        if (value.status === 409 && value.result === "limited") {
+          report("budget_limit_reached");
+          return "limited";
+        }
+      } catch { /* Fail closed, without disclosing ledger internals. */ }
+      report("budget_unavailable");
+      return "duplicate";
     },
     async settle(requestId: string, actualMicroUsd: number) {
-      const value = await ledgerCall(stub, "settle-paid-id", {
-        requestId, actualMicroUsd,
-      });
-      return value.status === 200 && value.result === "settled" ? "settled" :
-        value.status === 409 && value.result === "duplicate" ? "duplicate" : "invalid";
+      try {
+        const value = await ledgerCall(stub, "settle-paid-id", {
+          requestId, actualMicroUsd,
+        });
+        if (value.status === 200 && value.result === "settled") return "settled";
+        report(value.status === 409
+          ? "budget_settlement_failed" : "budget_unavailable");
+      } catch { report("budget_unavailable"); }
+      return "invalid";
     },
   };
 }
@@ -94,18 +109,31 @@ export async function runSyntheticPilot(
   if (!plan || plan.length !== 1) return {
     ok: false, status: 503, error: "synthetic_fixture_unavailable",
   };
+  let diagnostic: SyntheticDiagnostic | null = null;
+  const report = (code: SyntheticDiagnostic) => { diagnostic ??= code; };
   try {
-    const ledger = makeLedger(env!);
+    const ledger = makeLedger(env!, report);
     const outcome = await exerciseStagedBatchPlan(
       plan, ledger,
-      draft => callStagedOpenAi(draft, env!.OPENAI_API_KEY!, providerFetch),
+      async draft => {
+        // GPT-6 Luna supports effort "none". Use it for this fictional test
+        // only; do not change the future full-Paprika staging defaults.
+        const response = await callStagedOpenAi({
+          ...draft, request: { ...draft.request, reasoning: { effort: "none" } },
+        }, env!.OPENAI_API_KEY!, providerFetch, report);
+        if (response && typeof response === "object" &&
+            "status" in response && response.status === "incomplete") {
+          report("model_response_incomplete");
+        }
+        return response;
+      },
     );
     if (!outcome) return {
-      ok: false, status: 503, error: "pilot_test_unavailable",
+      ok: false, status: 503, error: diagnostic ?? "model_response_invalid",
     };
     const item = outcome.groups[0]?.reply.suggestions[0];
     if (!item || item.recipeId !== fictionalPayload.recipes[0].id) return {
-      ok: false, status: 503, error: "pilot_test_unavailable",
+      ok: false, status: 503, error: "model_response_invalid",
     };
     return {
       ok: true, testOnly: true, recipeId: item.recipeId,
