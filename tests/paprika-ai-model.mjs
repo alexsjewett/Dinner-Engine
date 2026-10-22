@@ -52,6 +52,31 @@ try {
   assert.equal(staged.request.tool_choice, "none");
   assert.equal(staged.request.text.format.type, "json_schema");
   assert.equal(staged.request.text.format.strict, true);
+  const schema = staged.request.text.format.schema;
+  const suggested = schema.properties.suggestions;
+  const itemSchema = suggested.items.properties;
+  assert.equal(suggested.minItems, 1);
+  assert.equal(suggested.maxItems, 1, "one eligible recipe means at most one returned");
+  assert.equal(itemSchema.explanation.minLength, 1);
+  assert.equal(itemSchema.explanation.maxLength, 240);
+  assert.equal(itemSchema.cautions.maxItems, 3);
+  assert.equal(itemSchema.cautions.items.minLength, 1);
+  assert.equal(itemSchema.cautions.items.maxLength, 120);
+  const nonblank = new RegExp(itemSchema.explanation.pattern);
+  for (const text of ["Fits pantry", " one ", "Visible text"]) {
+    assert.ok(nonblank.test(text));
+  }
+  for (const text of ["", "   ", "Line\nBreak", "bad\u0000control"]) {
+    assert.ok(!nonblank.test(text), "schema must reject blank/control text");
+  }
+  assert.ok(staged.request.instructions.includes("between 1 and 1 distinct"));
+  assert.ok(staged.request.instructions.includes("1-240"));
+  assert.ok(staged.request.instructions.includes("0-3 cautions"));
+  const twoEligible = mod.stagePaprikaModelRequest({ ...payload,
+    criteria: { ...criteria, mustAvoidFoods: [] },
+  });
+  assert.ok(twoEligible);
+  assert.equal(twoEligible.request.text.format.schema.properties.suggestions.maxItems, 2);
   assert.ok(staged.request.input.includes("FULL_NOTES_RETAINED"));
   assert.ok(staged.request.input.includes("peanuts and noodles"),
     "a full-library draft must not silently strip disqualified recipes");
@@ -106,6 +131,28 @@ try {
   assert.equal(verified.suggestions[0].requiresManualReview, true);
   assert.ok(verified.suggestions[0].cautions.some(x => x.includes("check all ingredients")));
   assert.ok(verified.estimatedMicroUsd > 0 && verified.estimatedMicroUsd <= 1_500);
+  assert.equal(mod.diagnosePaprikaModelReply(respond([suggestion]), staged.eligibleIds), null);
+  const modelDiagnosisCases = [
+    [ { ...respond([suggestion]), status: "incomplete" }, "model_status_invalid" ],
+    [ { ...respond([suggestion]), usage: null }, "model_usage_invalid" ],
+    [ { ...respond([suggestion]), output: [] }, "model_output_invalid" ],
+    [ { ...respond([suggestion]), output: [
+        { type: "message", content: [{ type: "output_text", text: "{not-json" }] },
+      ] }, "model_output_json_invalid" ],
+    [ respond([]), "model_suggestion_count_invalid" ],
+    [ respond([{ ...suggestion, recipeId: "unapproved-id" }]), "model_recipe_id_invalid" ],
+    [ respond([{ ...suggestion, explanation: " ".repeat(5) }]), "model_suggestion_text_invalid" ],
+    [ respond([{ ...suggestion, explanation: "a".repeat(241) }]), "model_suggestion_text_invalid" ],
+    [ respond([{ ...suggestion, cautions: ["x".repeat(121)] }]), "model_suggestion_text_invalid" ],
+    [ respond([{ ...suggestion, extra: "not allowed" }]), "model_suggestions_invalid" ],
+  ];
+  for (const [bad, reason] of modelDiagnosisCases) {
+    assert.equal(mod.validatePaprikaModelReply(bad, staged.eligibleIds), null,
+      "diagnosis must never make rejected response valid");
+    assert.equal(mod.diagnosePaprikaModelReply(bad, staged.eligibleIds), reason);
+  }
+  assert.equal(mod.diagnosePaprikaModelReply(respond([suggestion, suggestion]),
+    ["good", "other"]), "model_recipe_id_invalid");
   assert.equal(mod.validatePaprikaModelReply(respond([
     { ...suggestion, recipeId: "bad" },
   ]), staged.eligibleIds), null);
