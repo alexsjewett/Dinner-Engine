@@ -16,7 +16,8 @@ assert.ok(route >= 0, "real Paprika route must stay visible and explicitly block
 const region = worker.slice(route, route + 350);
 assert.ok(region.includes('return reply(503, { error: "ai_pilot_disabled" });'),
   "no real recipe bodies may be accepted pending owner activation");
-assert.ok(region.indexOf("ai_pilot_disabled") < region.indexOf("checkBody"),
+assert.ok(!region.includes("checkBody(") &&
+  !region.includes("checkFullPaprikaBody("),
   "real endpoint must be rejected before any body parser");
 assert.ok(worker.includes("ctx.access.getIdentity()"),
   "never remove trusted Cloudflare identity lookup");
