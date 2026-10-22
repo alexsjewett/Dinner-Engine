@@ -213,3 +213,12 @@ The prior future-AI security gate remains mandatory. See docs/AI_PILOT_PLAN.md.
 | DEC-085 | Approved diagnostic cleanup; CI/Cloudflare verification tracked separately | Remove temporary HTTP 403 diagnostic codes once a working iPhone authentication is observed; restore generic denied responses and tests. | Avoid leaving unnecessary details exposed in a production authorization response. |
 
 An authorized health request is not full security acceptance: still test Private Safari reauthentication and Cloudflare's production deployment of the cleanup. AI API billing remains disabled.
+
+## Milestone 3A.1 private-session device acceptance (October 21, 2026 Pacific)
+
+| ID | Status | Decision / finding | Rationale |
+|---|---|---|---|
+| DEC-086 | iPhone acceptance passed | A fresh Safari Private tab challenged the owner to sign in when accessing the protected Worker; ordinary Safari had already returned `enabled:false` for the approved identity. | Confirms that a new browser session doesn't receive the owner-authenticated health result without signing in. Not a comprehensive external-identity security test. |
+| DEC-087 | Proposed for next approval, not yet implemented | Prepare strictly validated, nonbillable API request envelopes, atomic durable rate/estimated-cost reservations and a kill switch before introducing an OpenAI secret. | Avoid billable exposure and preserve the currently working recipe experience while testing security controls. |
+
+**Remaining gate:** verify Cloudflare deployed the latest generic-denial cleanup, test off-switch/limits under concurrency, and explicitly approve billable API activation before sharing real recipe data.

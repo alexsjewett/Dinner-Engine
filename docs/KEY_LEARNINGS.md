@@ -302,3 +302,11 @@ Safari returned `enabled:false`. **PM takeaway:** when a deployed service
 cannot read a credential, verify *where* the value is injected before
 changing security code or identities. Remove temporary diagnostics after
 the cause is understood.
+
+### Test a second browser session, not just the signed-in one
+The primary Safari session was able to fetch the disabled health endpoint,
+and a fresh Safari Private session prompted for sign-in as intended.
+**PM takeaway:** a successful signed-in request proves only the happy path;
+a separate clean-session test catches accidentally unprotected routes.
+This is one acceptance check, not a substitute for hard quota and wrong-user
+security tests before enabling paid AI.

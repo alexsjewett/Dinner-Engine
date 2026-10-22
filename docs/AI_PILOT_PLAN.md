@@ -176,3 +176,25 @@ not full security sign-off.
 reservation, strict input/output schemas, budget kill switch, identity
 session validation, provider retention review, and security tests before
 configuring an OpenAI key or allowing actual Paprika uploads.
+
+## 3A.1 — Private Safari authentication acceptance (October 21, 2026 Pacific)
+
+**Owner confirmed on iPhone:** opening the Worker URL in a fresh Safari Private
+session required signing in. The earlier normal Safari request returned
+`{"service":"find-dinner-ai","enabled":false}` after the Production runtime
+`ALLOWED_EMAIL` secret was corrected. Together these constitute acceptance
+of the **positive owner-authentication and new-private-session challenge**
+checks. This is not a full penetration test or proof that the generic-403
+cleanup has deployed to Cloudflare; confirm that separately. Never place
+the owner's email, tokens or private recipe records in this public document.
+
+**Next small increment for separate approval — 3A.2, nonbillable guardrails:**
+Implement versioned, bounded request schema validation; one-user, atomic,
+durable rate/estimated-spend reservations via Cloudflare Durable Objects or
+another verified strongly consistent store; a server-side disable switch;
+generic error handling; and concurrency/malformed-input tests. Keep the
+OpenAI provider completely disconnected, return a disabled response to
+authorized AI requests, and leave the existing website untouched. No
+OpenAI API key or imported recipe transmission until a later explicit
+activation review. Exact budget limits and API behaviors need product-owner
+approval before modifying application code.

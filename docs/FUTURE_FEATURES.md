@@ -198,3 +198,10 @@ Temporary diagnostic codes removed. Fresh Private Safari sign-in/denial check
 and separate Cloudflare post-commit deployment confirmation remain.
 Next major work: durable cost/rate limits, strict API contracts, revocation
 and billable endpoint security review. No OpenAI key or recipe transmission.
+
+**3A.1 device acceptance (October 21, 2026 Pacific):** Owner confirms
+a fresh iPhone Safari Private session required Cloudflare sign-in. Alongside
+the authorized regular Safari health check, the initial owner sign-in flow
+is accepted. Private sign-in alone does not prove full identity isolation.
+Next proposed 3A.2: nonbillable, durable spending/rate controls and input
+validation before any OpenAI key or recipe transmissions.
