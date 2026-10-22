@@ -178,15 +178,14 @@ export function planPaprikaModelBatches(value: unknown): StagedPaprikaBatch[] | 
     const proposed = { ...full, recipes: trial };
     if (stagePaprikaModelRequest(proposed)) {
       group = trial;
-    } else if (group.length > 0 && stagePaprikaModelRequest({
-      ...full, recipes: group,
-    })) {
+    } else if (group.length === 0) {
+      // A known-conflict recipe may share a batch with later eligible recipes.
+      group = trial;
+    } else if (stagePaprikaModelRequest({ ...full, recipes: group })) {
       groups.push(group);
       group = [recipe];
-      // An individual recipe may exceed the model prompt cap; fail closed.
-      if (!stagePaprikaModelRequest({ ...full, recipes: group })) return null;
     } else {
-      // A group with no allowed IDs is not a safe or meaningful model prompt.
+      // No partial result when a group cannot fit or has no eligible IDs.
       return null;
     }
     if (groups.length >= MAX_PAPRIKA_MODEL_BATCHES) return null;

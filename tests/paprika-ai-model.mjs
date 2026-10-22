@@ -78,6 +78,17 @@ try {
   assert.ok(plan.every(batch => batch.totalBatches === plan.length));
   assert.ok(plan.every(batch => batch.draft.inputBytes <= mod.MAX_STAGED_INPUT_BYTES));
   assert.deepEqual(plan.flatMap(batch => batch.recipeIds), multi.recipes.map(r => r.id));
+  const conflictFirst = mod.planPaprikaModelBatches({
+    ...payload,
+    recipes: [recipe("known_conflict", "peanuts"), recipe("eligible", "beans")],
+  });
+  assert.ok(conflictFirst && conflictFirst.length === 1);
+  assert.deepEqual(conflictFirst[0].recipeIds, ["known_conflict", "eligible"]);
+  assert.deepEqual(conflictFirst[0].draft.eligibleIds, ["eligible"]);
+  assert.equal(mod.planPaprikaModelBatches({
+    ...payload, recipes: [recipe("only_conflict", "peanuts")],
+  }), null);
+
   assert.equal(mod.planPaprikaModelBatches({ ...payload,
     recipes: [recipe("too_long", "x".repeat(8_000))] }), null);
 
