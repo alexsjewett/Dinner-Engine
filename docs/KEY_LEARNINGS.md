@@ -273,3 +273,6 @@ bypassing server-side authorization.
 The disabled Worker cannot read recipe submissions or incur fees, and the
 baseline recipe matcher remains working. **PM takeaway:** stage deployment
 so AI failures, billing setup or outage never break dinner search.
+
+### Modern Cloudflare Worker-level Access
+Cloudflare's 2026 Worker-level Access integration attaches access control to the complete Worker and makes a platform-verified `ctx.access` identity available. We can verify it against a one-person allowlist, rather than maintain unnecessary custom JWT verification, while denying requests if Access is absent. **PM takeaway:** check current platform capabilities before implementing complex security primitives yourself.

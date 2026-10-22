@@ -16,13 +16,13 @@ Proposed: User explicitly invokes AI -> verify one-user sign-in -> Worker valida
 
 OpenAI is the initial provider. Select a currently available lower-cost model after fictional recipe quality tests; keep it configurable on the server, not in browser input. No need to support other AI services from day one.
 
-Cloudflare Worker is the proposed backend, with Cloudflare Access allowing exactly one approved identity. The Worker must independently verify JWT signature, expiry, issuer, application audience and identity (not trust an arbitrary request header). Cloudflare Worker secrets hold the API key. Keep secrets out of the public repository, frontend bundles, client-side storage, GitHub Actions logs and this chat.
+Cloudflare Worker is the proposed backend, with Cloudflare Access allowing exactly one approved identity. Its newer Worker-level Access integration exposes a Cloudflare-verified `ctx.access` identity. The Worker must reject missing Access context and restrict the verified identity to an approved one-user allowlist. When the platform-verified context is unavailable, an alternative implementation must cryptographically verify the Access JWT; never trust unchecked headers. Cloudflare Worker secrets hold the API key. Keep secrets out of the public repository, frontend bundles, client-side storage, GitHub Actions logs and this chat.
 
 **Mobile domain issue:** the static frontend is on github.io; an Access-protected Worker is likely on another domain. Safari may restrict cross-origin sign-in cookies. Explicitly test the actual authentication flow on iPhone. If necessary, migrate a tested copy of the UI to a same-origin custom domain or use a genuinely secure, short-lived bearer sign-in design. Never solve Safari cookie problems by opening an anonymous endpoint.
 
 ## Hard gates before paid provider requests
 
-1. Verify Access authentication plus independent Worker JWT validation and allowlist. Test denied unauthenticated, expired, wrong-audience and wrong-user tokens.
+1. Require Cloudflare Worker-level Access and check its platform-verified `ctx.access` identity against the one-user allowlist in the Worker. If this integration is unavailable, cryptographically verify JWT issuer/audience/expiry/signature. Test blocked anonymous, wrong-user, tampered-header and missing-Access requests.
 2. Implement a small versioned input schema and maximum request bytes, number of candidate recipes, duration and output tokens. Do not allow client-selected models or arbitrary provider requests.
 3. Implement atomic server-side, persisted quota reservations and reconciliation, with an off-switch and failure-closed behavior. Cloudflare Durable Objects with strongly consistent storage is a candidate. In-memory or local browser rate limits are insufficient. Use a provisional monthly spending target of **$10** and explicit per-request caps; this target is not a guarantee of a mathematically exact billing ceiling.
 4. Set OpenAI project budget notifications and evaluate account-level hard usage controls where available. Project alerts alone are not spending caps.
@@ -39,11 +39,12 @@ Cloudflare Worker is the proposed backend, with Cloudflare Access allowing exact
 - [x] OpenAI-first one-user architecture, security design and owner setup guidance
 - [x] Nonbillable, disabled-by-default Worker scaffold; no OpenAI SDK or deployment config
 - [x] CI test proving /api/ai/recommend responds 503 without reading request body
-- [ ] Owner creates a dedicated OpenAI API project and Cloudflare account
+- [x] Owner reports OpenAI API project `dinner-engine` created and Cloudflare account ready (October 21, 2026 Pacific; not verified through a connection).
+- [ ] Owner completes Cloudflare Zero Trust setup and OpenAI API project budget notifications.
 
 **3A.1 — Protected backend, separate review before active billing:**
 - [ ] Configure an Access-protected Worker on a tested domain / route
-- [ ] Validate Access tokens in the Worker with a one-person allowlist
+- [ ] Deny requests without verified `ctx.access` and allow only the approved user (or fully verify JWT if needed)
 - [ ] Durable quotas, request validation, response schema, provider timeout, kill switch, logging minimization
 - [ ] Anonymous and concurrency/adversarial security tests; real Safari sign-in check
 - [ ] Owner places API project key directly into Worker secret storage, never in chat
@@ -55,12 +56,30 @@ Cloudflare Worker is the proposed backend, with Cloudflare Access allowing exact
 - [ ] Side-by-side test against current recommendations; record quality/cost/latency
 - [ ] Keep baseline fallback; approve expansion to substitutions separately
 
-## Owner setup — no secrets or identifying details in chat
+## Owner setup progress and next steps — no secrets in chat
 
-1. Open https://platform.openai.com/ and create a dedicated API project named Find Dinner. Configure billing, usage views, and conservative notifications. **Do not create or share an API key in chat yet.**
-2. Open https://dash.cloudflare.com/ and create/sign in to a Cloudflare account; enable Zero Trust. We will guide Access and Worker setup once the architecture is ready to test. **Do not deploy an unprotected Worker.**
-3. Return to chat with only "both accounts ready" (or specify which service needs help). Do not post keys, email address, credit-card details or profile data.
-4. Later, paste the key directly into Cloudflare Worker Secrets through the Cloudflare dashboard, after verified authentication and quota controls are in place.
+**Accounts reported ready October 21, 2026 Pacific:** OpenAI API project
+`dinner-engine` and Cloudflare account. The OpenAI project name does not need
+to match the visible app name "Find dinner." Neither account is connected to
+the deployed app and no model key or provider calls exist yet.
+
+1. In https://dash.cloudflare.com/ open **Zero Trust**. If onboarding appears,
+   select a team name (e.g. `dinner-engine` if available), choose the Zero
+   Trust Free plan, finish the setup, and enable account 2FA. Cloudflare may
+   request a payment method for the Free tier; enter it only on Cloudflare.
+2. In https://platform.openai.com/ choose the `dinner-engine` project and
+   open **Limits**. Configure a $10/month *soft budget* and notifications
+   (e.g. 50% and 100%). Project budgets send alerts but do not stop spending.
+   Our future Worker enforces rate/cost quotas separately.
+3. Report only whether Zero Trust onboarding is complete or which
+   non-sensitive screen appears. Do not share keys, emails, account IDs,
+   login links with tokens, payment details or passwords.
+
+**Next engineering step:** create and protect a disabled Worker with
+Worker-level Cloudflare Access and one-user authorization, then verify
+login in iPhone Safari. Do not configure a billable OpenAI key or connect
+the public GitHub Pages app until authentication and durable quotas
+pass the security checkpoint.
 
 ## Sources
 

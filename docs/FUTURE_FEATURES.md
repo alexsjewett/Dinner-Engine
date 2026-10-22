@@ -182,3 +182,5 @@ separate explicit privacy, security and budget review. See docs/AI_PILOT_PLAN.md
 serving variants, persistent cloud recipe storage, cross-device household
 accounts, subscriptions and disclaimer consolidation. A large 2C rules-only
 enhancement is deferred because current matching is already useful.
+
+**3A setup progress:** Both vendor accounts reported ready; OpenAI project called `dinner-engine`. Next: Cloudflare Zero Trust setup, soft API-budget notifications, Worker-level Access sign-in test on iPhone. No paid AI endpoint active.

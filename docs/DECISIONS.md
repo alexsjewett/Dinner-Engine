@@ -176,9 +176,11 @@ No changes to matching, profile storage, recipe content, AI, backend or public r
 |---|---|---|---|
 | DEC-072 | Approved | Begin AI work with OpenAI as the initial provider; choose a lower-cost model after fictional tests, keeping the integration swappable. | Focus on recipe recommendations rather than multi-provider overhead. |
 | DEC-073 | Approved direction, not deployed | Plan Cloudflare Worker server-side API access; never place model keys in public GitHub Pages frontend or repo. | An API key is a billable secret and client code is inspectable. |
-| DEC-074 | Security gate | Protect with Cloudflare Access, verify signed JWT claims inside backend, allow only the approved user, and prove sign-in works on Safari. | Browser Origin checks or unchecked access headers are not authentication. |
+| DEC-074 | Security gate | Protect the whole Worker with Cloudflare Access and enforce a one-user allowlist using verified `ctx.access` (or independently validated JWT if needed); prove login works on Safari. | Browser Origin checks or unchecked access headers are not authentication. |
 | DEC-075 | Security gate | Persist atomic server-side budget and rate reservations, bound input/output, add off-switch and fail-closed handling, use provider notifications too. | Avoid an anonymously billable endpoint and unexpected spending. |
 | DEC-076 | Approved | AI may transmit minimal relevant recipe content only when user explicitly invokes it, with a clear preview; originals stay in browser and deterministic matcher remains fallback. | Support AI value without silent recipe transfer or changes to source recipes. |
 | DEC-077 | Staged, not activated | Commit only a nonbillable disabled backend entrypoint and CI smoke test pending the separate protected backend/activation review. | Work can begin without credentials or expenditure. |
 
 The prior future-AI security gate remains mandatory. See docs/AI_PILOT_PLAN.md.
+
+**3A account setup (October 21, 2026 Pacific):** Owner confirms OpenAI API project `dinner-engine` and Cloudflare account created. Neither connected; next: Cloudflare Zero Trust onboarding and OpenAI budget alerts. Worker-level Access with verified `ctx.access` is the preferred current authentication design.

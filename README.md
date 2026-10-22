@@ -235,3 +235,5 @@ implement persisted atomic quotas and cost controls, validate inputs,
 obtain explicit action-by-action sharing consent, and approve the final
 security and billing activation review. Never paste keys in the repository
 or conversation.
+
+**AI account checkpoint:** Owner reports Cloudflare account and OpenAI API project `dinner-engine` created (October 21, 2026 Pacific). Not yet connected. Next: Zero Trust onboarding, budget alerts and protected disabled Worker; see `docs/AI_PILOT_PLAN.md`.
