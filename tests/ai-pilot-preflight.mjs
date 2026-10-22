@@ -56,7 +56,20 @@ try {
   assert.equal(mod.validateAiResponse({ suggestions: [{
     recipeId: "synthetic-1", explanation: "Good", cautions: ["x".repeat(121)],
   }] }, ["synthetic-1"]), null);
-  console.log("3B.1 staged adapter, privacy minimization, budget math and output checks passed");
+  assert.equal(mod.canUseCandidateForAi({
+    category: "straightforward", reviewReasons: [], softNotes: [],
+  }), true);
+  assert.equal(mod.canUseCandidateForAi({
+    category: "review", reviewReasons: ["dietary review"], softNotes: [],
+  }), false);
+  assert.equal(mod.canUseCandidateForAi({
+    category: "straightforward", reviewReasons: [], softNotes: ["uncertain ingredient"],
+  }), false);
+  assert.equal(mod.validateTrustedEligibility(["a"], ["a", "b"]), true);
+  assert.equal(mod.validateTrustedEligibility(["a", "a"], ["a", "b"]), false);
+  assert.equal(mod.validateTrustedEligibility(["a", "invented"], ["a", "b"]), false);
+  assert.equal(mod.validateTrustedEligibility([], ["a"]), false);
+  console.log("3B.1 staged adapter, privacy minimization, eligibility and output checks passed");
 } finally {
   await Promise.all(paths.map(p => unlink(p.replace(/\.ts$/, suffix)).catch(() => {})));
 }
