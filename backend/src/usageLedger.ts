@@ -9,6 +9,7 @@
  * model pricing and reservation/reconciliation changes.
  */
 import { DurableObject } from "cloudflare:workers";
+import { reservePaidBudget } from "./paidBudget";
 
 export const LIMITS = {
   perHour: 10,
@@ -68,12 +69,17 @@ export function reserveTest(
 
 export class UsageLedger extends DurableObject {
   async fetch(request: Request): Promise<Response> {
+    const pathname = new URL(request.url).pathname;
     if (request.method !== "POST" ||
-        new URL(request.url).pathname !== "/reserve-test") {
+        !["/reserve-test", "/reserve-paid-preflight"].includes(pathname)) {
       return new Response("not_found", { status: 404 });
     }
     try {
       // No user data accepted or required by this internal ledger.
+      if (pathname === "/reserve-paid-preflight") {
+        const allowed = reservePaidBudget(this.ctx.storage as LedgerContext["storage"], Date.now());
+        return Response.json({ allowed, testOnly: true }, { status: allowed ? 200 : 429 });
+      }
       const result = reserveTest(this.ctx.storage as LedgerContext["storage"], Date.now());
       return Response.json(result, {
         status: result.allowed ? 200 : 429,
