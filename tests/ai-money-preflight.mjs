@@ -8,7 +8,7 @@ try {
   await writeFile(out, ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
   } }).outputText, { flag: "wx" });
-  const { reservePaidBudget, PAID_LIMITS, safeReconciledAmount } =
+  const { reservePaidBudget, PAID_LIMITS, safeReconciledAmount, reserveRequest, settleRequest } =
     await import(pathToFileURL(process.cwd() + "/" + out).href);
   const map = new Map();
   const storage = { kv: { get: key => map.get(key), put: (key, value) => map.set(key, value) },
@@ -30,5 +30,26 @@ try {
     "monthly dollar ceiling blocks a reservation");
   map.set("paid:usd:2026-10", "corrupt");
   assert.throws(() => reservePaidBudget(storage, now + 7_200_000), /ledger_corrupt/);
-  console.log("3B.1 staged money reservation tests passed");
+  const persistent = new Map();
+  const money = { kv: { get: k => persistent.get(k), put: (k,v) => persistent.set(k,v) },
+    transactionSync: fn => fn() };
+  const id = "server_generated_id_000001";
+  assert.equal(reserveRequest(money, now, id), "reserved");
+  assert.equal(reserveRequest(money, now, id), "duplicate");
+  assert.equal(persistent.get("paid:usd:2026-10"), 1500);
+  assert.equal(settleRequest(money, id, 400), "settled");
+  assert.equal(persistent.get("paid:usd:2026-10"), 400);
+  assert.equal(settleRequest(money, id, 400), "duplicate");
+  assert.equal(settleRequest(money, "missing_request_00001", 400), "invalid");
+  assert.equal(reserveRequest(money, now, "second_request_00001"), "reserved");
+  assert.equal(persistent.get("paid:usd:2026-10"), 1900,
+    "unknown outcome retains full reserved amount");
+  assert.equal(settleRequest(money, "second_request_00001", 1501), "invalid");
+  assert.equal(persistent.get("paid:usd:2026-10"), 1900);
+  assert.throws(() => reserveRequest(money, now, "bad"), /invalid_request_id/);
+  const burst = await Promise.all(Array.from({ length: 20 }, (_, i) =>
+    Promise.resolve(reserveRequest(money, now, "concurrent_request_" + String(i).padStart(6, "0"))));
+  assert.equal(burst.filter(x => x === "reserved").length, 8);
+  assert.equal(burst.filter(x => x === "limited").length, 12);
+  console.log("3B.1 staged money reservation, idempotency and settlement tests passed");
 } finally { await unlink(out).catch(() => {}); }
