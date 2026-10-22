@@ -4,13 +4,17 @@
  * enabled at runtime AND the authenticated user presses the test button.
  * Full Paprika recipe transmission remains disabled.
  */
-import { planPaprikaModelBatches } from "./paprikaModelDraft";
+import {
+  planPaprikaModelBatches, diagnosePaprikaModelReply,
+  type ModelValidationDiagnostic,
+} from "./paprikaModelDraft";
 import { exerciseStagedBatchPlan, type StagedLedger } from "./aiPilotOrchestrator";
 import { callStagedOpenAi, type ProviderFailureCode, type ProviderFetch } from "./openAiTransport";
 
-type SyntheticDiagnostic = ProviderFailureCode | "budget_limit_reached" |
-  "budget_unavailable" | "budget_settlement_failed" |
-  "model_response_incomplete" | "model_response_invalid";
+type SyntheticDiagnostic = ProviderFailureCode | ModelValidationDiagnostic |
+  "budget_limit_reached" | "budget_unavailable" |
+  "budget_settlement_failed" | "model_response_incomplete" |
+  "model_response_invalid";
 
 export interface SyntheticPilotEnv {
   AI_PILOT_MODE?: string;
@@ -124,6 +128,9 @@ export async function runSyntheticPilot(
         if (response && typeof response === "object" &&
             "status" in response && response.status === "incomplete") {
           report("model_response_incomplete");
+        } else if (response !== null) {
+          const rejected = diagnosePaprikaModelReply(response, draft.eligibleIds);
+          if (rejected) report(rejected);
         }
         return response;
       },

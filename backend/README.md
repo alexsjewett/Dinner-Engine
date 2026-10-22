@@ -156,3 +156,34 @@ Mocked tests cover explicit reasoning effort, unmodified caps and privacy
 options, incomplete or invalid model results, provider errors and budget
 rejections. GitHub CI and Cloudflare Production deployments must be verified
 independently before running another single fictional paid test.
+
+
+### 3B.2 strict model/output contract correction (October 22, 2026)
+
+The earlier fictional test could return `model_response_invalid` even after OpenAI
+received the request. The precise underlying model output was not stored and
+cannot be reconstructed; the cause of that particular failed attempt remains
+unconfirmed. We corrected a concrete mismatch, **without loosening any safety
+gate**:
+
+- The Responses `json_schema` now specifies 1 to at most `min(5,
+  eligible_recipe_count)` suggestions, exactly the allowed ID enum,
+  1–240-character nonblank explanations without control characters, and
+  0–3 nonblank cautions of at most 120 characters each. The instructions
+  repeat these exact limits. Server-side parsing continues to independently
+  enforce the same constraints, disallow duplicate IDs and reject extraneous
+  fields. Using Structured Outputs keyword constraints requires a compatible
+  non-fine-tuned model.
+- Diagnostic-only parsing differentiates unexpected model status, invalid
+  usage counts, absent/multiple/oversized output text, JSON parse failure,
+  invalid suggestion count, unapproved/duplicate recipe IDs, invalid text,
+  and unexpected fields. **No raw model content, prompt, secret, account data
+  or recipe information is logged or returned to Safari.**
+- Mock tests cover strict schema bounds, accepted/denied fictional replies,
+  and safe error codes. No real API calls or automatic retries are made by
+  these tests. The `reasoning: { effort: "none" }` test setting, 700-output-token
+  cap, `store:false`, owner authentication, $5/month durable budget, conservative
+  reservation behavior, and disabled full-Paprika endpoint are unchanged.
+
+Review the GitHub Actions tests and independent Cloudflare Production deployment
+of this commit before manually opting into another fictional billable test.

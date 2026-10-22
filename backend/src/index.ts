@@ -76,6 +76,14 @@ const safeFailureDescriptions = {
   budget_settlement_failed: "The pilot budget could not reconcile the request.",
   model_response_incomplete: "The model did not finish its answer.",
   model_response_invalid: "The model answer failed validation.",
+  model_status_invalid: "OpenAI did not return a completed answer.",
+  model_usage_invalid: "OpenAI's reported token usage failed verification.",
+  model_output_invalid: "OpenAI did not return one usable answer.",
+  model_output_json_invalid: "The returned answer was not valid JSON.",
+  model_suggestion_count_invalid: "The number or structure of recipe suggestions was invalid.",
+  model_recipe_id_invalid: "A recipe suggestion contained an unapproved or repeated recipe ID.",
+  model_suggestion_text_invalid: "An explanation or caution did not meet the text limits.",
+  model_suggestions_invalid: "The suggestion contained unexpected fields.",
 };
 button?.addEventListener("click", async () => {
   button.disabled = true;

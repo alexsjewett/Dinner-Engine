@@ -277,7 +277,36 @@ try {
     }] }],
   });
   response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
-  assert.deepEqual(await response.json(), { error: "model_response_invalid" });
+  assert.deepEqual(await response.json(), { error: "model_recipe_id_invalid" });
+  globalThis.fetch = async () => Response.json({
+    status: "completed", usage: { input_tokens: 377, output_tokens: 50 },
+    output: [{ type: "message", content: [{ type: "output_text",
+      text: JSON.stringify({ suggestions: [{
+        recipeId: "fictional-lentil-skillet",
+        explanation: "x".repeat(241), cautions: [],
+      }] }),
+    }] }],
+  });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.deepEqual(await response.json(), { error: "model_suggestion_text_invalid" });
+  globalThis.fetch = async () => Response.json({
+    status: "completed", usage: { input_tokens: 377, output_tokens: 50 },
+    output: [],
+  });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.deepEqual(await response.json(), { error: "model_output_invalid" });
+  globalThis.fetch = async () => Response.json({
+    status: "completed", usage: { input_tokens: 377, output_tokens: 50 },
+    output: [{ type: "message", content: [{ type: "output_text",
+      text: JSON.stringify({ suggestions: [{
+        recipeId: "fictional-lentil-skillet",
+        explanation: "Exactly one eligible recipe, without duplicate IDs",
+        cautions: [],
+      }] }),
+    }] }],
+  });
+  response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
+  assert.equal(response.status, 200, "valid bounded fictional reply still succeeds");
   // A simulated budget rejection never reaches the model.
   const limitedEnv = { ...testPilotEnv, USAGE_LEDGER: {
     getByName() { return { fetch: async () =>
