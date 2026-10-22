@@ -114,3 +114,7 @@ In test mode, the Worker reads at most 12,288 bytes, accepts only version-1 JSON
 The GitHub CI now runs synthetic auth, schema, oversize, concurrency, persistence, corruption and off-switch cases and a Wrangler `deploy --dry-run` backend check. Independently confirm the current Cloudflare Workers Builds result and iPhone health/private-session behavior.
 
 **Before any paid AI activation**: provider-specific token/price caps, actual usage reconciliation, consent, privacy/retention review, additional security tests and separate explicit approval are required. See `docs/AI_PILOT_PLAN.md`.
+
+## 3B.1 nonbillable staged adapter
+
+`src/aiPilot.ts` defines a pure, network-free OpenAI request preparation and output validation contract for proposed `gpt-6-luna`. It removes recipe directions, limits candidate IDs and explanation sizes, and computes conservative token-cost estimates from published rates. The current Worker **does not import or call this adapter**, and `/api/ai/recommend` still returns 503 without reading a body. The $5/month design target is **not** an enforced billable quota. Do not add an API key or turn on paid model requests. Provider transport, actual token accounting, durable real-money reconciliation, browser auth/CORS and separate security/activation approval remain outstanding.

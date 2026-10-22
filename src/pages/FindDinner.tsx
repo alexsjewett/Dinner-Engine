@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
+import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -228,6 +229,18 @@ export function FindDinner() {
               require manual review. Sample recipes use limited demo rules.
               Never assume a meal is allergy-safe or gluten-free: check the complete original
               ingredient list, labels, preparation and cross-contact.
+            </p>
+          </div>
+
+          <div className="dinner-result-section" aria-label="Upcoming AI recommendations">
+            <h3>AI suggestions (coming soon)</h3>
+            <p className="helper-text">{AI_PILOT_PREVIEW_MESSAGE}</p>
+            <button className="profile-primary-button" type="button" disabled
+              aria-describedby="ai-pilot-not-ready">
+              Improve suggestions with AI — not available yet
+            </button>
+            <p id="ai-pilot-not-ready" className="helper-text">
+              The AI connection is off until a separate privacy and billing review.
             </p>
           </div>
 

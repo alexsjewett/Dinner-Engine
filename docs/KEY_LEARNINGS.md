@@ -324,3 +324,6 @@ The real recommendation route remains disabled even for authenticated users. The
 
 ### Check two deployment pipelines
 GitHub Pages tests alone cannot establish that Cloudflare Workers can bundle or deploy. The project now performs a Wrangler dry run, and Cloudflare's own GitHub build check must also be verified separately. **PM takeaway:** distinguish passing tests, a successful build, a live deployment and actual iPhone acceptance.
+
+### A prepared AI adapter is not a live integration
+A pure request/response contract can be built and tested without API credentials, network calls or cookbook transmission. A disabled button makes the future experience visible while keeping existing matching reliable. **PM takeaway:** track staged UI, provider transport, real billing enforcement and live activation as separate acceptance gates; pricing constants alone are not a hard cost cap.

@@ -235,3 +235,12 @@ An authorized health request is not full security acceptance: still test Private
 | DEC-093 | CI passed; device verification pending | Run adversarial/concurrent/persistent quota tests and Wrangler Worker dry-run in addition to existing Pages tests. | Backend bundling, Cloudflare deployment and phone acceptance remain independently checked. |
 
 **No paid activation approved.** Real cost estimation/reconciliation, safety/retention review, opt-in AI UI and a model key need a later explicitly approved milestone.
+
+## 3B.1 staged implementation decisions (October 22, 2026 Pacific)
+
+| ID | Status | Decision | Rationale |
+|---|---|---|---|
+| DEC-094 | Implemented, nonbillable | Prepare a pure `gpt-6-luna` prompt builder and strict response validator; never call OpenAI in this phase. | Enables synthetic contract testing without secrets or paid calls. |
+| DEC-095 | Implemented, disabled UI | Show an explicitly unavailable AI action next to local recommendations; do not transmit recipes or modify matching. | Make future opt-in discoverable without misleading users or sharing data. |
+| DEC-096 | Design only, **not enforced for paid use** | Target $5/month, 8,000 input and 700 output tokens and 1,500 micro-USD conservative reservation per future call. | Provider token usage reconciliation and real budget enforcement must be implemented before activation. |
+| DEC-097 | Outstanding 3B.1 work | Add actual disabled provider transport, durable real-cost reservation/reconciliation, authenticated browser session and CORS policy, and final privacy/security tests before 3B.2 activation. | Avoid claiming that prepared constants or a disabled UI are a working AI integration. |

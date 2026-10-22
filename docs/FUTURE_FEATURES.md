@@ -207,3 +207,5 @@ Next proposed 3A.2: nonbillable, durable spending/rate controls and input
 validation before any OpenAI key or recipe transmissions.
 
 **3A.2 guardrails delivered in source:** strict 12 KiB/version-1 test request validation, one persistent SQLite Durable Object quota ledger, hourly/daily/monthly test caps, simulated $10/month budget reservations, and a default-off runtime kill switch. No OpenAI key, model calls, cookbook uploads or UI changes. Live backend and iPhone verification remain separate. Later: actual model-specific accounting, AI quality tests with owner-approved Paprika recipes, optional substitutions and the disclaimer cleanup.
+
+**3B.1 partial implementation:** AI recommendation button is visible but disabled; staged pure model request/response contract and preflight budget math have synthetic tests. No OpenAI transport, key, real-money quota or recipe sharing exists yet. Complete authenticated opt-in transport and actual usage accounting before proposing separate 3B.2 paid activation.
