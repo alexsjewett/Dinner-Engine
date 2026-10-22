@@ -126,3 +126,7 @@ The GitHub CI now runs synthetic auth, schema, oversize, concurrency, persistenc
 ### 3B.1 internal budget preflight wired (October 22, 2026)
 
 The Durable Object now accepts an internal-only `/reserve-paid-preflight` operation backed by SQLite transactional monetary counters. Synthetic tests verify the hourly cap and persistence across object reconstruction. The public Worker does not route to this operation; no provider transport, credentials, or paid requests exist. **The $5/month limit is not yet a real production cost cap.** Actual provider usage reconciliation, idempotency, authentication of browser opt-in and failure handling remain required before 3B.2.
+
+### Internal idempotent lifecycle (3B.1)
+
+The Durable Object now has internal-only `/reserve-paid-id` and `/settle-paid-id` operations. They accept opaque request IDs and verified integer micro-USD settlement amounts; duplicate reservations or settlements cannot double-count, and unsettled requests retain their full reservation. The public Worker still has **no route to these operations**, and no OpenAI provider calls are made. A real spending cap additionally requires server-generated unique IDs, verified provider usage, bounded model transport, conservative failure handling and final security review. The current state is nonbillable and incomplete.
