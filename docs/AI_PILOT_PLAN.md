@@ -258,3 +258,9 @@ Before 3B.2: connect the authenticated Worker to the validated version-2 body, a
 ### 3B.1 multi-batch planning (offline)
 
 A fail-closed planner now divides an otherwise-valid complete Paprika library into at most ten small model-input drafts when one request would exceed the staged 7,200-byte prompt cap. Every imported recipe must appear exactly once in the plan, without dropping or shortening recipe fields. Each planned call will need its own idempotent durable monetary reservation after activation; do not show partial AI rankings if any batch fails. The planner is not connected to the production Worker, does not make calls and is not a promise of successful provider-side token accounting. If a single recipe cannot fit, the planner rejects it and leaves deterministic recommendations available.
+
+### 3B.1 synthetic budget choreography (not live)
+
+An offline-only orchestrator now coordinates a bounded batch plan through injectable reserve, dispatch and settle callbacks. Each request receives a fresh server-generated opaque ID and reserves a fixed micro-dollar allowance before provider dispatch. Only a strictly validated, completed response with bounded provider token counts can settle and refund unused reserve. Failures, timeouts, duplicate reservations and unknown provider outcomes return no AI ranking and retain uncertain reservations. The entire AI result is withheld if any batch fails so the app can continue with deterministic matching.
+
+All tests supply a fake provider and fake Durable Object-style storage; `aiPilotOrchestrator.ts` is **not imported by the production Worker**, and it contains no default provider transport. These mocks do not prove that the eventual actual OpenAI invoice is mathematically capped. Authentication, Cloudflare Durable Object dispatch integration, complete recipe security review, verified token handling and actual provider reconciliation still require approval and end-to-end testing.

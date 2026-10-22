@@ -45,6 +45,8 @@ jobs:
         run: npm run test:ai-paprika-model
       - name: Test injected OpenAI transport without provider calls
         run: npm run test:ai-transport
+      - name: Test batch ledger orchestration with synthetic provider
+        run: npm run test:ai-orchestrator
       - name: Test staged AI budget reservations
         run: npm run test:ai-money
       - name: Validate Cloudflare Worker bundle without deploying
