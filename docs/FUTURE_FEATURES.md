@@ -150,3 +150,19 @@ The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions re
 **Approved and implemented; mobile device acceptance pending.** Saved recipes are read from IndexedDB at search time, ranked ahead of ten fictional samples, and labeled by source. Original ingredient lines are screened using minimal word/phrase and plural matching; known times are used, unknown time remains a review warning. Every imported result requires manual assessment, especially when a saved person's dietary needs or restrictions are involved. Original Paprika contents, sample rules, profiles and sessions are unchanged.
 
 **Next candidate (not approved):** a separate source-preserving ingredient review/enrichment screen for imported recipes, improved aliases and optional cook-reviewed substitutions, supported by stronger automated checks. No medical/allergy certification. AI and backend phases remain gated by separate security/budget approvals.
+
+## Future UX backlog — Consolidate disclaimers and caution language (feedback October 21, 2026)
+
+**Requested, not yet approved for implementation.** Primary user reports that disclaimer language is overwhelming, repetitive and distracting across Find Dinner, recipe result cards/details, Profiles and Recipe Library/import. Reduce warning fatigue while retaining appropriate due diligence, especially for genuine per-person dietary/restriction concerns and imperfect ingredient matching.
+
+**Later review scope:**
+- Inventory every warning, banner, helper paragraph, repeated caveat and safety-related label throughout all screens.
+- Decide where one short, clear explanation can replace several repeated disclaimers; make detailed explanations available in a single easy-to-find "How recommendations work / limitations" destination if useful.
+- Keep succinct **contextual** warnings only when they change a cooking decision (e.g., an apparent Must avoid ingredient hit, uncertain imported recipe classification, unknown time or label/cross-contact issue). Do not bury actionable warnings inside generic legal language.
+- Use calm, plain-English language. Avoid implying that an imported recipe is verified allergy-safe/gluten-free or that the app has performed checks it has not actually performed.
+- Review what privacy/storage guidance is genuinely necessary at import/profile entry, and eliminate repeated copy that users have already seen.
+- For wider distribution beyond a single primary user, review any applicable legal, privacy, accessibility and food-safety communication needs; **do not assume a certain count of disclaimers alone provides legal protection**.
+
+**Acceptance criterion:** noticeably less repetitive text on the core dinner flow, while actionable restrictions, uncertainties and material privacy limitations remain clearly identifiable at the point they matter.
+
+**No UI/code change authorized by this backlog note.** Scope and approve the consolidation as a separate small milestone after current feature work.
