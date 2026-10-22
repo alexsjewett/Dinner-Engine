@@ -45,6 +45,8 @@ jobs:
         run: npm run test:ai-readiness
       - name: Validate larger catalog readiness
         run: npm run test:ai-catalog
+      - name: Verify real Paprika AI activation remains blocked
+        run: npm run test:ai-activation-gate
       - name: Test non-executing Paprika Responses adapter
         run: npm run test:ai-paprika-model
       - name: Test injected OpenAI transport without provider calls
