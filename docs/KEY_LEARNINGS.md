@@ -327,3 +327,6 @@ GitHub Pages tests alone cannot establish that Cloudflare Workers can bundle or 
 
 ### A prepared AI adapter is not a live integration
 A pure request/response contract can be built and tested without API credentials, network calls or cookbook transmission. A disabled button makes the future experience visible while keeping existing matching reliable. **PM takeaway:** track staged UI, provider transport, real billing enforcement and live activation as separate acceptance gates; pricing constants alone are not a hard cost cap.
+
+### Budget arithmetic and production enforcement are different milestones
+A tested transactional reservation function is necessary but not sufficient. It must be integrated with durable storage, unique request IDs, provider usage reconciliation and conservative timeout handling before any real paid call. **PM takeaway:** a passing unit test is not evidence that live spending is capped.

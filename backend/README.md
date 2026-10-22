@@ -118,3 +118,7 @@ The GitHub CI now runs synthetic auth, schema, oversize, concurrency, persistenc
 ## 3B.1 nonbillable staged adapter
 
 `src/aiPilot.ts` defines a pure, network-free OpenAI request preparation and output validation contract for proposed `gpt-6-luna`. It removes recipe directions, limits candidate IDs and explanation sizes, and computes conservative token-cost estimates from published rates. The current Worker **does not import or call this adapter**, and `/api/ai/recommend` still returns 503 without reading a body. The $5/month design target is **not** an enforced billable quota. Do not add an API key or turn on paid model requests. Provider transport, actual token accounting, durable real-money reconciliation, browser auth/CORS and separate security/activation approval remain outstanding.
+
+### Prepared monetary ledger (not live)
+
+`src/paidBudget.ts` defines fail-closed $5/month reservation arithmetic and conservative reconciliation validation with synthetic tests. It is **not imported by the running Worker** and does not protect any paid requests. There is no paid provider endpoint or API key. Idempotent reservations, storage integration, provider usage reconciliation and authenticated opt-in remain outstanding before any billable activation.
