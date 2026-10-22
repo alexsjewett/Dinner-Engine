@@ -49,12 +49,15 @@ function validTerms(value: unknown, max: number): boolean {
 }
 function validCriteria(value: unknown): boolean {
   if (!object(value) || !exactKeys(value, [
-    "have", "unavailable", "timeLimitMinutes", "mustAvoidFoods", "dietaryNeeds",
+    "have", "unavailable", "timeLimitMinutes", "mustAvoidFoods",
+    "shouldAvoidFoods", "preferAvoidFoods", "dietaryNeeds",
   ])) return false;
   return validTerms(value.have, 30) &&
     validTerms(value.unavailable, 30) &&
     [15, 30, 45, 60].includes(value.timeLimitMinutes as number) &&
     validTerms(value.mustAvoidFoods, 30) &&
+    validTerms(value.shouldAvoidFoods, 30) &&
+    validTerms(value.preferAvoidFoods, 30) &&
     Array.isArray(value.dietaryNeeds) && value.dietaryNeeds.length <= 3 &&
     value.dietaryNeeds.every(need =>
       ["vegetarian", "vegan", "gluten-free"].includes(need as string)) &&

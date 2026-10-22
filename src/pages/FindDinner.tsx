@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
 import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
+import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -19,6 +20,7 @@ export function FindDinner() {
   const [search, setSearch] = useState<SavedSearch>(readSearchSession);
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
+  const [aiScopeReviewed, setAiScopeReviewed] = useState(false);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
@@ -44,6 +46,7 @@ export function FindDinner() {
       draft: { ...previous.draft, ...partial },
     }));
     setError("");
+    setAiScopeReviewed(false);
   }
 
   function togglePerson(id: string, checked: boolean) {
@@ -62,6 +65,7 @@ export function FindDinner() {
     const submitted = { ...search.draft, selectedProfileIds: selected };
     setSearch({ draft: submitted, submitted, expanded: false });
     setError("");
+    setAiScopeReviewed(false);
   }
 
   const draft = search.draft;
@@ -72,6 +76,9 @@ export function FindDinner() {
     : [];
   const aiPaprikaPreview = localPaprikaShortlist(results);
   const aiLibrarySummary = fullPaprikaLibraryPreview(localRecipes);
+  const aiFullRequest = submitted && aiScopeReviewed
+    ? prepareLocalPaprikaRequest(localRecipes, submitted, diners, true)
+    : null;
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
   const direct = firstThree.filter((item) => item.category === "straightforward");
@@ -262,6 +269,34 @@ export function FindDinner() {
                 You'll review and explicitly approve sharing when AI is activated.
               </p>
             </details>
+            {libraryStatus === "ready" && localRecipes.length > 0 && (
+              <div className="profile-field">
+                <label className="dinner-mode-choice">
+                  <input
+                    type="checkbox"
+                    checked={aiScopeReviewed}
+                    onChange={(event) => setAiScopeReviewed(event.target.checked)}
+                  />
+                  Check the size and contents of a future full-library AI request locally
+                </label>
+                <p className="helper-text">
+                  Preview only. Checking this box does not upload recipes, start an AI call,
+                  or activate billing. Any future AI request will need an explicit action.
+                </p>
+                {aiFullRequest && (
+                  <p className="helper-text" role="status">
+                    {aiFullRequest.ok
+                      ? "Local preflight passed: " + aiFullRequest.count +
+                        " complete recipes, " + aiFullRequest.bytes.toLocaleString() +
+                        " UTF-8 bytes. Dietary restrictions are summarized without diner names. No upload."
+                      : "Local preflight cannot proceed (" + aiFullRequest.reason +
+                        "). " + aiFullRequest.count + " recipes, " +
+                        aiFullRequest.bytes.toLocaleString() +
+                        " bytes. Your full library will not be silently reduced."}
+                  </p>
+                )}
+              </div>
+            )}
             <p id="ai-pilot-not-ready" className="helper-text">
               The AI connection is off until a separate privacy and billing review.
             </p>

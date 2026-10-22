@@ -39,6 +39,8 @@ jobs:
         run: npm run test:ai-pilot
       - name: Test full Paprika library request contract
         run: npm run test:ai-paprika
+      - name: Test Paprika privacy and local sharing preview
+        run: npm run test:ai-paprika-browser
       - name: Test staged AI budget reservations
         run: npm run test:ai-money
       - name: Validate Cloudflare Worker bundle without deploying

@@ -26,7 +26,7 @@ try {
   });
   const criteria = {
     have: ["pasta"], unavailable: [], timeLimitMinutes: 30,
-    mustAvoidFoods: [], dietaryNeeds: [],
+    mustAvoidFoods: [], shouldAvoidFoods: [], preferAvoidFoods: [], dietaryNeeds: [],
   };
   const payload = {
     version: 2, scope: "full-paprika-library",
