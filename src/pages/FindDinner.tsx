@@ -212,7 +212,7 @@ export function FindDinner() {
         <section className="dinner-results" aria-labelledby="dinner-results-heading">
           <div className="dinner-results-heading">
             <p className="eyebrow">
-              {localRecipes.length > 0 ? "Your recipes first · Sample recipes included" : "From your sample cookbook"}
+              {localRecipes.length > 0 ? "Your recipes first · Sample recipes also eligible" : "From your sample cookbook"}
             </p>
             <h2 id="dinner-results-heading">Dinner ideas</h2>
             <p className="helper-text">
