@@ -43,6 +43,8 @@ jobs:
         run: npm run test:ai-paprika-browser
       - name: Test non-executing Paprika Responses adapter
         run: npm run test:ai-paprika-model
+      - name: Test injected OpenAI transport without provider calls
+        run: npm run test:ai-transport
       - name: Test staged AI budget reservations
         run: npm run test:ai-money
       - name: Validate Cloudflare Worker bundle without deploying
