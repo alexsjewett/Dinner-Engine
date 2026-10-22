@@ -4,8 +4,11 @@ import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
 import { loadProfiles } from "../services/profileStorage";
+import { listImportedRecipes } from "../services/importedRecipeStorage";
+import { recommendAllDinners } from "../services/dinnerSuggestions";
+import type { ImportedRecipe } from "../types/importedRecipe";
 import {
-  recommendDinners, selectDiners,
+  selectDiners,
   type SearchCriteria, type TimeChoice,
 } from "../services/dinnerMatcher";
 import { readSearchSession, saveSearchSession, type SavedSearch } from "../services/searchSession";
@@ -14,9 +17,24 @@ export function FindDinner() {
   const [search, setSearch] = useState<SavedSearch>(readSearchSession);
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
+  const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
+  const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
 
   useEffect(() => { saveSearchSession(search); }, [search]);
+  useEffect(() => {
+    let live = true;
+    listImportedRecipes()
+      .then((recipes) => {
+        if (!live) return;
+        setLocalRecipes(recipes);
+        setLibraryStatus("ready");
+      })
+      .catch(() => {
+        if (live) setLibraryStatus("error");
+      });
+    return () => { live = false; };
+  }, []);
 
   function changeCriteria(partial: Partial<SearchCriteria>) {
     setSearch((previous) => ({
@@ -47,7 +65,9 @@ export function FindDinner() {
   const draft = search.draft;
   const submitted = search.submitted;
   const diners = submitted ? selectDiners(profiles, submitted) : [];
-  const results = submitted ? recommendDinners(getAllRecipes(), submitted, profiles, 10) : [];
+  const results = submitted && libraryStatus !== "loading"
+    ? recommendAllDinners(localRecipes, getAllRecipes(), submitted, profiles, 10)
+    : [];
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
   const direct = firstThree.filter((item) => item.category === "straightforward");
@@ -62,7 +82,7 @@ export function FindDinner() {
         <h1>What sounds good tonight?</h1>
         <p className="lead">
           Share what's in your kitchen, how much time you have, and who's eating.
-          We'll suggest a few ideas from our sample cookbook.
+          We'll suggest ideas from your saved Paprika recipes and our sample cookbook.
         </p>
       </div>
 
@@ -175,21 +195,39 @@ export function FindDinner() {
         </form>
       </FeatureCard>
 
-      {submitted && (
+      {libraryStatus === "loading" && (
+        <p role="status" className="helper-text">
+          Loading your browser-saved recipes…
+        </p>
+      )}
+      {libraryStatus === "error" && (
+        <p role="alert" className="profile-alert">
+          Your local recipe library could not be read in this browser.
+          Search results currently include sample recipes only; try reopening the app
+          or check your browser's site data settings.
+        </p>
+      )}
+
+      {submitted && libraryStatus !== "loading" && (
         <section className="dinner-results" aria-labelledby="dinner-results-heading">
           <div className="dinner-results-heading">
-            <p className="eyebrow">From your sample cookbook</p>
+            <p className="eyebrow">
+              {localRecipes.length > 0 ? "Your recipes first · Sample recipes included" : "From your sample cookbook"}
+            </p>
             <h2 id="dinner-results-heading">Dinner ideas</h2>
             <p className="helper-text">
-              Showing {search.expanded ? results.length : firstThree.length} of {results.length} recipe ideas from your last search.
+              Showing {search.expanded ? results.length : firstThree.length} of the top {results.length} recipe ideas
+              from {localRecipes.length} saved and {getAllRecipes().length} sample recipes.
               {diners.length > 0
                 ? " Considering " + diners.map((person) => person.name).join(", ") + "."
                 : " No saved profiles selected: dietary restrictions were not checked."}
             </p>
             <p className="dinner-results-caveat">
-              These are demo-rule matches, NOT verified allergy-safe or gluten-free meals.
-              Check original ingredients, packaged food labels, preparation and cross-contact.
-              Simple ingredient names may miss hidden ingredients or synonyms.
+              Imported Paprika recipes are matched by simple ingredient words and any listed
+              cooking times; their dietary suitability is NOT verified. All imported recipes
+              require manual review. Sample recipes use limited demo rules.
+              Never assume a meal is allergy-safe or gluten-free: check the complete original
+              ingredient list, labels, preparation and cross-contact.
             </p>
           </div>
 
@@ -197,9 +235,10 @@ export function FindDinner() {
             <div className="dinner-result-section">
               <h3>More straightforward options</h3>
               <p className="helper-text">
-                No conflicts identified by this limited sample matcher. This is not a safety determination.
+                No conflicts identified by the limited sample rules. Imported recipes
+                never receive this label; it is not a food-safety determination.
               </p>
-              {direct.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
+              {direct.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
             </div>
           )}
 
@@ -210,7 +249,7 @@ export function FindDinner() {
                 These may still inspire dinner, but need more time, shopping, portion
                 changes or a cook's assessment before serving.
               </p>
-              {review.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
+              {review.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
             </div>
           )}
 
@@ -222,19 +261,19 @@ export function FindDinner() {
             >
               <h3>Additional matches</h3>
               <p className="helper-text">
-                More ranked ideas from the same cookbook. Review notices and food restrictions
-                still apply to each recipe.
+                More ranked ideas from your saved recipes and the sample cookbook.
+                Review notices and food restrictions still apply to every recipe.
               </p>
               {extraDirect.length > 0 && (
                 <div className="dinner-additional-group">
                   <h4>More straightforward options</h4>
-                  {extraDirect.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
+                  {extraDirect.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
                 </div>
               )}
               {extraReview.length > 0 && (
                 <div className="dinner-additional-group">
                   <h4>More options needing adjustment or review</h4>
-                  {extraReview.map((item) => <DinnerResultCard key={item.recipe.id} result={item} />)}
+                  {extraReview.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
                 </div>
               )}
             </div>
@@ -264,9 +303,10 @@ export function FindDinner() {
         <div>
           <strong>Original recipes stay unchanged.</strong>
           <p>
-            This prototype uses ten manually classified recipes, not AI or
-            certified allergen analysis. Later we'll explore ingredient swaps
-            and separate toppings for a cook to review.
+            Find Dinner reads imported recipes from this browser only, alongside
+            ten manually classified fictional samples. Original Paprika text is
+            preserved, and recommendations are not verified for allergies,
+            gluten or cross-contact. Later we'll explore cook-reviewed swaps.
           </p>
         </div>
       </div>

@@ -75,8 +75,9 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
               </FeatureCard>
             )}
             <p className="library-note">
-              Browsing only: Find Dinner does not match imported recipes yet.
-              Check original ingredients and labels for dietary needs.
+              This recipe can now appear in Find Dinner suggestions, but its
+              ingredient screening is only a text match. Review the complete
+              recipe and labels for all dietary needs before cooking.
             </p>
           </>
         ) : (

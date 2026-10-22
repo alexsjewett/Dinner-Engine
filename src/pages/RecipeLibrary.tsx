@@ -108,8 +108,8 @@ export function RecipeLibrary() {
         <strong>Private to this browser—not synced or backed up.</strong>{" "}
         Imported recipes are stored in this device's IndexedDB, not GitHub.
         Clearing website data or using a private tab may erase them.
-        Your Paprika export stays your backup. Imported recipes are for browsing
-        only; Find Dinner doesn't match them yet.
+        Your Paprika export stays your backup. Find Dinner now suggests
+        imported recipes with explicit manual-review warnings.
       </div>
 
       <div className="recipe-library-tabs" role="group" aria-label="Recipe collections">

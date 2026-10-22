@@ -597,3 +597,13 @@ h1 {
   .recipe-library-tabs { gap: 7px; }
   .recipe-library-tab { font-size: 13px; padding: 6px; }
 }
+
+/* 2B — distinguish personal recipes from fictional demo results. */
+.dinner-result-labels { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.dinner-source-tag {
+  display: inline-flex; align-items: center; min-height: 28px;
+  padding: 5px 10px; border-radius: 999px;
+  background: #eeeae1; color: #625d50; font-size: 12px; font-weight: 780;
+}
+.dinner-source-tag--my { background: #dfece0; color: #31543a; }
+.dinner-result-description { overflow-wrap: anywhere; }
