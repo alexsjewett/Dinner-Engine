@@ -29,7 +29,14 @@ function terms(value: string): string[] {
 function possibleLineMatch(term: string, line: string): boolean {
   const phrase = normalize(term);
   if (!phrase) return false;
-  return (" " + normalize(line) + " ").includes(" " + phrase + " ");
+  const haystack = " " + normalize(line) + " ";
+  // Small, transparent singular/plural variants (egg/eggs, tomato/tomatoes).
+  // They are not a food taxonomy and never imply safety when no match exists.
+  const candidates = new Set([phrase, phrase + "s", phrase + "es"]);
+  if (phrase.length > 3 && phrase.endsWith("s")) candidates.add(phrase.slice(0, -1));
+  if (phrase.length > 4 && phrase.endsWith("es")) candidates.add(phrase.slice(0, -2));
+  if (phrase.length > 4 && phrase.endsWith("ies")) candidates.add(phrase.slice(0, -3) + "y");
+  return [...candidates].some((candidate) => haystack.includes(" " + candidate + " "));
 }
 
 function ingredientLines(source: string): string[] {
