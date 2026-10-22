@@ -310,21 +310,18 @@ export function FindDinner() {
                 {aiFullRequest && (
                   <p className="helper-text" role="status">
                     {aiFullRequest.ok
-                      ? "First check passed: " + aiFullRequest.count +
+                      ? "The single-window check passed: " + aiFullRequest.count +
                         " complete recipes, " + aiFullRequest.bytes.toLocaleString() +
-                        " UTF-8 bytes. Selected dietary restrictions are summarized without diner names or IDs. No upload."
-                      : "Cannot prepare the full library (" + aiFullRequest.reason +
-                        "). " + aiFullRequest.count + " recipes, " +
-                        aiFullRequest.bytes.toLocaleString() +
-                        " bytes. No recipes will be quietly omitted."}
+                        " UTF-8 bytes. Multi-window local planning is available below."
+                      : "The single-window check is limited (" + aiFullRequest.reason +
+                        "). The offline planner below can still examine all " +
+                        localRecipes.length + " recipes. No upload."}
                   </p>
                 )}
-                {aiFullRequest?.ok && (
-                  <button type="button" className="profile-secondary-button"
-                    onClick={checkLocalAiPlan}>
-                    Check full-library AI plan locally — no upload
-                  </button>
-                )}
+                <button type="button" className="profile-secondary-button"
+                  onClick={checkLocalAiPlan}>
+                  Check full-library AI plan locally — no upload
+                </button>
                 {localAiReadiness && (
                   <div className="local-ai-readiness" role="status" aria-live="polite">
                     {localAiReadiness.ready ? (
