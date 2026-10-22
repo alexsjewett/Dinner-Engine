@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
+import { localPaprikaShortlist } from "../services/aiPaprikaPreview";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -69,6 +70,7 @@ export function FindDinner() {
   const results = submitted && libraryStatus !== "loading"
     ? recommendAllDinners(localRecipes, getAllRecipes(), submitted, profiles, 10)
     : [];
+  const aiPaprikaPreview = localPaprikaShortlist(results);
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
   const direct = firstThree.filter((item) => item.category === "straightforward");
@@ -239,6 +241,17 @@ export function FindDinner() {
               aria-describedby="ai-pilot-not-ready">
               Improve suggestions with AI — not available yet
             </button>
+            {aiPaprikaPreview.length > 0 && (
+              <details>
+                <summary>Preview Paprika recipes for future AI suggestions ({aiPaprikaPreview.length})</summary>
+                <p className="helper-text">This preview stays in your browser. Nothing is sent to AI yet. Imported recipes still need dietary review.</p>
+                <ul>
+                  {aiPaprikaPreview.map((item) => (
+                    <li key={item.id}><strong>{item.title}</strong> — Manual dietary review required.</li>
+                  ))}
+                </ul>
+              </details>
+            )}
             <p id="ai-pilot-not-ready" className="helper-text">
               The AI connection is off until a separate privacy and billing review.
             </p>
