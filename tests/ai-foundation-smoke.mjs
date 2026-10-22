@@ -153,16 +153,20 @@ assert.equal(response.status, 503, "missing Durable Object binding must fail clo
 // 3B.2: fictional paid test stays disabled without exact runtime conditions.
 const testPage = "https://example.invalid/api/ai/test";
 const synthetic = "https://example.invalid/api/ai/test/synthetic";
-const fictionalPost = (opts = {}) => new Request(synthetic, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Origin": "https://example.invalid",
-    "X-Find-Dinner-Intent": "synthetic-test",
-    ...(opts.headers ?? {}),
-  },
-  body: opts.body ?? JSON.stringify({ confirmed: true }),
-});
+const fictionalPost = (opts = {}) => {
+  const body = opts.body ?? JSON.stringify({ confirmed: true });
+  return new Request(synthetic, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": String(Buffer.byteLength(body, "utf8")),
+      "Origin": "https://example.invalid",
+      "X-Find-Dinner-Intent": "synthetic-test",
+      ...(opts.headers ?? {}),
+    },
+    body,
+  });
+};
 const testHtml = await worker.fetch(new Request(testPage), ownerEnv, owner);
 assert.equal(testHtml.status, 200);
 const html = await testHtml.text();
@@ -205,6 +209,16 @@ for (const body of ['{"confirmed":false}', '{"confirmed":true,"extra":1}',
   "not json", "x".repeat(140)]) {
   response = await worker.fetch(fictionalPost({ body }), testPilotEnv, owner);
   assert.equal(response.status, 400, "malformed synthetic confirmation rejected");
+}
+for (const header of ["not-a-number", "-1", "129", "9999999999999999999999999"]) {
+  const badLength = fictionalPost({
+    headers: { "Content-Length": header },
+  });
+  response = await worker.fetch(badLength, testPilotEnv, owner);
+  assert.equal(response.status, 400,
+    "invalid or out-of-range Content-Length is denied before any paid call");
+  assert.equal(badLength.bodyUsed, false,
+    "invalid Content-Length must fail before reading recipe body");
 }
 const originalFetch = globalThis.fetch;
 let providerCalls = 0;

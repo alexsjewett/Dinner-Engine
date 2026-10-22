@@ -84,7 +84,7 @@ button?.addEventListener("click", async () => {
 });`;
 async function checkSyntheticConfirmation(request: Request): Promise<boolean> {
   const length = request.headers.get("content-length");
-  if (length !== null && (!/^\\d+$/.test(length) ||
+  if (length !== null && (!/^\d+$/.test(length) ||
       !Number.isSafeInteger(Number(length)) || Number(length) > 128)) return false;
   if (request.headers.get("content-type") !== "application/json" || !request.body) return false;
   const reader = request.body.getReader();
