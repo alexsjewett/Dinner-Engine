@@ -328,16 +328,19 @@ export function FindDinner() {
                       <>
                         <strong>Local preparation checks passed (not activated).</strong>
                         <p>
-                          All {localAiReadiness.recipeCount} recipes fit in{" "}
-                          {localAiReadiness.batchCount} bounded batch
+                          All {localAiReadiness.recipeCount} recipes are accounted
+                          for in {localAiReadiness.windowCount} complete planning
+                          window{localAiReadiness.windowCount === 1 ? "" : "s"} and{" "}
+                          {localAiReadiness.batchCount} bounded model batch
                           {localAiReadiness.batchCount === 1 ? "" : "es"}.
                           {" "}{localAiReadiness.eligibleRecipeCount} recipe IDs remain eligible;
                           {" "}{localAiReadiness.knownConflictExcludedCount} have obvious
                           text conflicts with Must avoid terms and cannot be recommended.
                         </p>
                         <p>
-                          Recipe counts per batch: {localAiReadiness.batchRecipeCounts.join(", ")}.
-                          Largest planned input: {localAiReadiness.largestBatchBytes.toLocaleString()} bytes.
+                          Recipes per planning window: {localAiReadiness.windowRecipeCounts.join(", ")}.
+                          Model batches per window are limited separately.
+                          Largest staged input: {localAiReadiness.largestBatchBytes.toLocaleString()} bytes.
                           This is not a tokenizer, dietary certification or cost estimate.
                         </p>
                         <p>
