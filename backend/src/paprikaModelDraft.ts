@@ -153,3 +153,63 @@ export function validatePaprikaModelReply(
   if (estimatedMicroUsd === null) return null;
   return { suggestions: withReview, inputTokens, outputTokens, estimatedMicroUsd };
 }
+
+/**
+ * Offline segmentation planner: each batch is an individually bounded draft.
+ * A larger library is NEVER silently truncated. No provider calls are made.
+ * This is only planning: the active workflow must reserve/settle each call
+ * and fail back to the local matcher unless the entire plan succeeds.
+ */
+export const MAX_PAPRIKA_MODEL_BATCHES = 10;
+export interface StagedPaprikaBatch {
+  batchNumber: number;
+  totalBatches: number;
+  totalLibraryRecipes: number;
+  recipeIds: string[];
+  draft: StagedRequest;
+}
+export function planPaprikaModelBatches(value: unknown): StagedPaprikaBatch[] | null {
+  if (!validateFullPaprikaPayload(value)) return null;
+  const full = value as LibraryPayload & Record<string, unknown>;
+  const groups: LibraryRecipe[][] = [];
+  let group: LibraryRecipe[] = [];
+  for (const recipe of full.recipes) {
+    const trial = [...group, recipe];
+    const proposed = { ...full, recipes: trial };
+    if (stagePaprikaModelRequest(proposed)) {
+      group = trial;
+    } else if (group.length > 0 && stagePaprikaModelRequest({
+      ...full, recipes: group,
+    })) {
+      groups.push(group);
+      group = [recipe];
+      // An individual recipe may exceed the model prompt cap; fail closed.
+      if (!stagePaprikaModelRequest({ ...full, recipes: group })) return null;
+    } else {
+      // A group with no allowed IDs is not a safe or meaningful model prompt.
+      return null;
+    }
+    if (groups.length >= MAX_PAPRIKA_MODEL_BATCHES) return null;
+  }
+  if (group.length > 0) groups.push(group);
+  if (groups.length < 1 || groups.length > MAX_PAPRIKA_MODEL_BATCHES) return null;
+  const result: StagedPaprikaBatch[] = [];
+  for (let i = 0; i < groups.length; i++) {
+    const recipes = groups[i];
+    const draft = stagePaprikaModelRequest({ ...full, recipes });
+    if (!draft) return null;
+    result.push({
+      batchNumber: i + 1,
+      totalBatches: groups.length,
+      totalLibraryRecipes: full.recipes.length,
+      recipeIds: recipes.map(recipe => recipe.id),
+      draft,
+    });
+  }
+  // Every original recipe must occur once in the model-input plan.
+  const allIds = result.flatMap(item => item.recipeIds);
+  if (allIds.length !== full.recipes.length ||
+      new Set(allIds).size !== allIds.length ||
+      allIds.some((id, i) => id !== full.recipes[i].id)) return null;
+  return result;
+}

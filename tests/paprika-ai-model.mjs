@@ -66,6 +66,21 @@ try {
     recipes: [recipe("all_bad", "peanuts")] }), null);
   assert.equal(mod.stagePaprikaModelRequest({ ...payload,
     recipes: [recipe("too_long", "a".repeat(8_000))] }), null);
+  const multi = {
+    ...payload,
+    criteria: { ...criteria, mustAvoidFoods: [] },
+    recipes: Array.from({ length: 8 }, (_, i) => ({
+      ...recipe("batch_" + i), directions: "Simmer and stir ".repeat(75),
+    })),
+  };
+  const plan = mod.planPaprikaModelBatches(multi);
+  assert.ok(plan && plan.length > 1, "larger libraries need multiple bounded model calls");
+  assert.ok(plan.every(batch => batch.totalBatches === plan.length));
+  assert.ok(plan.every(batch => batch.draft.inputBytes <= mod.MAX_STAGED_INPUT_BYTES));
+  assert.deepEqual(plan.flatMap(batch => batch.recipeIds), multi.recipes.map(r => r.id));
+  assert.equal(mod.planPaprikaModelBatches({ ...payload,
+    recipes: [recipe("too_long", "x".repeat(8_000))] }), null);
+
   const respond = suggestions => ({
     status: "completed", usage: { input_tokens: 1100, output_tokens: 200 },
     output: [{ type: "message", content: [
