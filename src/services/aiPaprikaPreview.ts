@@ -8,3 +8,14 @@ export function localPaprikaShortlist(results: readonly DinnerSuggestion[]) {
     warnings: item.reviewReasons.slice(0, 4),
   }));
 }
+
+/** Local-only preview of the full imported recipe library, never uploaded here. */
+export function fullPaprikaLibraryPreview(recipes: readonly import("../types/importedRecipe").ImportedRecipe[]) {
+  return {
+    recipeCount: recipes.length,
+    recipeTitles: recipes.map(recipe => recipe.name),
+    includesFullIngredients: true,
+    includesDirections: true,
+    transmitted: false as const,
+  };
+}
