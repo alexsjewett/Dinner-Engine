@@ -16,6 +16,7 @@
     "test:ai-paprika-browser": "node tests/paprika-ai-browser.mjs",
     "test:ai-readiness": "node tests/ai-readiness-browser.mjs",
     "test:ai-catalog": "node tests/ai-catalog-browser.mjs",
+    "test:ai-activation-gate": "node tests/ai-activation-gate.mjs",
     "test:ai-paprika-model": "node tests/paprika-ai-model.mjs",
     "test:ai-transport": "node tests/openai-transport-mock.mjs",
     "test:ai-orchestrator": "node tests/ai-orchestrator-mock.mjs"
