@@ -35,6 +35,11 @@ jobs:
         run: npm run test:matching
       - name: Test disabled AI foundation
         run: npm run test:ai-foundation
+      - name: Validate Cloudflare Worker bundle without deploying
+        run: |
+          npm install --prefix backend --no-audit --no-fund
+          cd backend
+          npx wrangler deploy --dry-run --outdir .wrangler-dry-run
       - name: Build website
         run: npm run build
       - name: Configure GitHub Pages
