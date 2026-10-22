@@ -226,3 +226,20 @@ Store original ingredients, instructions and textual durations as written; do no
 
 ### Sensitive source payloads
 Paprika exports can contain photos and other data that were never intended for publication. This first version omits photo data from the stored records and avoids transmitting any import data to a backend. **PM takeaway:** minimize what an early prototype stores and never treat public hosting as a private user-data backend.
+
+## Milestone 2B — Bridging imported data and recommendations
+
+### Raw ingredient text is not verified ingredient metadata
+Imported Paprika lines can include measurements, variations, sauces and proprietary products. Whole-word detection and a few plural forms help match pantry terms, but absent hits cannot certify a recipe against a saved restriction. **PM takeaway:** distinguish a cheap lexical hint from structured safety-critical facts.
+
+### Prioritize a user's data without hiding uncertainty
+Imported My Recipe results precede samples but always show a manual-review label, even when no obvious restriction appears. A possible Must avoid hit is visibly explained and receives a strong internal ranking penalty. **PM takeaway:** usefulness and trust are not an either/or choice; make uncertainty a first-class part of the UI.
+
+### Parse time only when supported by the source
+Paprika may store unstructured duration strings or omit them. The prototype recognizes clear minute/hour units and falls back to adding prep+cook only when both are known; it does not invent total minutes. **PM takeaway:** unknown values are valuable information, not an invitation to silently estimate.
+
+### Data loading is part of the user experience
+The browser's IndexedDB read is asynchronous, and an old search can be restored while recipes load. The interface waits for that read and surfaces storage errors instead of silently showing only samples. **PM takeaway:** user trust depends on explaining delayed or unavailable personal data.
+
+### Unit tests catch simple but meaningful errors
+A synthetic Must avoid test first exposed an egg/eggs vocabulary mismatch; the small plural fix was included without compromising review warnings. Separate synthetic cases confirm the demo matcher remains unchanged when no imports exist. **PM takeaway:** representative edge cases are worth adding before feature expansion, but on-device acceptance remains independent.

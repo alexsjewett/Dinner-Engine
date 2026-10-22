@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Milestone 2A: browser-local Paprika import, preview, IndexedDB storage, and My recipes browsing implemented; production build and iPhone acceptance verified separately.
+**Status:** Milestone 2B: Find Dinner now includes browser-local imported Paprika recipes, prioritized ahead of demo recommendations and always marked for manual review; build/automated testing and iPhone acceptance tracked separately.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -185,7 +185,7 @@ A later GitHub Actions run unexpectedly published an earlier commit after the Mi
 - Clearing site data, using private browsing, reinstalling a browser or switching devices may delete local recipes. There is **no sync, backup, account, or cloud storage**.
 
 ### Deliberately postponed
-- Find Dinner continues to recommend from the **ten fictional demo recipes** only. Imported recipes do not participate in ranking, restriction analysis or claimed cooking times yet; that will require a separately approved matching/verification milestone.
+- **Historical 2A boundary (superseded by Milestone 2B below):** At initial import launch, Find Dinner still used sample recipes only. Milestone 2B adds conservative, review-only matching for imported recipes.
 - AI, substitutions, Paprika sync, editing imported recipes, photos, exports and a private backend remain deferred.
 
 ### Mobile acceptance checks
@@ -194,3 +194,26 @@ A later GitHub Actions run unexpectedly published an earlier commit after the Mi
 - Select another export/category to add recipes; sample recipe browsing and Find Dinner demo results should remain unchanged.
 - Ensure the file picker, preview list and cards fit on iPhone, and that errors for unreadable/too-large files are understandable.
 - Confirm imports are **not** present on a different device or in an incognito window.
+
+## Milestone 2B — Match imported recipes in Find Dinner (October 21, 2026)
+
+**Approved scope:** Give locally saved Paprika recipes priority in Find Dinner, label their source, apply limited ingredient and original-time matching, and explicitly flag uncertainty without implying allergy, gluten, or dietary safety. No AI, backend, storage migration or changes to the ten sample recipe facts.
+
+### What happens now
+- Find Dinner reads the **same IndexedDB store** as Recipe Library on each visit. Nothing needs to be re-imported and no originals are altered.
+- Ranked **My Recipe** cards appear first; **Sample Recipe** cards may follow. The top three plus **Show more matches** behavior remains, capped at ten total results. If ten or more imported recipes exist, they can fill all ten slots.
+- Imported recipe matches use literal, whole-word/phrase checks of original ingredient lines, with minimal plural variants such as `egg` / `eggs`. These matches are possibilities, not validated ingredient classifications; synonyms, compound foods, hidden ingredients, and cross-contact may be missed.
+- On-hand terms increase a recipe's rank; explicitly unavailable terms take precedence. The label **Not marked on hand** does not mean missing.
+- Timing is taken only from recognizable original duration strings such as `30 min` or `1 hr 15 mins`. If a parseable total isn't available, both prep and cook durations must be present before they can be added. Unknown or unclear durations remain **unverified**, are never guessed, and trigger a review note.
+- Imported recipes **always** appear under **Needs adjustment or review**, even when no conflicting ingredient text is found. Possible Must avoid hits are highlighted by person and strongly demoted within owned-recipe ranking; Should/Prefer hits appear as preference notes. Selected Vegetarian, Vegan and Gluten-free needs are shown as **not verified** rather than assumed satisfied.
+- The original deterministic sample matcher, profile selection, search session and saved profile data are unchanged. Returning from an imported recipe uses the existing search-state restoration.
+
+### Safety and privacy
+This is **not a nutrition, medical or food-safety checker**. Search uses text that may not reflect packaged-food allergens, alternatives, cross-contact or actual serving portions. Never treat absent text hits as certification. Original Paprika data stays in the user's browser; no recipe text, profiles or identifiers are sent to GitHub, AI or a backend. Browser clearing/private windows remain separate.
+
+### Automated verification and phone acceptance
+- CI runs the synthetic Paprika export smoke test **and** `npm run test:matching`: checks imported prioritization, unchanged sample-only ranking, review-only status, unknown times, individual Must/Prefer text matches, singular/plural detection, unavailable precedence and that matching leaves original recipe text unchanged.
+- **Real iPhone testing still required:** using the same browser where recipes were saved, run Find Dinner and confirm a saved recipe appears with **My Recipe** and **Needs adjustment or review**. Expand up to ten, open that recipe, then return and confirm filters and results. Try an on-hand ingredient from one of your recipes, then list it as unavailable. Test a saved Must avoid restriction and an unknown-time recipe. Confirm no saved recipes appear in a different browser/private tab.
+- If IndexedDB cannot be read, Find Dinner visibly warns and can still show fictional sample recommendations; it must never silently pretend imports were available.
+
+**Deferred:** confidence-controlled ingredient parsing, real allergen taxonomy, cook-reviewed modifications/substitutions, Paprika sync, AI and a secure backend.

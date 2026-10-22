@@ -153,3 +153,19 @@ No changes to matching, profile storage, recipe content, AI, backend or public r
 | DEC-064 | Verification pending | Check final GitHub build/deploy and real iPhone testing with a representative Paprika export. | A compiling importer is not proof of compatibility with every export or iOS storage state. |
 
 **Privacy:** The app is still a publicly hosted static page. Browser-local IndexedDB is neither authenticated nor encrypted. Importing real household data should be an informed user choice; initial testing should use non-sensitive recipes. Never send Paprika exports to GitHub, a logging endpoint, or an AI service.
+
+## Milestone 2B — Imported recipe matching (October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-065 | Approved and implemented | Read the existing browser-local IndexedDB cookbook when Find Dinner mounts; do not copy or rewrite imported recipe data. | Makes recipes from Milestone 2A available without re-importing or adding a server. |
+| DEC-066 | Approved and implemented | Rank My Recipe candidates ahead of demo samples; keep the first-three and expandable up-to-ten search experience. | Prioritizes the recipes the household actually cooks, with visible source labels. |
+| DEC-067 | Approved and implemented | Screen original ingredient lines with basic normalized whole-phrase and singular/plural text matching; treat all imported recipes as review-needed. | Offers immediately useful pantry matching without incorrectly asserting dietary safety from missing text. |
+| DEC-068 | Approved and implemented | Display known original duration text and compare time only when total or both prep+cook durations parse unambiguously. | Avoids inventing time estimates or silently excluding recipes with unknown duration. |
+| DEC-069 | Approved and implemented | Surface possible Must avoid ingredient hits and selected dietary needs for manual review; rank hard hits down within the imported group, never into straightforward/safe. | Preserves per-person warnings; no claim of recipe or portion safety, hidden ingredient detection or cross-contact clearance. |
+| DEC-070 | Approved and implemented | Keep demo rules unchanged, add My Recipe/Sample Recipe labels, preserve per-tab search state, and display an error if imported browser storage fails to load. | Protects earlier behavior and makes local-data availability explicit. |
+| DEC-071 | Automated checks implemented; mobile acceptance pending | Test with synthetic fixtures for mixed source ranking, review status, unknown times, hard/soft restrictions and preservation of originals; separately verify with real device. | Passing CI is not proof of end-to-end compatibility or food safety. |
+
+**History:** DEC-063's 2A deferment of imported matching is superseded by DEC-065–070. Better ingredient verification and safe adaptations still require separately approved work.
+
+**Security boundary:** IndexedDB remains local to each browser and origin, without encrypted accounts or backup. Actual household recipe text/profile data must not enter the public repository.

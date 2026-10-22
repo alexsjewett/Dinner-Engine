@@ -144,3 +144,9 @@ The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions re
 **Approved and implemented; deploy and device acceptance tracked separately.** Users can select a Paprika Recipe Format export, preview titles and import up to 25 chosen recipes per batch into browser-only IndexedDB; My recipes browsing shows unmodified text and metadata. Duplicate Paprika IDs are skipped. Original sample cookbook remains accessible. No photos, cloud uploads, matching of imported recipes, AI or backend.
 
 **Next proposal, not approved yet:** Build trustworthy matching for imported recipes. That requires explicit handling of unknown cooking times, ingredient normalization, ambiguous ingredient labels and per-person restriction review without certifying allergy safety. Keep original Paprika text immutable and derived matching facts distinct.
+
+## Milestone 2B — Find Dinner includes your imported Paprika recipes
+
+**Approved and implemented; mobile device acceptance pending.** Saved recipes are read from IndexedDB at search time, ranked ahead of ten fictional samples, and labeled by source. Original ingredient lines are screened using minimal word/phrase and plural matching; known times are used, unknown time remains a review warning. Every imported result requires manual assessment, especially when a saved person's dietary needs or restrictions are involved. Original Paprika contents, sample rules, profiles and sessions are unchanged.
+
+**Next candidate (not approved):** a separate source-preserving ingredient review/enrichment screen for imported recipes, improved aliases and optional cook-reviewed substitutions, supported by stronger automated checks. No medical/allergy certification. AI and backend phases remain gated by separate security/budget approvals.
