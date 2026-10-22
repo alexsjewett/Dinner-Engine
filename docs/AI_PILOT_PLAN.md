@@ -228,3 +228,7 @@ Added `backend/src/paidBudget.ts` with a pure, synchronous fail-closed $5/month 
 ### 3B.1 eligibility trust boundary
 
 The matcher currently labels all imported Paprika recipes `review` because their dietary safety is not verified. For the initial AI pilot, the prepared eligibility gate permits only `straightforward` suggestions without review reasons or soft warnings. **A browser-supplied eligibility flag is not trustworthy.** Before model calls are activated, the Worker needs a trusted server-side source for eligibility (for example, a versioned server-owned sample catalog) or a defensible signed shortlist; otherwise the Worker must fail closed. Do not send imported recipes or household profiles to OpenAI by default. The pure gate is staged but not yet wired into the Worker.
+
+### Paprika permission update (October 22, 2026)
+
+The owner explicitly permits the full imported Paprika file to be shared with AI when the feature is activated. The staged client preview remains local and the live Worker still rejects recommendation calls. This permission changes the data-sharing scope but **does not authorize billable provider activation (3B.2)**. Before activation, display clear per-request consent about the full library, protect household dietary restrictions, enforce a verified server-side monetary ceiling and require the separate activation approval. Do not imply that the local preview already sends data.
