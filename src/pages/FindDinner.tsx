@@ -264,9 +264,12 @@ export function FindDinner() {
               <summary>What sharing your full Paprika library with AI would mean</summary>
               <p className="helper-text">
                 Your library currently contains {aiLibrarySummary.recipeCount} imported recipes.
-                Future AI requests may include their full ingredients and directions,
-                not just the five recipes previewed above. Nothing is transmitted now.
-                You'll review and explicitly approve sharing when AI is activated.
+                A future full-library AI request may include every imported recipe's
+                ingredients, directions, descriptions, notes, timing, categories and source links,
+                not just the five examples above. It may also include selected diners'
+                food restrictions and dietary needs without their profile names or IDs.
+                Personal information inside the recipe text itself is not automatically removed.
+                Nothing is transmitted now; a separate explicit AI action will be required.
               </p>
             </details>
             {libraryStatus === "ready" && localRecipes.length > 0 && (
