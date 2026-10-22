@@ -292,3 +292,13 @@ missing secret, identity lookup errors, unavailable email and identity
 mismatch without revealing credentials. **PM takeaway:** build a small,
 safe diagnostic checkpoint rather than guessing at security settings, and
 remove it when debugging is done.
+
+### Build-time configuration is not runtime secrets
+The first Cloudflare Worker device test failed with `allowlist_missing`
+despite the owner configuring an allowlist. The fix was to put
+`ALLOWED_EMAIL` into **Production Worker runtime Variables and Secrets**
+instead of the similarly named **Build** settings. Once corrected, iPhone
+Safari returned `enabled:false`. **PM takeaway:** when a deployed service
+cannot read a credential, verify *where* the value is injected before
+changing security code or identities. Remove temporary diagnostics after
+the cause is understood.

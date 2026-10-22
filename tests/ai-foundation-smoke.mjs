@@ -43,21 +43,21 @@ const fixture = () => new Request(recommendURL, {
   body: JSON.stringify({ ingredients: "fictional potatoes, synthetic carrots" }),
 });
 
-for (const [label, env, ctx, reason] of [
-  ["no Access context", allowed, undefined, "access_context_missing"],
-  ["malformed Access context", allowed, malformed, "access_context_missing"],
-  ["wrong identity", allowed, denied, "identity_mismatch"],
-  ["no allowlist", {}, trusted, "allowlist_missing"],
-  ["blank allowlist", { ALLOWED_EMAIL: " " }, trusted, "allowlist_missing"],
-  ["invalid allowlist", { ALLOWED_EMAIL: "not_an_email" }, trusted, "allowlist_missing"],
-  ["identity lookup failed", allowed, broken, "identity_lookup_failed"],
-  ["missing email", allowed, noEmail, "identity_email_missing"],
-  ["null identity", allowed, nullIdentity, "identity_email_missing"],
+for (const [label, env, ctx] of [
+  ["no Access context", allowed, undefined],
+  ["malformed Access context", allowed, malformed],
+  ["wrong identity", allowed, denied],
+  ["no allowlist", {}, trusted],
+  ["blank allowlist", { ALLOWED_EMAIL: " " }, trusted],
+  ["invalid allowlist", { ALLOWED_EMAIL: "not_an_email" }, trusted],
+  ["identity lookup failed", allowed, broken],
+  ["missing email", allowed, noEmail],
+  ["null identity", allowed, nullIdentity],
 ]) {
-  // Diagnostic codes exist solely on health; authorization is NEVER relaxed.
+  // Every failing health and recommendation request is denied identically.
   const health = await worker.fetch(new Request(healthURL), env, ctx);
   assert.equal(health.status, 403, label);
-  assert.deepEqual(await health.json(), { error: "access_denied", diagnostic: reason }, label);
+  assert.deepEqual(await health.json(), { error: "access_denied" }, label);
 
   const request = fixture();
   const response = await worker.fetch(request, env, ctx);
@@ -84,4 +84,4 @@ assert.equal(result.headers.get("Access-Control-Allow-Origin"), null);
 
 assert.equal((await worker.fetch(new Request(recommendURL), allowed, trusted)).status, 404);
 assert.equal((await worker.fetch(new Request("https://example.invalid/other"), allowed, trusted)).status, 404);
-console.log("AI auth diagnostics and fail-closed tests passed; no identity disclosed or recipes read");
+console.log("AI authorization regression tests passed; no diagnostic disclosures or recipe body reads");

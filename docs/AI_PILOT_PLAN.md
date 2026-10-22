@@ -155,3 +155,24 @@ repeat a fresh-Private-tab access test.
 **Still blocked:** any OpenAI model calls, key setup, cost risk, real recipe
 transmission or cross-origin frontend calls. Existing GitHub Pages recipe
 matching remains available.
+
+## 3A.1 user device acceptance and diagnostic cleanup (October 21, 2026 Pacific)
+
+**Verified by owner on iPhone Safari:** after configuring `ALLOWED_EMAIL`
+under Production Worker's **runtime** Variables and Secrets (rather than
+Build variables), GET `/api/ai/health` returned `enabled:false`.
+This confirms the Worker completed its verified Cloudflare Access identity
+check and matched the runtime allowlist secret. No AI provider call or billing
+was possible; the model endpoint remains deliberately disabled.
+
+The temporary health-route failure diagnostic has been removed from source
+and regression tests updated to require generic HTTP 403 JSON across all
+unauthorized endpoints. **Verification pending:** the cleanup commit's
+Cloudflare production deployment, and separate denial/sign-in requirements
+in an iPhone Safari Private tab. Marked owner-only positive auth verified,
+not full security sign-off.
+
+**Next engineering gate (not yet active):** persistent atomic usage and cost
+reservation, strict input/output schemas, budget kill switch, identity
+session validation, provider retention review, and security tests before
+configuring an OpenAI key or allowing actual Paprika uploads.

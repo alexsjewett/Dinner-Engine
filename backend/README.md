@@ -80,3 +80,23 @@ tokens, prompt data or request bodies are returned or logged.
 Every failure **still responds 403**. Other endpoints only respond with
 generic `access_denied`; AI remains disabled and unable to bill or transmit
 recipes. Remove the codes once the iPhone Access check is resolved.
+
+## 3A.1 authenticated iPhone success and diagnostic removal (October 21, 2026 Pacific)
+
+**Owner verified** `GET /api/ai/health` now responds with
+`{"service":"find-dinner-ai","enabled":false}` on iPhone Safari.
+The earlier `allowlist_missing` failure came from setting the secret in
+Cloudflare's **Build** section rather than the Worker Production **Bindings /
+Variables and Secrets** runtime section. The owner corrected the configuration
+without weakening Cloudflare Access, and the allowlist then passed.
+
+The approved temporary 403 `diagnostic` codes have now been removed from
+source. Denials to **all** endpoints are again generic:
+`{"error":"access_denied"}`. Tests assert no failure details, no body
+reads on denied requests, and no AI calls even for authorized requests.
+
+**Separate outstanding checks:** GitHub CI success is not Cloudflare deployment
+proof. Confirm the latest Git commit is deployed in Cloudflare, then verify
+an authorized iPhone Safari request *and* that a fresh Private Safari session
+requires sign-in. Do not submit personal recipe text to this endpoint until
+durable request quotas and the billable security gate have been approved.

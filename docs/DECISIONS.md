@@ -204,3 +204,12 @@ The prior future-AI security gate remains mandatory. See docs/AI_PILOT_PLAN.md.
 | DEC-083 | Approved tests | Verify each failure code and keep every rejected request unread (body not parsed), with all other endpoints returning generic denial. Retain paid endpoint's 503 disablement. | Isolate the root cause without creating a privacy, authentication or cost regression. |
 
 **Remove temporary health diagnostics once owner-only Safari auth succeeds; require independent CI, Cloudflare deployment and device verification.**
+
+## Milestone 3A.1 — owner authentication acceptance (October 21, 2026 Pacific)
+
+| ID | Status | Decision | Rationale |
+|---|---|---|---|
+| DEC-084 | Owner phone check passed | Correct the allowlist secret by using Cloudflare **Production runtime** Variables and Secrets instead of Build variables; verify the Worker returns `enabled:false` after Access/allowlist checks. | The `allowlist_missing` failure was a deployment configuration issue rather than an email-capitalization or identity-matching bug. |
+| DEC-085 | Approved diagnostic cleanup; CI/Cloudflare verification tracked separately | Remove temporary HTTP 403 diagnostic codes once a working iPhone authentication is observed; restore generic denied responses and tests. | Avoid leaving unnecessary details exposed in a production authorization response. |
+
+An authorized health request is not full security acceptance: still test Private Safari reauthentication and Cloudflare's production deployment of the cleanup. AI API billing remains disabled.

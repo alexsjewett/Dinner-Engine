@@ -1,9 +1,8 @@
 /**
  * Milestone 3A.1 - nonbillable, fail-closed Cloudflare Worker.
  *
- * Temporary 3A.1 authentication diagnostics are returned ONLY on the health
- * route, as fixed, nonsensitive failure codes, without granting access.
- * Remove these details once iPhone Access verification succeeds.
+ * Temporary authentication diagnostics were retired after owner-only
+ * Safari authentication succeeded. Denied requests return generic 403.
  *
  * A Cloudflare Access policy must cover the entire Worker. Only the
  * platform-verified ctx.access identity is trusted; an independent exact
@@ -23,16 +22,6 @@ interface WorkerExecutionContext {
   };
 }
 
-/** Fixed codes only: never return email, identity details, tokens or secrets. */
-type DeniedReason =
-  | "access_context_missing"
-  | "allowlist_missing"
-  | "identity_lookup_failed"
-  | "identity_email_missing"
-  | "identity_mismatch";
-
-type Authentication = { ok: true } | { ok: false; reason: DeniedReason };
-
 const headers = {
   "Content-Type": "application/json; charset=utf-8",
   "Cache-Control": "no-store",
@@ -46,31 +35,31 @@ function reply(status: number, body: Record<string, unknown>): Response {
 async function checkAuthorization(
   env: WorkerEnv | undefined,
   ctx: WorkerExecutionContext | undefined,
-): Promise<Authentication> {
+): Promise<boolean> {
   // Cloudflare-verified Access context is mandatory, not a request header.
   if (!ctx?.access || typeof ctx.access.getIdentity !== "function") {
-    return { ok: false, reason: "access_context_missing" };
+    return false;
   }
 
   const allowed = env?.ALLOWED_EMAIL?.trim().toLowerCase();
   if (!allowed || !allowed.includes("@")) {
-    return { ok: false, reason: "allowlist_missing" };
+    return false;
   }
 
   let identity: { email?: string } | null;
   try {
     identity = await ctx.access.getIdentity();
   } catch {
-    return { ok: false, reason: "identity_lookup_failed" };
+    return false;
   }
 
   if (typeof identity?.email !== "string" || !identity.email.trim()) {
-    return { ok: false, reason: "identity_email_missing" };
+    return false;
   }
   if (identity.email.trim().toLowerCase() !== allowed) {
-    return { ok: false, reason: "identity_mismatch" };
+    return false;
   }
-  return { ok: true };
+  return true;
 }
 
 export default {
@@ -79,19 +68,13 @@ export default {
     env?: WorkerEnv,
     ctx?: WorkerExecutionContext,
   ): Promise<Response> {
-    // Route recognition is safe before authorization; no request body is read.
-    const url = new URL(request.url);
-    const isHealth = request.method === "GET" && url.pathname === "/api/ai/health";
-    const auth = await checkAuthorization(env, ctx);
-    if (!auth.ok) {
-      // Temporary diagnostics are intentionally restricted to health.
-      // All other paths reveal no information about the failure reason.
-      return reply(403, isHealth
-        ? { error: "access_denied", diagnostic: auth.reason }
-        : { error: "access_denied" });
+    // Authorization occurs before routing or reading a request body.
+    if (!await checkAuthorization(env, ctx)) {
+      return reply(403, { error: "access_denied" });
     }
 
-    if (isHealth) {
+    const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/api/ai/health") {
       return reply(200, { service: "find-dinner-ai", enabled: false });
     }
     if (url.pathname === "/api/ai/recommend" && request.method === "POST") {

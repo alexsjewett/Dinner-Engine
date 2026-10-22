@@ -246,3 +246,11 @@ An iPhone health check was denied despite configuring the owner-only
 `ALLOWED_EMAIL` secret. Temporary health-route-only, non-identifying
 403 failure codes are being tested and deployed to isolate the issue.
 No auth bypass, API key, model calls or recipe transfer is involved.
+
+**3A.1 iPhone acceptance update (October 21, 2026 Pacific):** An authenticated
+Safari request to the protected `dinner-engine-ai/api/ai/health` now
+returns `enabled:false`, after the `ALLOWED_EMAIL` value was moved from
+Cloudflare's Build settings into **Production runtime** Variables and Secrets.
+Approved temporary 403 diagnostic codes are now removed; further CI,
+Cloudflare deployment and Private Safari session verification are separately
+tracked. **AI remains disabled and nonbillable; no imported recipes were sent.**

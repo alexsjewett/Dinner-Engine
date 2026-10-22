@@ -191,3 +191,10 @@ enhancement is deferred because current matching is already useful.
 Access confirmed, but iPhone Safari health check still returns 403. A
 temporarily approved, non-identifying diagnostic is being used to isolate
 the fail-closed check before proceeding with AI. No API key or live model.
+
+**3A.1 authentication progress:** Owner confirmed `enabled:false` on iPhone
+after correcting the Cloudflare Production runtime `ALLOWED_EMAIL` secret.
+Temporary diagnostic codes removed. Fresh Private Safari sign-in/denial check
+and separate Cloudflare post-commit deployment confirmation remain.
+Next major work: durable cost/rate limits, strict API contracts, revocation
+and billable endpoint security review. No OpenAI key or recipe transmission.
