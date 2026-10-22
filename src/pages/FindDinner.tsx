@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
-import { localPaprikaShortlist } from "../services/aiPaprikaPreview";
+import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -71,6 +71,7 @@ export function FindDinner() {
     ? recommendAllDinners(localRecipes, getAllRecipes(), submitted, profiles, 10)
     : [];
   const aiPaprikaPreview = localPaprikaShortlist(results);
+  const aiLibrarySummary = fullPaprikaLibraryPreview(localRecipes);
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
   const direct = firstThree.filter((item) => item.category === "straightforward");
@@ -252,6 +253,15 @@ export function FindDinner() {
                 </ul>
               </details>
             )}
+            <details>
+              <summary>What sharing your full Paprika library with AI would mean</summary>
+              <p className="helper-text">
+                Your library currently contains {aiLibrarySummary.recipeCount} imported recipes.
+                Future AI requests may include their full ingredients and directions,
+                not just the five recipes previewed above. Nothing is transmitted now.
+                You'll review and explicitly approve sharing when AI is activated.
+              </p>
+            </details>
             <p id="ai-pilot-not-ready" className="helper-text">
               The AI connection is off until a separate privacy and billing review.
             </p>
