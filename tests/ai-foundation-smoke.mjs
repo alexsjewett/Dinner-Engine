@@ -257,8 +257,9 @@ try {
   globalThis.fetch = async () => new Response(rejectedMessage, { status: 400 });
   response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
   assert.equal(response.status, 503);
-  assert.deepEqual(await response.json(), { error: "provider_request_rejected" });
-  assert.ok(!(await response.clone().text()).includes(rejectedMessage),
+  const rejectedBody = await response.text();
+  assert.deepEqual(JSON.parse(rejectedBody), { error: "provider_request_rejected" });
+  assert.ok(!rejectedBody.includes(rejectedMessage),
     "provider error bodies must not be echoed");
   globalThis.fetch = async () => new Response("rate limited", { status: 429 });
   response = await worker.fetch(fictionalPost(), testPilotEnv, owner);
