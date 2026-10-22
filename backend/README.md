@@ -122,3 +122,7 @@ The GitHub CI now runs synthetic auth, schema, oversize, concurrency, persistenc
 ### Prepared monetary ledger (not live)
 
 `src/paidBudget.ts` defines fail-closed $5/month reservation arithmetic and conservative reconciliation validation with synthetic tests. It is **not imported by the running Worker** and does not protect any paid requests. There is no paid provider endpoint or API key. Idempotent reservations, storage integration, provider usage reconciliation and authenticated opt-in remain outstanding before any billable activation.
+
+### 3B.1 internal budget preflight wired (October 22, 2026)
+
+The Durable Object now accepts an internal-only `/reserve-paid-preflight` operation backed by SQLite transactional monetary counters. Synthetic tests verify the hourly cap and persistence across object reconstruction. The public Worker does not route to this operation; no provider transport, credentials, or paid requests exist. **The $5/month limit is not yet a real production cost cap.** Actual provider usage reconciliation, idempotency, authentication of browser opt-in and failure handling remain required before 3B.2.
