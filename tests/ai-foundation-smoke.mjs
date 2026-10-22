@@ -251,6 +251,9 @@ try {
   assert.equal(result.testOnly, true);
   assert.equal(result.requiresManualReview, true);
   assert.equal(result.recipeId, "fictional-lentil-skillet");
+  assert.ok(result.cautions.some(text => text.includes("Fictional test recipe")));
+  assert.ok(!result.cautions.some(text => text.includes("Imported Paprika recipe")),
+    "fictional fixture must not be mislabeled as a real imported recipe");
   assert.equal(providerCalls, 1);
   // Each is a mocked provider outcome: no more billable calls and no retries.
   const rejectedMessage = "private-provider-message-must-not-reach-browser";

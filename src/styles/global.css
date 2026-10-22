@@ -502,6 +502,18 @@ h1 {
   font-size: 13px; line-height: 1.6;
 }
 .dinner-result-section { margin-top: 25px; }
+.local-ai-readiness {
+  margin-top: 10px;
+  border: 1px solid #d8e4d5;
+  background: #f7faf5;
+  color: var(--forest);
+  border-radius: 14px;
+  padding: 15px 16px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.local-ai-readiness strong { font-size: 14px; }
+.local-ai-readiness p { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
 .dinner-result-section > h3 { margin: 0 0 7px; font-size: 20px; color: var(--forest); }
 .dinner-result-section > .helper-text { margin: 0 0 15px; }
 .dinner-result-card {

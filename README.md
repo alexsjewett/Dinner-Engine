@@ -264,3 +264,43 @@ Conservative test limits: 10 accepted tests/hour, 40/day, 100/month, synthetic 1
 Connecting a paid model requires separate approval of real cost reservations/reconciliation, budget shutoff, outputs, privacy/retention and explicit user-triggered sharing.
 
 **3B.1 staged preview (October 22, 2026 Pacific):** The Find dinner. results page now includes a disabled, clearly labeled AI action; the browser makes no AI requests. `backend/src/aiPilot.ts` prepares a minimized shortlist for proposed `gpt-6-luna` and validates output against candidate IDs, with synthetic preflight tests. OpenAI is **not connected**; $5/month is a design target, not an enforced real-money cap. Additional 3B.1 implementation and security review are required before separately approving 3B.2 billable activation.
+
+
+## Milestone 3C — Offline full-library AI readiness (October 22, 2026)
+
+**Status:** Nonbillable frontend preparation only. The owner approved continued
+engineering work after the fictional paid test succeeded. The real Paprika
+recommendation route stays disabled; this milestone sends **no imported recipes
+to OpenAI or to the Cloudflare Worker**.
+
+After finding dinner ideas, the **Optional AI dinner ideas — preparation only**
+section includes a deliberate local review checkbox and a new
+**Check full-library AI plan locally — no upload** action. The checkbox
+explains which data could eventually be shared (complete imported recipe
+fields and selected eaters' anonymous dietary restrictions, without name/ID).
+It also warns that `store:false` does not imply zero provider retention.
+
+The local check runs the same non-network schema/batch planner used for the
+staged future integration. It refuses an empty or malformed library, more
+than 40 recipes, a body above 98,304 bytes, any individual input that cannot
+fit the 7,200-byte staged model-request cap, or a library that cannot fit
+within 10 complete batches. It **never truncates the library or silently
+drops recipes**. An eligible ID cannot include a recipe with obvious textual
+Must avoid conflicts; that heuristic is not a dietary safety determination.
+Only counts and readiness summaries are retained in ephemeral React state;
+full recipe text, model drafts, profile data and identifiers are never
+written to storage or transmitted by this action.
+
+The original deterministic dinner suggestions, imported-recipe storage,
+diner profiles and recipe texts are unchanged. The disabled real AI button
+remains disabled, as does `POST /api/ai/recommend`. Failed checks leave
+ordinary results usable. The fictional test warning is now correctly labeled
+fictional rather than imported Paprika.
+
+**Verify:** `npm run test:ai-readiness`, `npm run test:ai-paprika-browser`,
+`npm run test:ai-foundation`, `npm run build` and Wrangler dry run via
+GitHub Actions. After both GitHub Pages and Cloudflare deployments are
+confirmed, on iPhone search and inspect the new local check; do not use a
+paid AI test or send your actual Paprika data. Full-library billable
+activation requires a separate explicit authorization and privacy/security
+review, not this readiness checkbox.

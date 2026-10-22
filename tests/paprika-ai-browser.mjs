@@ -11,8 +11,11 @@ const frontendSrc = await readFile("src/services/aiPaprikaRequest.ts", "utf8");
 const pageSrc = await readFile("src/pages/FindDinner.tsx", "utf8");
 assert.ok(!/fetch\s*\(|XMLHttpRequest|sendBeacon|OPENAI_API_KEY/.test(frontendSrc),
   "the local preflight must not transmit data");
-assert.ok(!pageSrc.includes("fetch(\"/api/ai/recommend\""),
-  "the recommendation UI must remain offline");
+assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(pageSrc),
+  "the recommendation UI must have no direct browser network calls");
+assert.ok(pageSrc.includes("Check full-library AI plan locally — no upload"));
+assert.ok(pageSrc.includes("disabled"),
+  "the real Paprika AI action remains disabled pending activation");
 try {
   const compile = text => ts.transpileModule(text, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },

@@ -144,7 +144,11 @@ export async function runSyntheticPilot(
     };
     return {
       ok: true, testOnly: true, recipeId: item.recipeId,
-      explanation: item.explanation, cautions: item.cautions,
+      explanation: item.explanation,
+      cautions: item.cautions.map(caution =>
+        caution === "Imported Paprika recipe: check all ingredients, labels and cross-contact."
+          ? "Fictional test recipe: review original ingredients and labels before cooking real recipes."
+          : caution),
       requiresManualReview: true, estimatedMicroUsd: outcome.totalEstimatedMicroUsd,
     };
   } catch {

@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
 import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
+import { assessLocalAiReadiness, type LocalAiReadiness } from "../services/aiPaprikaReadiness";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { getAllRecipes } from "../data/cookbook";
@@ -21,6 +22,7 @@ export function FindDinner() {
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
   const [aiScopeReviewed, setAiScopeReviewed] = useState(false);
+  const [localAiReadiness, setLocalAiReadiness] = useState<LocalAiReadiness | null>(null);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
@@ -32,6 +34,7 @@ export function FindDinner() {
       .then((recipes) => {
         if (!live) return;
         setLocalRecipes(recipes);
+        setLocalAiReadiness(null);
         setLibraryStatus("ready");
       })
       .catch(() => {
@@ -47,6 +50,7 @@ export function FindDinner() {
     }));
     setError("");
     setAiScopeReviewed(false);
+    setLocalAiReadiness(null);
   }
 
   function togglePerson(id: string, checked: boolean) {
@@ -66,6 +70,7 @@ export function FindDinner() {
     setSearch({ draft: submitted, submitted, expanded: false });
     setError("");
     setAiScopeReviewed(false);
+    setLocalAiReadiness(null);
   }
 
   const draft = search.draft;
@@ -76,9 +81,15 @@ export function FindDinner() {
     : [];
   const aiPaprikaPreview = localPaprikaShortlist(results);
   const aiLibrarySummary = fullPaprikaLibraryPreview(localRecipes);
-  const aiFullRequest = submitted && aiScopeReviewed
+  const aiFullRequest = submitted && aiScopeReviewed && libraryStatus === "ready"
     ? prepareLocalPaprikaRequest(localRecipes, submitted, diners, true)
     : null;
+  function checkLocalAiPlan() {
+    if (!submitted || !aiScopeReviewed || libraryStatus !== "ready") return;
+    // Never send, store or log recipe content during this local-only action.
+    const draft = prepareLocalPaprikaRequest(localRecipes, submitted, diners, true);
+    setLocalAiReadiness(assessLocalAiReadiness(draft));
+  }
   const firstThree = results.slice(0, 3);
   const extras = results.slice(3);
   const direct = firstThree.filter((item) => item.category === "straightforward");
@@ -243,8 +254,13 @@ export function FindDinner() {
           </div>
 
           <div className="dinner-result-section" aria-label="Upcoming AI recommendations">
-            <h3>AI suggestions (coming soon)</h3>
+            <h3>Optional AI dinner ideas — preparation only</h3>
             <p className="helper-text">{AI_PILOT_PREVIEW_MESSAGE}</p>
+            <p className="helper-text">
+              A fictional AI test succeeded. AI ranking of your own Paprika recipes
+              is still switched off. The preparation check below runs entirely on
+              this device and cannot request, spend on, or enable OpenAI.
+            </p>
             <button className="profile-primary-button" type="button" disabled
               aria-describedby="ai-pilot-not-ready">
               Improve suggestions with AI — not available yet
@@ -269,7 +285,10 @@ export function FindDinner() {
                 not just the five examples above. It may also include selected diners'
                 food restrictions and dietary needs without their profile names or IDs.
                 Personal information inside the recipe text itself is not automatically removed.
-                Nothing is transmitted now; a separate explicit AI action will be required.
+                OpenAI may retain submitted data under its API policies even when
+                response storage is disabled. Nothing is transmitted now; a separate
+                explicit AI action, authenticated server safeguards and your final
+                activation approval will be required.
               </p>
             </details>
             {libraryStatus === "ready" && localRecipes.length > 0 && (
@@ -278,9 +297,12 @@ export function FindDinner() {
                   <input
                     type="checkbox"
                     checked={aiScopeReviewed}
-                    onChange={(event) => setAiScopeReviewed(event.target.checked)}
+                    onChange={(event) => {
+                      setAiScopeReviewed(event.target.checked);
+                      setLocalAiReadiness(null);
+                    }}
                   />
-                  Check the size and contents of a future full-library AI request locally
+                  Review how my complete Paprika library would be prepared for AI
                 </label>
                 <p className="helper-text">
                   Preview only. Checking this box does not upload recipes, start an AI call,
@@ -289,14 +311,56 @@ export function FindDinner() {
                 {aiFullRequest && (
                   <p className="helper-text" role="status">
                     {aiFullRequest.ok
-                      ? "Local preflight passed: " + aiFullRequest.count +
+                      ? "First check passed: " + aiFullRequest.count +
                         " complete recipes, " + aiFullRequest.bytes.toLocaleString() +
-                        " UTF-8 bytes. Dietary restrictions are summarized without diner names. No upload."
-                      : "Local preflight cannot proceed (" + aiFullRequest.reason +
+                        " UTF-8 bytes. Selected dietary restrictions are summarized without diner names or IDs. No upload."
+                      : "Cannot prepare the full library (" + aiFullRequest.reason +
                         "). " + aiFullRequest.count + " recipes, " +
                         aiFullRequest.bytes.toLocaleString() +
-                        " bytes. Your full library will not be silently reduced."}
+                        " bytes. No recipes will be quietly omitted."}
                   </p>
+                )}
+                {aiFullRequest?.ok && (
+                  <button type="button" className="profile-secondary-button"
+                    onClick={checkLocalAiPlan}>
+                    Check full-library AI plan locally — no upload
+                  </button>
+                )}
+                {localAiReadiness && (
+                  <div className="local-ai-readiness" role="status" aria-live="polite">
+                    {localAiReadiness.ready ? (
+                      <>
+                        <strong>Local preparation checks passed (not activated).</strong>
+                        <p>
+                          All {localAiReadiness.recipeCount} recipes fit in{" "}
+                          {localAiReadiness.batchCount} bounded batch
+                          {localAiReadiness.batchCount === 1 ? "" : "es"}.
+                          {" "}{localAiReadiness.eligibleRecipeCount} recipe IDs remain eligible;
+                          {" "}{localAiReadiness.knownConflictExcludedCount} have obvious
+                          text conflicts with Must avoid terms and cannot be recommended.
+                        </p>
+                        <p>
+                          Recipe counts per batch: {localAiReadiness.batchRecipeCounts.join(", ")}.
+                          Largest planned input: {localAiReadiness.largestBatchBytes.toLocaleString()} bytes.
+                          This is not a tokenizer, dietary certification or cost estimate.
+                        </p>
+                        <p>
+                          No AI suggestions have been generated. Nothing was uploaded,
+                          stored in a cloud account, or billed.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <strong>Full-library AI preparation is blocked.</strong>
+                        <p>
+                          Reason: {localAiReadiness.reason}. All {localAiReadiness.recipeCount}
+                          {" "}recipes must fit the approved limits; we will not
+                          silently send only a portion or remove a Must avoid rule.
+                          Your ordinary dinner suggestions still work.
+                        </p>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             )}
