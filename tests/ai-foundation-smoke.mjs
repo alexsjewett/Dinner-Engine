@@ -11,6 +11,7 @@ import ts from "typescript";
 const suffix = ".guardrail-smoke-" + process.pid + ".mjs";
 const paths = [
   "backend/src/guardrails.ts",
+  "backend/src/paidBudget.ts",
   "backend/src/usageLedger.ts",
   "backend/src/index.ts",
 ];
@@ -199,6 +200,17 @@ assert.equal((await durable2.fetch(new Request("https://internal/reserve-test", 
 }))).status, 429, "ledger state must survive instance recreation");
 assert.equal((await durable2.fetch(new Request("https://internal/no"))).status, 404);
 
+const paidStorage = storage();
+const paidLedger = new UsageLedger({ storage: paidStorage }, {});
+const paidUrl = "https://internal/reserve-paid-preflight";
+for (let i = 0; i < 10; i++) {
+  assert.equal((await paidLedger.fetch(new Request(paidUrl, { method: "POST" }))).status, 200);
+}
+assert.equal((await paidLedger.fetch(new Request(paidUrl, { method: "POST" }))).status, 429);
+assert.equal(paidStorage.values.get("paid:usd:" + new Date().toISOString().slice(0, 7)), 15000);
+assert.equal((await new UsageLedger({ storage: paidStorage }, {}).fetch(
+  new Request(paidUrl, { method: "POST" }))).status, 429);
+assert.equal((await paidLedger.fetch(new Request(paidUrl))).status, 404);
 const longTerm = storage();
 const base = Date.parse("2026-10-01T00:00:00Z");
 for (let i = 0; i < 100; i++) {
