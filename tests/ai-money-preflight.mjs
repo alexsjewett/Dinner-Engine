@@ -48,7 +48,7 @@ try {
   assert.equal(persistent.get("paid:usd:2026-10"), 1900);
   assert.throws(() => reserveRequest(money, now, "bad"), /invalid_request_id/);
   const burst = await Promise.all(Array.from({ length: 20 }, (_, i) =>
-    Promise.resolve(reserveRequest(money, now, "concurrent_request_" + String(i).padStart(6, "0"))));
+    Promise.resolve(reserveRequest(money, now, "concurrent_request_" + String(i).padStart(6, "0")))));
   assert.equal(burst.filter(x => x === "reserved").length, 8);
   assert.equal(burst.filter(x => x === "limited").length, 12);
   console.log("3B.1 staged money reservation, idempotency and settlement tests passed");
