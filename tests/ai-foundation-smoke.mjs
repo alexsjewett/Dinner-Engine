@@ -211,6 +211,25 @@ assert.equal(paidStorage.values.get("paid:usd:" + new Date().toISOString().slice
 assert.equal((await new UsageLedger({ storage: paidStorage }, {}).fetch(
   new Request(paidUrl, { method: "POST" }))).status, 429);
 assert.equal((await paidLedger.fetch(new Request(paidUrl))).status, 404);
+const lifecycleStorage = storage();
+const lifecycle = new UsageLedger({ storage: lifecycleStorage }, {});
+const internalPost = (path, payload) => new Request("https://internal/" + path, {
+  method: "POST", headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+const requestId = "server_only_request_00001";
+assert.equal((await lifecycle.fetch(internalPost("reserve-paid-id", { requestId }))).status, 200);
+assert.equal((await lifecycle.fetch(internalPost("reserve-paid-id", { requestId }))).status, 409);
+assert.equal((await lifecycle.fetch(internalPost("settle-paid-id",
+  { requestId, actualMicroUsd: 400 }))).status, 200);
+assert.equal((await lifecycle.fetch(internalPost("settle-paid-id",
+  { requestId, actualMicroUsd: 400 }))).status, 409);
+assert.equal(lifecycleStorage.values.get("paid:usd:" +
+  new Date().toISOString().slice(0, 7)), 400);
+assert.equal((await lifecycle.fetch(internalPost("settle-paid-id",
+  { requestId: "missing_request_00001", actualMicroUsd: 10 }))).status, 409);
+assert.equal((await lifecycle.fetch(internalPost("reserve-paid-id",
+  { requestId: "bad" }))).status, 400);
 const longTerm = storage();
 const base = Date.parse("2026-10-01T00:00:00Z");
 for (let i = 0; i < 100; i++) {
