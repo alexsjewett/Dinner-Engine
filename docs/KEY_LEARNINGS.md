@@ -243,3 +243,33 @@ The browser's IndexedDB read is asynchronous, and an old search can be restored 
 
 ### Unit tests catch simple but meaningful errors
 A synthetic Must avoid test first exposed an egg/eggs vocabulary mismatch; the small plural fix was included without compromising review warnings. Separate synthetic cases confirm the demo matcher remains unchanged when no imports exist. **PM takeaway:** representative edge cases are worth adding before feature expansion, but on-device acceptance remains independent.
+
+## Milestone 3A.0 — Secure AI setup as a staged product milestone
+
+### A billable key belongs on a server
+Public browser code is readable; committing a provider secret to a frontend
+bundle or public repository lets others use the project's paid account.
+**PM takeaway:** even a single-user AI integration needs server-side execution.
+
+### One user still needs verified authentication
+Only an actual authorized identity may invoke a billable API. Cloudflare
+Access can gate entry, but server-side code should validate the signed token,
+application audience and one-user allowlist rather than trust headers.
+**PM takeaway:** one-user scope reduces features, not security requirements.
+
+### Alerts are not quotas
+OpenAI project budget notifications alone do not guarantee spending stops.
+Atomic durable server-side quotas, bounded requests/tokens and an off-switch
+provide stronger cost controls. **PM takeaway:** plan for concurrency,
+retries, provider failures and key compromise, not just average cost.
+
+### Validate on the actual phone
+A GitHub Pages frontend and Cloudflare Worker may sit on separate domains;
+Safari cross-site cookie behavior is a real usability dependency.
+**PM takeaway:** authentication must work in the intended browser without
+bypassing server-side authorization.
+
+### Keep the old tool useful while introducing a new dependency
+The disabled Worker cannot read recipe submissions or incur fees, and the
+baseline recipe matcher remains working. **PM takeaway:** stage deployment
+so AI failures, billing setup or outage never break dinner search.

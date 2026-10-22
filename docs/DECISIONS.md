@@ -169,3 +169,16 @@ No changes to matching, profile storage, recipe content, AI, backend or public r
 **History:** DEC-063's 2A deferment of imported matching is superseded by DEC-065–070. Better ingredient verification and safe adaptations still require separately approved work.
 
 **Security boundary:** IndexedDB remains local to each browser and origin, without encrypted accounts or backup. Actual household recipe text/profile data must not enter the public repository.
+
+## Milestone 3A.0 — Secure AI foundation (approved October 21, 2026)
+
+| ID | Status | Decision | Rationale and trade-off |
+|---|---|---|---|
+| DEC-072 | Approved | Begin AI work with OpenAI as the initial provider; choose a lower-cost model after fictional tests, keeping the integration swappable. | Focus on recipe recommendations rather than multi-provider overhead. |
+| DEC-073 | Approved direction, not deployed | Plan Cloudflare Worker server-side API access; never place model keys in public GitHub Pages frontend or repo. | An API key is a billable secret and client code is inspectable. |
+| DEC-074 | Security gate | Protect with Cloudflare Access, verify signed JWT claims inside backend, allow only the approved user, and prove sign-in works on Safari. | Browser Origin checks or unchecked access headers are not authentication. |
+| DEC-075 | Security gate | Persist atomic server-side budget and rate reservations, bound input/output, add off-switch and fail-closed handling, use provider notifications too. | Avoid an anonymously billable endpoint and unexpected spending. |
+| DEC-076 | Approved | AI may transmit minimal relevant recipe content only when user explicitly invokes it, with a clear preview; originals stay in browser and deterministic matcher remains fallback. | Support AI value without silent recipe transfer or changes to source recipes. |
+| DEC-077 | Staged, not activated | Commit only a nonbillable disabled backend entrypoint and CI smoke test pending the separate protected backend/activation review. | Work can begin without credentials or expenditure. |
+
+The prior future-AI security gate remains mandatory. See docs/AI_PILOT_PLAN.md.

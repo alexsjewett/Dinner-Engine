@@ -166,3 +166,19 @@ The Phase 2 AI idea for optional sides/toppings, omissions, and substitutions re
 **Acceptance criterion:** noticeably less repetitive text on the core dinner flow, while actionable restrictions, uncertainties and material privacy limitations remain clearly identifiable at the point they matter.
 
 **No UI/code change authorized by this backlog note.** Scope and approve the consolidation as a separate small milestone after current feature work.
+
+## Milestone 3A — Approved OpenAI-first secure AI pilot
+
+**Stage 3A.0 staged, no live AI:** a deliberately disabled backend Worker
+scaffold, CI fail-closed test and design notes are in the repo. The working
+2B recommendations and local recipe data remain unchanged.
+
+**Before any billable or personal-data activation:** owner OpenAI API and
+Cloudflare accounts; one-user verified authorization; iPhone Safari sign-in;
+atomic durable quotas / spending protection; bounded prompts/outputs;
+separate explicit privacy, security and budget review. See docs/AI_PILOT_PLAN.md.
+
+**Future but not authorized for this increment:** AI ingredient substitutions,
+serving variants, persistent cloud recipe storage, cross-device household
+accounts, subscriptions and disclaimer consolidation. A large 2C rules-only
+enhancement is deferred because current matching is already useful.

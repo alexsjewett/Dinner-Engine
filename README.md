@@ -2,7 +2,7 @@
 
 A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
-**Status:** Milestone 2B: Find Dinner now includes browser-local imported Paprika recipes, prioritized ahead of demo recommendations and always marked for manual review; build/automated testing and iPhone acceptance tracked separately.
+**Status:** Milestone 3A.0 approved and staged. AI is not yet active: a nonbillable, fail-closed backend scaffold and security plan have been added. Existing 2B dinner recommendations remain live.
 
 ## Product vision
 Dinner Engine is a companion to Paprika Recipe Manager, not a replacement. Start with a single household and ten placeholder recipes; design for future independent households, each with its own cookbook, profiles, and AI usage/payment arrangement.
@@ -217,3 +217,21 @@ This is **not a nutrition, medical or food-safety checker**. Search uses text th
 - If IndexedDB cannot be read, Find Dinner visibly warns and can still show fictional sample recommendations; it must never silently pretend imports were available.
 
 **Deferred:** confidence-controlled ingredient parsing, real allergen taxonomy, cook-reviewed modifications/substitutions, Paprika sync, AI and a secure backend.
+
+## Milestone 3A.0 — Approved OpenAI-first AI pilot, security foundation only
+
+The user approved a small, one-user AI recommendation pilot using OpenAI via a
+secure Cloudflare Worker. The initial deliverable is deliberately safe: a
+disabled backend scaffold under backend/, tested by GitHub Actions, and an
+explicit security, privacy and cost-control plan in docs/AI_PILOT_PLAN.md.
+
+**No AI key, billable request, personal recipe transfer, or deployed backend
+is part of 3A.0.** The existing iPhone web app stays unchanged, including
+browser-local Paprika recipes, profiles, and deterministic search.
+
+Before any AI service goes live: create the OpenAI and Cloudflare accounts,
+confirm protected single-user authentication (including iPhone Safari),
+implement persisted atomic quotas and cost controls, validate inputs,
+obtain explicit action-by-action sharing consent, and approve the final
+security and billing activation review. Never paste keys in the repository
+or conversation.
