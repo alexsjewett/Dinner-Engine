@@ -222,3 +222,16 @@ An authorized health request is not full security acceptance: still test Private
 | DEC-087 | Proposed for next approval, not yet implemented | Prepare strictly validated, nonbillable API request envelopes, atomic durable rate/estimated-cost reservations and a kill switch before introducing an OpenAI secret. | Avoid billable exposure and preserve the currently working recipe experience while testing security controls. |
 
 **Remaining gate:** verify Cloudflare deployed the latest generic-denial cleanup, test off-switch/limits under concurrency, and explicitly approve billable API activation before sharing real recipe data.
+
+## Milestone 3A.2 — Approved nonbillable safeguards (October 21, 2026 Pacific)
+
+| ID | Status | Decision | Rationale |
+|---|---|---|---|
+| DEC-088 | Implemented | Leave OpenAI disconnected and `/api/ai/recommend` permanently disabled in this stage. | No accidental provider charges or recipe transmission. |
+| DEC-089 | Implemented | Enforce versioned, exact-field JSON with 12 KiB streaming cap and at most five bounded recipes. | Reject oversized or malformed inputs before any quota reservation. |
+| DEC-090 | Implemented | Use one SQLite-backed Durable Object to atomically persist per-hour/day/month quotas and simulated budget. | Prevent concurrent requests or new sessions bypassing shared limits. |
+| DEC-091 | Implemented as simulations only | Reserve 10 placeholder cents per accepted guardrail test, with 10/hour, 40/day, 100/month and simulated $10 monthly limit. | A synthetic reservation is not a guaranteed cap on future billable API usage. |
+| DEC-092 | Implemented; off by default | Accept test-only requests only when Production runtime `AI_GUARDRAIL_MODE=test`. | Simple emergency off-switch; missing flag rejects before reading a body. |
+| DEC-093 | CI passed; device verification pending | Run adversarial/concurrent/persistent quota tests and Wrangler Worker dry-run in addition to existing Pages tests. | Backend bundling, Cloudflare deployment and phone acceptance remain independently checked. |
+
+**No paid activation approved.** Real cost estimation/reconciliation, safety/retention review, opt-in AI UI and a model key need a later explicitly approved milestone.

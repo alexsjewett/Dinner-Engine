@@ -198,3 +198,13 @@ authorized AI requests, and leave the existing website untouched. No
 OpenAI API key or imported recipe transmission until a later explicit
 activation review. Exact budget limits and API behaviors need product-owner
 approval before modifying application code.
+
+## Milestone 3A.2 — Nonbillable guardrails implementation (October 21, 2026 Pacific)
+
+**Approved and implemented in source.** Authentication remains the first gate. The GET health check still returns `enabled:false`. The POST recommendation route is hard-disabled (503) and never reads recipes or invokes OpenAI.
+
+A separate POST `/api/ai/guardrails` is a **developer test-only** route requiring owner authentication and Production runtime secret `AI_GUARDRAIL_MODE=test`; the missing/default setting is an off-switch. It applies bounded, strict version-1 JSON validation (12,288-byte streaming cap, up to five recipes, controlled criteria) and an atomic reservation in one SQLite-backed Durable Object. Quotas: 10/hour, 40/day, 100/month, plus a **synthetic** 10-cent reservation per test against a **synthetic** $10 monthly allowance. Persistent counters are non-identifying. Missing ledger, storage errors, invalid input and disabled test flag all fail closed. OpenAI is not connected. No actual expense is tracked or guaranteed by these placeholders.
+
+Tests cover wrong/absent identity, email case, forged request headers, off-switch, invalid and oversized payloads, unsupported content types, unknown schema fields, missing Durable Object binding, atomic concurrent reservations, persistence and corrupted counters. GitHub CI now tests the Worker with a Wrangler dry-run as well as the existing app.
+
+**Still required:** confirm Cloudflare's latest successful build and live Worker health response; verify a clean Safari Private session still triggers sign-in. The test-only flag should remain absent/off unless a separate synthetic request exercise is planned. Do not enter an OpenAI API key or send Paprika data yet. Model-specific usage reservations, real provider spend reconciliation, maximum tokens, output validation, opt-in data sharing and a separate billable security review remain prerequisites.

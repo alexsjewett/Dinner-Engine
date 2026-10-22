@@ -100,3 +100,17 @@ proof. Confirm the latest Git commit is deployed in Cloudflare, then verify
 an authorized iPhone Safari request *and* that a fresh Private Safari session
 requires sign-in. Do not submit personal recipe text to this endpoint until
 durable request quotas and the billable security gate have been approved.
+
+## 3A.2 — Nonbillable guardrails (October 21, 2026 Pacific)
+
+The Worker remains OpenAI-free and its real recommendation route always returns HTTP 503 without reading a request body. The existing app and local Paprika recipes are unchanged.
+
+The authenticated POST `/api/ai/guardrails` route is **off by default**. It accepts test requests only if the Production *runtime* secret `AI_GUARDRAIL_MODE` is exactly `test`. If absent or any other value, the test route returns 503 without reading a body. To stop it, change or remove that secret and deploy a new Worker version. Do not add a provider key.
+
+In test mode, the Worker reads at most 12,288 bytes, accepts only version-1 JSON with known fields and up to 5 bounded fictional recipe candidates, and never persists or echoes ingredient, direction, search or profile text. It returns only an acceptance flag (test-only, no provider) or a generic error. Owner authentication still applies first.
+
+`USAGE_LEDGER` binds one SQLite-backed Durable Object, identified by fixed internal name `pilot-owner-v1`. Synchronous transactions atomically reserve simulated 10-cent units against limits of 10 accepted tests/hour, 40/day, 100/month and $10/month in placeholder counters. UTC hour/day/month boundaries apply. The ledger stores only counts and **does not measure actual OpenAI spending**. Unavailable or corrupt ledger storage blocks requests. There is no billing reconciliation because no model is connected.
+
+The GitHub CI now runs synthetic auth, schema, oversize, concurrency, persistence, corruption and off-switch cases and a Wrangler `deploy --dry-run` backend check. Independently confirm the current Cloudflare Workers Builds result and iPhone health/private-session behavior.
+
+**Before any paid AI activation**: provider-specific token/price caps, actual usage reconciliation, consent, privacy/retention review, additional security tests and separate explicit approval are required. See `docs/AI_PILOT_PLAN.md`.

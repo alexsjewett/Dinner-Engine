@@ -310,3 +310,17 @@ and a fresh Safari Private session prompted for sign-in as intended.
 a separate clean-session test catches accidentally unprotected routes.
 This is one acceptance check, not a substitute for hard quota and wrong-user
 security tests before enabling paid AI.
+
+## Milestone 3A.2 — Durable quotas without a billable model
+
+### Shared limits need transactional server storage
+A browser counter resets across devices; a SQLite-backed Cloudflare Durable Object holds one shared quota ledger. Synchronous transactions prevent concurrent requests from overspending the simulated allowance. **PM takeaway:** model a usage limit as a stateful server invariant, not as a visual indicator.
+
+### Estimated reservation is not an actual spending ceiling
+Ten synthetic cents per test and a simulated $10 budget are deliberately placeholders. The Worker makes no model calls. Model-specific token limits, pricing and reconciliation are still required for any real billing. **PM takeaway:** never equate a test counter with provider-level financial protection.
+
+### Default off and failure closed
+The real recommendation route remains disabled even for authenticated users. The optional test-only route requires a private runtime switch and valid schema and fails if the quota binding is unavailable. **PM takeaway:** each missing dependency should prevent, not permit, an operation.
+
+### Check two deployment pipelines
+GitHub Pages tests alone cannot establish that Cloudflare Workers can bundle or deploy. The project now performs a Wrangler dry run, and Cloudflare's own GitHub build check must also be verified separately. **PM takeaway:** distinguish passing tests, a successful build, a live deployment and actual iPhone acceptance.

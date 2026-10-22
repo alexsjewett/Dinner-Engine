@@ -205,3 +205,5 @@ the authorized regular Safari health check, the initial owner sign-in flow
 is accepted. Private sign-in alone does not prove full identity isolation.
 Next proposed 3A.2: nonbillable, durable spending/rate controls and input
 validation before any OpenAI key or recipe transmissions.
+
+**3A.2 guardrails delivered in source:** strict 12 KiB/version-1 test request validation, one persistent SQLite Durable Object quota ledger, hourly/daily/monthly test caps, simulated $10/month budget reservations, and a default-off runtime kill switch. No OpenAI key, model calls, cookbook uploads or UI changes. Live backend and iPhone verification remain separate. Later: actual model-specific accounting, AI quality tests with owner-approved Paprika recipes, optional substitutions and the disclaimer cleanup.

@@ -254,3 +254,11 @@ Cloudflare's Build settings into **Production runtime** Variables and Secrets.
 Approved temporary 403 diagnostic codes are now removed; further CI,
 Cloudflare deployment and Private Safari session verification are separately
 tracked. **AI remains disabled and nonbillable; no imported recipes were sent.**
+
+## Milestone 3A.2 — Nonbillable request protection
+
+The protected Cloudflare backend now includes a default-off developer validation route, strict schema and request-size limits, and shared SQLite Durable Object rate/simulated-spend reservations. The actual recommendation route remains disabled and has no OpenAI client or API key. The existing browser-local recipes and GitHub Pages app are unchanged.
+
+Conservative test limits: 10 accepted tests/hour, 40/day, 100/month, synthetic 10 cents/test and synthetic $10/month. These are **not actual provider costs** or a guaranteed real-money ceiling. The test endpoint requires private Production runtime secret `AI_GUARDRAIL_MODE=test`; it is off by default. GitHub CI validates the Worker with a Wrangler dry-run, and Cloudflare must be checked independently before phone acceptance. See `backend/README.md` and `docs/AI_PILOT_PLAN.md`.
+
+Connecting a paid model requires separate approval of real cost reservations/reconciliation, budget shutoff, outputs, privacy/retention and explicit user-triggered sharing.
