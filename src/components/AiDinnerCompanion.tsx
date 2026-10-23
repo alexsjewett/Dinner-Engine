@@ -4,6 +4,7 @@ import type { ImportedRecipe } from "../types/importedRecipe";
 import type { HouseholdProfile } from "../types/profile";
 import type { SearchCriteria } from "../services/dinnerMatcher";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
+import { describeAiFailure } from "../services/aiQuotaFeedback";
 import {
   AI_WORKER_ORIGIN, validatedWorkerOrigin, askAiWithSecurePopup,
   checkAiSecureConnection,
@@ -160,7 +161,9 @@ export function AiDinnerCompanion({ recipes, criteria, diners }: Props) {
               ) : (
                 <>
                   <strong>AI suggestions unavailable</strong>
-                  <p>{messages[result.error] ?? "The secure AI request did not finish. No automatic retry was made."}</p>
+                  <p>{result.error.startsWith("budget_")
+                      ? describeAiFailure(result.error)
+                      : messages[result.error] ?? "The secure AI request did not finish. No automatic retry was made."}</p>
                 </>
               )}
             </div>

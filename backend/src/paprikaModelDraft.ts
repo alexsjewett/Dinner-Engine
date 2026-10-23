@@ -9,7 +9,10 @@ import {
   validateAiResponse, estimateUsageMicroUsd, type AiSuggestion,
 } from "./aiPilot";
 
-export const MAX_STAGED_INPUT_BYTES = 7_200;
+// More of each complete Paprika library can fit in each model request.
+// This is deliberately below the 20,480-byte provider request ceiling and
+// retains the existing independent model token and monetary caps.
+export const MAX_STAGED_INPUT_BYTES = 12_288;
 
 type RecordValue = Record<string, unknown>;
 function object(value: unknown): value is RecordValue {
@@ -58,7 +61,8 @@ export interface StagedRequest {
  * Full imported recipe fields are retained in the model input. Never replace a
  * full-library request with a partial shortlist without new, visible consent.
  * A byte bound is an additional conservative guard, NOT a tokenizer or a
- * guarantee of provider-side token usage; actual token gate is still pending.
+ * guarantee of provider-side token usage. The existing validated 8k-token
+ * response limit and 700-output-token provider cap remain unchanged.
  */
 export function stagePaprikaModelRequest(value: unknown): StagedRequest | null {
   if (!validateFullPaprikaPayload(value)) return null;

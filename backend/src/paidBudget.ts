@@ -109,7 +109,8 @@ export function settleRequest(storage: MoneyStorage, requestId: string,
  */
 export function reservePaidBatch(
   storage: MoneyStorage, timestamp: number, requestIds: readonly string[],
-): "reserved" | "duplicate" | "limited" {
+): "reserved" | "duplicate" | "hourly_limited" | "daily_limited" |
+  "monthly_limited" | "spending_limited" {
   if (requestIds.length < 1 || requestIds.length > PAID_LIMITS.hourly ||
       new Set(requestIds).size !== requestIds.length ||
       requestIds.some(id => !/^[a-zA-Z0-9_-]{16,80}$/.test(id))) {
@@ -124,11 +125,14 @@ export function reservePaidBatch(
     }
     const values = keys.map(key => safeCount(storage.kv.get(key)));
     const n = requestIds.length;
-    if (values[0] + n > PAID_LIMITS.hourly ||
-        values[1] + n > PAID_LIMITS.daily ||
-        values[2] + n > PAID_LIMITS.monthly ||
-        values[3] + n * PAID_LIMITS.perRequestMicroUsd > PAID_LIMITS.monthlyMicroUsd)
-      return "limited";
+    // Identify the specific failing limit without changing counters.
+    // Precedence is fixed; if more than one is exhausted, report the
+    // shortest-term quota first while preserving fail-closed behavior.
+    if (values[0] + n > PAID_LIMITS.hourly) return "hourly_limited";
+    if (values[1] + n > PAID_LIMITS.daily) return "daily_limited";
+    if (values[2] + n > PAID_LIMITS.monthly) return "monthly_limited";
+    if (values[3] + n * PAID_LIMITS.perRequestMicroUsd > PAID_LIMITS.monthlyMicroUsd)
+      return "spending_limited";
     keys.forEach((key, index) => storage.kv.put(key,
       values[index] + n * (index === 3 ? PAID_LIMITS.perRequestMicroUsd : 1)));
     requestIds.forEach(id => storage.kv.put("paid:req:" + id, month * 10_000));

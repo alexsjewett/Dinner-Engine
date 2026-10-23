@@ -95,7 +95,7 @@ try {
   assert.equal(mod.stagePaprikaModelRequest({ ...payload,
     recipes: [recipe("all_bad", "peanuts")] }), null);
   assert.equal(mod.stagePaprikaModelRequest({ ...payload,
-    recipes: [recipe("too_long", "a".repeat(8_000))] }), null);
+    recipes: [recipe("too_long", "a".repeat(15_000))] }), null);
   const multi = {
     ...payload,
     criteria: { ...criteria, mustAvoidFoods: [] },
@@ -104,7 +104,14 @@ try {
     })),
   };
   const plan = mod.planPaprikaModelBatches(multi);
-  assert.ok(plan && plan.length > 1, "larger libraries need multiple bounded model calls");
+  assert.ok(plan && plan.length > 1, "larger libraries still use bounded model calls");
+  assert.ok(plan.length <= 3, "larger safe batches should reduce provider calls");
+  const optimizedPack = mod.stagePaprikaModelRequest({
+    ...multi, recipes: multi.recipes.slice(0, 5),
+  });
+  assert.ok(optimizedPack && optimizedPack.inputBytes > 7_200 &&
+    optimizedPack.inputBytes <= mod.MAX_STAGED_INPUT_BYTES,
+    "five complete recipes should now fit together although they exceed the old 7200-byte gate");
   assert.ok(plan.every(batch => batch.totalBatches === plan.length));
   assert.ok(plan.every(batch => batch.draft.inputBytes <= mod.MAX_STAGED_INPUT_BYTES));
   assert.deepEqual(plan.flatMap(batch => batch.recipeIds), multi.recipes.map(r => r.id));
@@ -119,7 +126,7 @@ try {
       { ...recipe("broccoli", "broccoli and olive oil"), name: "Broccoli Dinner" },
       ...Array.from({ length: 7 }, (_, i) => ({
         ...recipe("tofu_" + i, "tofu and oregano"),
-        directions: "Stir and simmer. ".repeat(55),
+        directions: "Stir and simmer. ".repeat(100),
       })),
     ],
   };
@@ -154,7 +161,7 @@ try {
   }), null);
 
   assert.equal(mod.planPaprikaModelBatches({ ...payload,
-    recipes: [recipe("too_long", "x".repeat(8_000))] }), null);
+    recipes: [recipe("too_long", "x".repeat(15_000))] }), null);
 
   const respond = suggestions => ({
     status: "completed", usage: { input_tokens: 1100, output_tokens: 200 },
