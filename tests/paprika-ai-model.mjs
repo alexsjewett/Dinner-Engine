@@ -6,7 +6,7 @@ import ts from "typescript";
 const suffix = ".paprika-model-test-" + process.pid + ".mjs";
 const paths = [
   "backend/src/guardrails.ts", "backend/src/aiPilot.ts",
-  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts",
+  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts", "backend/src/recipeRelevance.ts",
 ];
 const worker = await readFile("backend/src/index.ts", "utf8");
 const draft = await readFile("backend/src/paprikaModelDraft.ts", "utf8");
@@ -78,7 +78,7 @@ try {
   assert.ok(staged.request.instructions.includes("1-240"));
   assert.ok(staged.request.instructions.includes("0-3 cautions"));
   const twoEligible = mod.stagePaprikaModelRequest({ ...payload,
-    criteria: { ...criteria, mustAvoidFoods: [] },
+    criteria: { ...criteria, mustAvoidFoods: [], have: [] },
   });
   assert.ok(twoEligible);
   assert.equal(twoEligible.request.text.format.schema.properties.suggestions.maxItems, 2);

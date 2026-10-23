@@ -18,7 +18,7 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
     Array.isArray(suggestion.cautions) &&
     suggestion.cautions.every(item => typeof item === "string");
   const backTo = origin?.from === "/" ? "/" : "/library";
-  const backLabel = backTo === "/" ? "Find Dinner" : "Recipe Library";
+  const backLabel = backTo === "/" ? "Dinner ideas" : "Recipe Library";
   const recipe = imported ? undefined : getRecipeById(recipeId ?? "");
 
   const [savedRecipe, setSavedRecipe] = useState<ImportedRecipe | null>(null);

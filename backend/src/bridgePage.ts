@@ -8,9 +8,9 @@ export const BRIDGE_ORIGIN = "https://alexsjewett.github.io";
 export const BRIDGE_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Find dinner. — secure AI connection</title>
+<title>Kitchen Companion — secure AI connection</title>
 <style>body{font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:34rem;margin:3rem auto;padding:0 1rem;color:#29372f;line-height:1.6}h1{font-size:1.5rem}p{color:#536358}</style>
-</head><body><main><h1>Find dinner. — secure AI connection</h1>
+</head><body><main><h1>Kitchen Companion — secure AI connection</h1>
 <p id="status" role="status">Checking your protected connection…</p>
 <p>AI requests use this authenticated window. The original Paprika recipes
 stay unchanged in your cookbook. Do not close this window during an active
@@ -24,7 +24,7 @@ export const BRIDGE_JS = `"use strict";
   const state = params.get("state");
   const trustedOrigin = "https://alexsjewett.github.io";
   if (!state || !/^[a-zA-Z0-9_-]{16,80}$/.test(state) || !window.opener) {
-    status.textContent = "Please open this secure window from Find dinner.";
+    status.textContent = "Please open this secure window from Kitchen Companion";
     return;
   }
   let used = false;
@@ -76,7 +76,7 @@ export const BRIDGE_JS = `"use strict";
     } catch {
       notify("dinner-ai-result", { ok: false, error: "ai_unavailable" });
     }
-    status.textContent = "Request complete. Return to Find dinner.";
+    status.textContent = "Request complete. Return to Kitchen Companion";
     // Give Safari time to deliver postMessage before closing the popup.
     setTimeout(() => window.close(), 750);
   });

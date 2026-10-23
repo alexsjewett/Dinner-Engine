@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
 import { AI_WORKER_ORIGIN, askAiWithSecurePopup, type AiDinnerSuggestion } from "../services/aiPopupBridge";
 import { evaluateImportedRecipe } from "../services/importedDinnerMatcher";
+import { reviewAiAdjustments, screenRecipeForSearch } from "../../backend/src/recipeRelevance";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { loadProfiles } from "../services/profileStorage";
@@ -58,6 +59,14 @@ export function FindDinner() {
     changeCriteria({ selectedProfileIds: checked ? [...ids, id] : ids });
   }
 
+  function eligibleForSearch(recipe: ImportedRecipe, criteria: SearchCriteria,
+    dinersForSearch: ReturnType<typeof selectDiners>): boolean {
+    const relevant = screenRecipeForSearch(recipe,
+      criteria.haveText.split(","), criteria.unavailableText.split(","));
+    return relevant.eligible && !evaluateImportedRecipe(recipe, criteria, dinersForSearch)
+      .reviewReasons.some(reason => reason.includes("(Must avoid)"));
+  }
+
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const available = new Set(profiles.map((person) => person.id));
@@ -70,6 +79,16 @@ export function FindDinner() {
     const dinersForRequest = selectDiners(profiles, submitted);
     if (useAi && (libraryStatus !== "ready" || localRecipes.length === 0)) {
       setError("Import some Paprika recipes before searching with AI.");
+      return;
+    }
+    const eligibleNow = localRecipes.filter(recipe =>
+      eligibleForSearch(recipe, submitted, dinersForRequest));
+    if (useAi && eligibleNow.length === 0) {
+      setSearch({ draft: submitted, submitted, expanded: false });
+      setAiSearch(false);
+      setAiSuggestions(null);
+      setAiFailure("");
+      setError("None of your saved recipes match those ingredients and restrictions. AI was not called.");
       return;
     }
     const prepared = useAi
@@ -104,12 +123,33 @@ export function FindDinner() {
             "). Showing your usual recipe matches instead. No automatic retry.");
           return;
         }
-        const allowed = new Set(localRecipes.map(recipe => recipe.id));
-        if (result.suggestions.some(item => !allowed.has(item.recipeId))) {
-          setAiFailure("AI returned an unknown recipe. Showing your usual matches instead.");
+        const allowed = new Map(eligibleNow.map(recipe => [recipe.id, recipe]));
+        // The client rechecks the response even if an older Worker is deployed.
+        // Never show a recipe requiring a missing ingredient or nonsensical swap.
+        const safe = result.suggestions.flatMap(item => {
+          const recipe = allowed.get(item.recipeId);
+          if (!recipe) return [];
+          const mustAvoid = dinersForRequest.flatMap(d => d.foodRestrictions
+            .filter(restriction => restriction.level === "must")
+            .map(restriction => restriction.food));
+          const adjustments = reviewAiAdjustments(item.adjustments, recipe,
+            submitted.haveText.split(","), submitted.unavailableText.split(","),
+            mustAvoid);
+          const unsafeSwapWording = /\b(substitut(?:e|ion)|swap|replac(?:e|ing)|instead of)\b/i;
+          // Freeform model advice about swaps cannot bypass the reviewed
+          // structured substitution contract.
+          const explanation = unsafeSwapWording.test(item.explanation)
+            ? "This recipe matches ingredients you listed. Review the original before cooking."
+            : item.explanation;
+          const cautions = item.cautions.filter(note =>
+            !unsafeSwapWording.test(note));
+          return [{ ...item, explanation, cautions, adjustments }];
+        });
+        if (safe.length === 0) {
+          setAiFailure("No AI ideas met your ingredient rules. Showing matching recipes instead.");
           return;
         }
-        setAiSuggestions(result.suggestions);
+        setAiSuggestions(safe);
       }).catch(() => {
         setAiFailure("AI is unavailable. Showing your usual recipe matches. No automatic retry.");
       }).finally(() => setAiBusy(false));
@@ -119,8 +159,11 @@ export function FindDinner() {
   const draft = search.draft;
   const submitted = search.submitted;
   const diners = submitted ? selectDiners(profiles, submitted) : [];
-  const results = submitted && libraryStatus !== "loading"
-    ? recommendAllDinners(localRecipes, [], submitted, profiles, 10)
+  const eligibleRecipes = submitted && libraryStatus === "ready"
+    ? localRecipes.filter(recipe => eligibleForSearch(recipe, submitted, diners))
+    : [];
+  const results = submitted && libraryStatus === "ready"
+    ? recommendAllDinners(eligibleRecipes, [], submitted, profiles, 10)
     : [];
   // AI and ordinary searches share the same imported-recipe card component.
   // Only validated IDs already present in the browser's library are displayed.
@@ -130,7 +173,8 @@ export function FindDinner() {
         if (!recipe || !submitted) return null;
         const match = evaluateImportedRecipe(recipe, submitted, diners);
         // Independently refuse recipes with detected hard dietary conflicts.
-        if (match.reviewReasons.some(reason => reason.includes("(Must avoid)"))) return null;
+        if (!eligibleRecipes.some(candidate => candidate.id === recipe.id) ||
+            match.reviewReasons.some(reason => reason.includes("(Must avoid)"))) return null;
         return match;
       }).filter((item): item is NonNullable<typeof item> => item !== null)
     : null;
@@ -179,7 +223,7 @@ export function FindDinner() {
               aria-describedby="dinner-unavailable-help"
             />
             <p id="dinner-unavailable-help" className="helper-text">
-              Recipes needing those items will be marked for review.
+              Recipes requiring those ingredients will be excluded.
             </p>
           </div>
 
@@ -312,7 +356,7 @@ export function FindDinner() {
             </p>
           )}
           {!aiBusy && displayed.length === 0 && (
-            <p className="helper-text">No matching recipes yet. Try another ingredient or import more from Paprika.</p>
+            <p className="helper-text">No recipes match the available and unavailable ingredients you entered. Try changing your criteria or importing more recipes.</p>
           )}
           {firstThree.length > 0 && (
             <div className="dinner-result-section">

@@ -37,7 +37,7 @@ function AppLayout() {
             <path d="M17.5 5c-1.3 1.3-1.3 2.1 0 3.3" />
           </svg>
         </span>
-        <span className="brand-name">Find dinner.</span>
+        <span className="brand-name">Kitchen Companion</span>
       </header>
       <main ref={mainRef} className="main-content" id="main-content">
         <Outlet />

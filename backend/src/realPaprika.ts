@@ -13,6 +13,7 @@ import { callStagedOpenAi, type ProviderFailureCode, type ProviderFetch } from "
 import type { FullPaprikaPayload } from "./paprikaContract";
 import { type SyntheticPilotEnv } from "./pilotSynthetic";
 import type { AiAdjustment } from "./aiPilot";
+import { reviewAiAdjustments, screenRecipeForSearch } from "./recipeRelevance";
 
 export interface RealPaprikaEnv extends SyntheticPilotEnv {
   AI_REAL_MODE?: string;
@@ -48,6 +49,12 @@ export async function runRealPaprika(
   payload: FullPaprikaPayload, env: RealPaprikaEnv, providerFetch: ProviderFetch,
 ): Promise<RealResponse> {
   if (!realPaprikaReady(env)) return { ok: false, error: "ai_pilot_disabled" };
+  // Do not reserve or bill any OpenAI call when no recipe has a pantry match
+  // or an explicitly unavailable ingredient is required.
+  if (!payload.recipes.some(recipe => screenRecipeForSearch(recipe,
+    payload.criteria.have, payload.criteria.unavailable).eligible)) {
+    return { ok: false, error: "no_eligible_recipes" };
+  }
   const batches = planPaprikaModelBatches(payload);
   if (!batches || batches.length < 1 || batches.length > 10)
     return { ok: false, error: "library_exceeds_safe_batch_limits" };
@@ -110,23 +117,13 @@ export async function runRealPaprika(
     // Optional model-proposed changes can only reference phrases already in
     // the original ingredient list. Strip, never auto-apply, ungrounded or
     // obvious Must-avoid replacements. Recommendations remain usable.
-    const normalize = (value: string) => " " + value.toLowerCase().normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim() + " ";
     const recipeById = new Map(payload.recipes.map(recipe => [recipe.id, recipe]));
     const groups = outcome.groups.map(group => group.reply.suggestions.map(item => {
       const recipe = recipeById.get(item.recipeId);
-      const original = recipe ? normalize(recipe.ingredients) : "";
-      const adjustments = (item.adjustments ?? []).filter(change => {
-        const phrase = normalize(change.ingredientFrom).trim();
-        if (!phrase || !original.includes(" " + phrase + " ")) return false;
-        const replacement = normalize(change.ingredientTo);
-        return !payload.criteria.mustAvoidFoods.some(food => {
-          const term = normalize(food).trim();
-          return !term || [term, term + "s", term + "es"].some(variant =>
-            replacement.includes(" " + variant + " "));
-        });
-      });
+      const adjustments = recipe
+        ? reviewAiAdjustments(item.adjustments, recipe, payload.criteria.have,
+          payload.criteria.unavailable, payload.criteria.mustAvoidFoods)
+        : [];
       return { ...item, adjustments };
     }));
     const suggestions: Array<{

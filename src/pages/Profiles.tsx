@@ -238,7 +238,7 @@ export function Profiles() {
         <p className="eyebrow">Made for your table</p>
         <h1>Who's eating dinner today?</h1>
         <p className="lead">
-          Save dietary needs and foods to avoid for each person. Find Dinner uses these preferences when suggesting recipes.
+          Save dietary needs and foods to avoid for each person. Kitchen Companion uses these preferences when suggesting recipes.
         </p>
       </div>
 
