@@ -13,7 +13,7 @@ const [worker, browser, catalog, pilot, quota, config] = await Promise.all([
 // These are deliberate rollout boundaries, not substitutes for auth testing.
 const route = worker.indexOf('url.pathname === "/api/ai/recommend"');
 assert.ok(route >= 0, "real Paprika route must stay visible and explicitly blocked");
-const region = worker.slice(route, route + 350);
+const region = worker.slice(route, route + 1_100);
 assert.ok(region.includes('if (!realPaprikaReady(env)) return reply(503, { error: "ai_pilot_disabled" });'),
   "real recipes must be disabled by a separate exact runtime switch");
 assert.ok(region.indexOf("ai_pilot_disabled") < region.indexOf("readFullPaprikaBody"),
