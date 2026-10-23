@@ -63,7 +63,7 @@ function matchLines(recipe: SearchableRecipe, term: string): string[] {
 function avoidedReplacement(to: string, unavailable: readonly string[],
   mustAvoid: readonly string[], needs: readonly string[]): boolean {
   const blocked = [...unavailable, ...mustAvoid];
-  if (blocked.some(word => hasIngredientTerm(to, word))) return true;
+  if (blocked.some(word => hasIngredientTerm(to, word) && !plantBasedIngredient(to, word))) return true;
   const vegan = needs.includes("vegan");
   const vegetarian = vegan || needs.includes("vegetarian");
   if (vegetarian && /\b(?:meat|chicken|beef|pork|fish|shrimp)\b/i.test(to)) return true;
@@ -177,7 +177,8 @@ export function screenRecipeForSearch(
   let adaptationTier = 0;
   for (const term of required) {
     const lines = matchLines(recipe, term);
-    const titleOnly = hasIngredientTerm(recipe.name, term) && lines.length === 0;
+    const titleOnly = hasIngredientTerm(recipe.name, term) && lines.length === 0 &&
+      !plantBasedIngredient(recipe.name, term);
     if (titleOnly) return { eligible: false, onHand, missing, adjustments: [], adaptationTier: 5 };
     if (!lines.length) continue;
     // A repeated hard ingredient can require multiple recipe changes: reject
@@ -229,4 +230,28 @@ export function reviewAiAdjustments(
       ingredientTo: change.ingredientTo, method: "substitute" as const,
       why: "A conventional alternative you listed as available." }];
   });
+}
+
+/**
+ * Stable cross-batch ranking for already screened recipes. The model supplies
+ * culinary judgment within each batch; these signals make pantry and softer
+ * restrictions comparable across batches. Never override eligibility.
+ */
+export function recommendationFitScore(
+  recipe: SearchableRecipe, have: readonly string[], unavailable: readonly string[],
+  mustAvoid: readonly string[], needs: readonly string[],
+  shouldAvoid: readonly string[], preferAvoid: readonly string[],
+): number {
+  const screened = screenRecipeForSearch(recipe, have, unavailable, mustAvoid, needs);
+  if (!screened.eligible) return -10_000;
+  let score = 100 + Math.min(screened.onHand.length, 4) * 12
+    - screened.adaptationTier * 20 - screened.adjustments.length * 6;
+  const prominent = (word: string) => hasIngredientTerm(recipe.name, word);
+  for (const word of checkedTerms(shouldAvoid)) {
+    if (matchLines(recipe, word).length) score -= prominent(word) ? 60 : 13;
+  }
+  for (const word of checkedTerms(preferAvoid)) {
+    if (matchLines(recipe, word).length) score -= prominent(word) ? 28 : 5;
+  }
+  return score;
 }
