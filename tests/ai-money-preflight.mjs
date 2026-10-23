@@ -8,7 +8,7 @@ try {
   await writeFile(out, ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
   } }).outputText, { flag: "wx" });
-  const { reservePaidBudget, PAID_LIMITS, safeReconciledAmount, reserveRequest, settleRequest } =
+  const { reservePaidBudget, reservePaidBatch, PAID_LIMITS, safeReconciledAmount, reserveRequest, settleRequest } =
     await import(pathToFileURL(process.cwd() + "/" + out).href);
   const map = new Map();
   const storage = { kv: { get: key => map.get(key), put: (key, value) => map.set(key, value) },
@@ -51,5 +51,29 @@ try {
     Promise.resolve(reserveRequest(money, now, "concurrent_request_" + String(i).padStart(6, "0")))));
   assert.equal(burst.filter(x => x === "reserved").length, 8);
   assert.equal(burst.filter(x => x === "limited").length, 12);
-  console.log("3B.1 staged money reservation, idempotency and settlement tests passed");
+  const batchMap = new Map();
+  const batchStorage = {
+    kv: { get: key => batchMap.get(key), put: (key, value) => batchMap.set(key, value) },
+    transactionSync: fn => fn(),
+  };
+  const ids = ["batch_server_request_000001", "batch_server_request_000002"];
+  assert.equal(reservePaidBatch(batchStorage, now, ids), "reserved");
+  assert.equal(batchMap.get("paid:h:2026-10-22T13"), 2);
+  assert.equal(batchMap.get("paid:usd:2026-10"), 3000);
+  assert.equal(reservePaidBatch(batchStorage, now, ids), "duplicate");
+  assert.equal(batchMap.get("paid:h:2026-10-22T13"), 2,
+    "replayed batch must not spend again");
+  assert.equal(settleRequest(batchStorage, ids[0], 79), "settled");
+  assert.equal(batchMap.get("paid:usd:2026-10"), 1579);
+  assert.equal(reservePaidBatch(batchStorage, now,
+    Array.from({ length: 9 }, (_, i) => "over_limit_batch_id_" + i)), "limited");
+  assert.equal(batchMap.get("paid:h:2026-10-22T13"), 2,
+    "overlimit batch must not reserve even the first request");
+  assert.throws(() => reservePaidBatch(batchStorage, now, [ids[0], ids[0]]),
+    /invalid_request_ids/);
+  assert.equal(reservePaidBatch(batchStorage, now,
+    Array.from({ length: 8 }, (_, i) => "valid_batch_request_" + String(i).padStart(5,"0"))),
+    "reserved");
+  assert.equal(batchMap.get("paid:h:2026-10-22T13"), 10);
+  console.log("3B.1 money accounting and atomic complete-plan reservations passed");
 } finally { await unlink(out).catch(() => {}); }

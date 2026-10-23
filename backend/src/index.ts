@@ -7,10 +7,13 @@
  * server-held API secret. Identity checks precede body reads or provider work.
  */
 import { checkBody } from "./guardrails";
-import { runSyntheticPilot, syntheticPilotReady, type SyntheticPilotEnv } from "./pilotSynthetic";
+import { runSyntheticPilot, syntheticPilotReady } from "./pilotSynthetic";
+import { BRIDGE_HTML, BRIDGE_JS } from "./bridgePage";
+import { runRealPaprika, realPaprikaReady, type RealPaprikaEnv } from "./realPaprika";
+import { readFullPaprikaBody } from "./paprikaContract";
 export { UsageLedger } from "./usageLedger";
 
-interface WorkerEnv extends SyntheticPilotEnv {
+interface WorkerEnv extends RealPaprikaEnv {
   ALLOWED_EMAIL?: string; // Private Cloudflare Production runtime Secret
   AI_GUARDRAIL_MODE?: string; // Default absent/off; "test" permits nonbillable check only
   USAGE_LEDGER?: {
@@ -149,6 +152,24 @@ export default {
         guardrails: "configured",
       });
     }
+    if (request.method === "GET" && url.pathname === "/api/ai/bridge") {
+      return new Response(BRIDGE_HTML, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+          "Referrer-Policy": "no-referrer",
+          "Content-Security-Policy": "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",
+        },
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/ai/bridge/client.js") {
+      return new Response(BRIDGE_JS, {
+        headers: { ...headers, "Content-Type": "text/javascript; charset=utf-8" },
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/ai/bridge/status") {
+      return reply(200, { service: "find-dinner-ai", enabled: realPaprikaReady(env) });
+    }
     if (request.method === "GET" && url.pathname === "/api/ai/test") {
       return syntheticPage(syntheticPilotReady(env));
     }
@@ -174,8 +195,19 @@ export default {
         reply(outcome.status, { error: outcome.error });
     }
     if (url.pathname === "/api/ai/recommend" && request.method === "POST") {
-      // No billable provider integration exists. Never read original recipe bodies.
-      return reply(503, { error: "ai_pilot_disabled" });
+      // This is a separate, default-off owner-approved REAL mode; never read
+      // recipe content before verifying Access, runtime switch and user intent.
+      if (!realPaprikaReady(env)) return reply(503, { error: "ai_pilot_disabled" });
+      if (request.headers.get("origin") !== url.origin ||
+          request.headers.get("x-find-dinner-intent") !== "real-paprika-opt-in" ||
+          request.headers.get("sec-fetch-site") === "cross-site") {
+        return reply(403, { error: "intent_required" });
+      }
+      const parsed = await readFullPaprikaBody(request);
+      if (!parsed.ok) return reply(parsed.status, { error: parsed.error });
+      const outcome = await runRealPaprika(parsed.payload, env!, fetch);
+      return outcome.ok ? reply(200, outcome) :
+        reply(503, { error: outcome.error });
     }
     if (url.pathname !== "/api/ai/guardrails" || request.method !== "POST") {
       return reply(404, { error: "not_found" });

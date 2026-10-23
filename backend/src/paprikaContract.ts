@@ -84,9 +84,26 @@ export function validateFullPaprikaPayload(value: unknown): boolean {
   // UTF-8 bytes, not string length, are the transport bound.
   return new TextEncoder().encode(JSON.stringify(value)).byteLength <= MAX_PAPRIKA_BODY_BYTES;
 }
+export interface FullPaprikaPayload {
+  version: 2;
+  scope: "full-paprika-library";
+  consent: "explicit-per-request";
+  recipes: Array<{
+    id: string; paprikaUid: string | null; name: string; ingredients: string;
+    directions: string; description: string; notes: string; servings: string;
+    prepTime: string; cookTime: string; totalTime: string; source: string;
+    sourceUrl: string; categories: string[];
+  }>;
+  criteria: {
+    have: string[]; unavailable: string[]; timeLimitMinutes: number;
+    mustAvoidFoods: string[]; shouldAvoidFoods: string[];
+    preferAvoidFoods: string[]; dietaryNeeds: string[];
+  };
+}
 type Result = { ok: true } | { ok: false; status: number; error: string };
+type ParsedResult = { ok: true; payload: FullPaprikaPayload } | Exclude<Result, { ok: true }>;
 /** Read at most the specified bytes; never log, persist, or forward contents. */
-export async function checkFullPaprikaBody(request: Request): Promise<Result> {
+export async function readFullPaprikaBody(request: Request): Promise<ParsedResult> {
   if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
     request.headers.get("content-type") ?? "")) {
     return { ok: false, status: 415, error: "unsupported_media_type" };
@@ -122,11 +139,18 @@ export async function checkFullPaprikaBody(request: Request): Promise<Result> {
     }
     const parsed: unknown = JSON.parse(
       new TextDecoder("utf-8", { fatal: true }).decode(buffer));
-    return validateFullPaprikaPayload(parsed) ? { ok: true } :
+    return validateFullPaprikaPayload(parsed) ?
+      { ok: true, payload: parsed as FullPaprikaPayload } :
       { ok: false, status: 400, error: "invalid_request" };
   } catch {
     return { ok: false, status: 400, error: "invalid_request" };
   } finally {
     reader.releaseLock();
   }
+}
+
+/** Backward-compatible checker: never exposes a validated body to its callers. */
+export async function checkFullPaprikaBody(request: Request): Promise<Result> {
+  const result = await readFullPaprikaBody(request);
+  return result.ok ? { ok: true } : result;
 }

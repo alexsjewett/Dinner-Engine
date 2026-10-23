@@ -18,6 +18,8 @@ const paths = [
   "backend/src/aiPilotOrchestrator.ts",
   "backend/src/openAiTransport.ts",
   "backend/src/pilotSynthetic.ts",
+  "backend/src/realPaprika.ts",
+  "backend/src/bridgePage.ts",
   "backend/src/usageLedger.ts",
   "backend/src/index.ts",
 ];

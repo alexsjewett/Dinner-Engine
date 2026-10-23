@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { AI_PILOT_PREVIEW_MESSAGE } from "../services/aiPilotPreview";
+import { AiDinnerCompanion } from "../components/AiDinnerCompanion";
 import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
 import { assessLocalCatalogReadiness, type CatalogReadiness } from "../services/aiPaprikaCatalogReadiness";
@@ -253,17 +253,13 @@ export function FindDinner() {
           </div>
 
           <div className="dinner-result-section" aria-label="Upcoming AI recommendations">
-            <h3>Optional AI dinner ideas — preparation only</h3>
-            <p className="helper-text">{AI_PILOT_PREVIEW_MESSAGE}</p>
+            <AiDinnerCompanion recipes={localRecipes}
+              criteria={submitted} diners={diners} />
+            <h3>Full-library preparation check (offline)</h3>
             <p className="helper-text">
-              A fictional AI test succeeded. AI ranking of your own Paprika recipes
-              is still switched off. The preparation check below runs entirely on
-              this device and cannot request, spend on, or enable OpenAI.
+              This optional planning check runs only on your phone. It does not
+              start an AI request, send recipes or incur a model charge.
             </p>
-            <button className="profile-primary-button" type="button" disabled
-              aria-describedby="ai-pilot-not-ready">
-              Improve suggestions with AI — not available yet
-            </button>
             {aiPaprikaPreview.length > 0 && (
               <details>
                 <summary>Preview Paprika recipes for future AI suggestions ({aiPaprikaPreview.length})</summary>
@@ -285,9 +281,9 @@ export function FindDinner() {
                 food restrictions and dietary needs without their profile names or IDs.
                 Personal information inside the recipe text itself is not automatically removed.
                 OpenAI may retain submitted data under its API policies even when
-                response storage is disabled. Nothing is transmitted now; a separate
-                explicit AI action, authenticated server safeguards and your final
-                activation approval will be required.
+                response storage is disabled. The offline preparation check never transmits anything.
+                The separate Ask AI action above requires deliberate consent
+                and a protected, activated backend before sending recipes.
               </p>
             </details>
             {libraryStatus === "ready" && localRecipes.length > 0 && (
@@ -364,8 +360,8 @@ export function FindDinner() {
                 )}
               </div>
             )}
-            <p id="ai-pilot-not-ready" className="helper-text">
-              The AI connection is off until a separate privacy and billing review.
+            <p className="helper-text">
+              The offline preparation check never activates paid AI.
             </p>
           </div>
 

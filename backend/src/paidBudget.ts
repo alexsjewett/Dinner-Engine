@@ -101,3 +101,37 @@ export function settleRequest(storage: MoneyStorage, requestId: string,
     return "settled";
   });
 }
+
+/**
+ * Atomically reserve an entire eligible model plan before sending the first
+ * real Paprika request. Never accept browser-controlled request IDs.
+ * If the hour or dollar budget cannot cover every call, no counters change.
+ */
+export function reservePaidBatch(
+  storage: MoneyStorage, timestamp: number, requestIds: readonly string[],
+): "reserved" | "duplicate" | "limited" {
+  if (requestIds.length < 1 || requestIds.length > PAID_LIMITS.hourly ||
+      new Set(requestIds).size !== requestIds.length ||
+      requestIds.some(id => !/^[a-zA-Z0-9_-]{16,80}$/.test(id))) {
+    throw Error("invalid_request_ids");
+  }
+  const keys = periodKeys(timestamp);
+  const month = Number(new Date(timestamp).toISOString().slice(0, 7).replace("-", ""));
+  return storage.transactionSync(() => {
+    for (const id of requestIds) {
+      const existing = storage.kv.get("paid:req:" + id);
+      if (existing !== undefined) { safeCount(existing); return "duplicate"; }
+    }
+    const values = keys.map(key => safeCount(storage.kv.get(key)));
+    const n = requestIds.length;
+    if (values[0] + n > PAID_LIMITS.hourly ||
+        values[1] + n > PAID_LIMITS.daily ||
+        values[2] + n > PAID_LIMITS.monthly ||
+        values[3] + n * PAID_LIMITS.perRequestMicroUsd > PAID_LIMITS.monthlyMicroUsd)
+      return "limited";
+    keys.forEach((key, index) => storage.kv.put(key,
+      values[index] + n * (index === 3 ? PAID_LIMITS.perRequestMicroUsd : 1)));
+    requestIds.forEach(id => storage.kv.put("paid:req:" + id, month * 10_000));
+    return "reserved";
+  });
+}
