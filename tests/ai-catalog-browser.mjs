@@ -6,7 +6,7 @@ import ts from "typescript";
 const suffix = ".catalog-fixture-" + process.pid + ".mjs";
 const paths = [
   "backend/src/guardrails.ts", "backend/src/aiPilot.ts",
-  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts",
+  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts", "backend/src/recipeRelevance.ts",
   "src/services/aiPaprikaRequest.ts", "src/services/aiPaprikaReadiness.ts",
   "src/services/aiPaprikaCatalogReadiness.ts",
 ];
