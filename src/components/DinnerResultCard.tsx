@@ -38,12 +38,12 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
         <span className="recipe-timing">{time}</span>
       </div>
       <h3>{title}</h3>
-      <p className="dinner-result-description">
-        {description ? description.slice(0, 240) : imported
-          ? "Original recipe imported from your Paprika library."
-          : "Sample dinner idea."}
-        {description.length > 240 ? "…" : ""}
-      </p>
+      {description.trim() && (
+        <p className="dinner-result-description">
+          {description.slice(0, 240)}
+          {description.length > 240 ? "…" : ""}
+        </p>
+      )}
       {onHand.length > 0 && (
         <section className="dinner-extra-ingredients" aria-label="Ingredients on-hand">
           <strong>Ingredients on-hand:</strong>
