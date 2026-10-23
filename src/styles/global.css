@@ -502,6 +502,25 @@ h1 {
   font-size: 13px; line-height: 1.6;
 }
 .dinner-result-section { margin-top: 25px; }
+.ai-companion {
+  border: 1px solid #dae7d7;
+  background: var(--paper);
+  border-radius: 17px;
+  padding: 18px;
+  margin: 4px 0 23px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ai-companion > h3 { margin: 0; font-size: 19px; color: var(--forest); }
+.ai-companion > .helper-text { margin: 0; }
+.ai-companion .dinner-mode-choice { display: flex; align-items: flex-start; gap: 10px; }
+.ai-companion .dinner-mode-choice input { flex-shrink: 0; margin-top: 5px; }
+.ai-companion > button { align-self: flex-start; }
+.ai-dinner-suggestion { padding: 12px 0; border-top: 1px solid var(--border); }
+.ai-dinner-suggestion p { margin: 5px 0; }
+.ai-dinner-suggestion a { color: var(--sage); font-weight: 750; }
+
 .local-ai-readiness {
   margin-top: 10px;
   border: 1px solid #d8e4d5;
