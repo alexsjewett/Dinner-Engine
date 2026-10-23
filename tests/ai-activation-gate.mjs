@@ -40,8 +40,8 @@ assert.ok(catalog.includes("MAX_LOCAL_CATALOG_RECIPES = 200"));
 assert.ok(pilot.includes("fictional-lentil-skillet") &&
   pilot.includes("syntheticPilotReady"),
   "paid testing uses a fixed fictional fixture only");
-assert.ok(quota.includes("hourly: 10") && quota.includes("daily: 40") &&
-  quota.includes("monthly: 100"));
+assert.ok(quota.includes("hourly: 50") && quota.includes("daily: 150") &&
+  quota.includes("monthly: 1_000"));
 assert.ok(quota.includes("monthlyMicroUsd: 5_000_000") &&
   quota.includes("perRequestMicroUsd: 1_500"),
   "do not silently raise server-enforced spending limits");

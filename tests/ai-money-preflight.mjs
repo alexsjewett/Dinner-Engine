@@ -8,7 +8,7 @@ try {
   await writeFile(out, ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
   } }).outputText, { flag: "wx" });
-  const { reservePaidBudget, reservePaidBatch, PAID_LIMITS, safeReconciledAmount, reserveRequest, settleRequest } =
+  const { reservePaidBudget, reservePaidBatch, PAID_LIMITS, MAX_PAID_BATCH_CALLS, safeReconciledAmount, reserveRequest, settleRequest } =
     await import(pathToFileURL(process.cwd() + "/" + out).href);
   const map = new Map();
   const storage = { kv: { get: key => map.get(key), put: (key, value) => map.set(key, value) },
@@ -16,10 +16,10 @@ try {
   const now = Date.parse("2026-10-22T13:00:00Z");
   assert.equal(PAID_LIMITS.monthlyMicroUsd, 5_000_000);
   assert.equal(PAID_LIMITS.perRequestMicroUsd, 1_500);
-  const attempts = await Promise.all(Array.from({ length: 30 },
+  const attempts = await Promise.all(Array.from({ length: 60 },
     async () => reservePaidBudget(storage, now)));
-  assert.equal(attempts.filter(Boolean).length, 10);
-  assert.equal(map.get("paid:usd:2026-10"), 15_000);
+  assert.equal(attempts.filter(Boolean).length, 50);
+  assert.equal(map.get("paid:usd:2026-10"), 75_000);
   assert.equal(reservePaidBudget(storage, now), false);
   assert.equal(reservePaidBudget(storage, now + 3_600_000), true);
   assert.equal(safeReconciledAmount(-1), null);
@@ -47,9 +47,9 @@ try {
   assert.equal(settleRequest(money, "second_request_00001", 1501), "invalid");
   assert.equal(persistent.get("paid:usd:2026-10"), 1900);
   assert.throws(() => reserveRequest(money, now, "bad"), /invalid_request_id/);
-  const burst = await Promise.all(Array.from({ length: 20 }, (_, i) =>
+  const burst = await Promise.all(Array.from({ length: 60 }, (_, i) =>
     Promise.resolve(reserveRequest(money, now, "concurrent_request_" + String(i).padStart(6, "0")))));
-  assert.equal(burst.filter(x => x === "reserved").length, 8);
+  assert.equal(burst.filter(x => x === "reserved").length, 48);
   assert.equal(burst.filter(x => x === "limited").length, 12);
   const batchMap = new Map();
   const batchStorage = {
@@ -65,10 +65,12 @@ try {
     "replayed batch must not spend again");
   assert.equal(settleRequest(batchStorage, ids[0], 79), "settled");
   assert.equal(batchMap.get("paid:usd:2026-10"), 1579);
-  assert.equal(reservePaidBatch(batchStorage, now,
-    Array.from({ length: 9 }, (_, i) => "over_limit_batch_id_" + i)), "hourly_limited");
+  assert.equal(MAX_PAID_BATCH_CALLS, 10);
+  assert.throws(() => reservePaidBatch(batchStorage, now,
+    Array.from({ length: MAX_PAID_BATCH_CALLS + 1 },
+      (_, i) => "oversized_batch_request_" + i)), /invalid_request_ids/);
   assert.equal(batchMap.get("paid:h:2026-10-22T13"), 2,
-    "overlimit batch must not reserve even the first request");
+    "oversized search plan must not reserve even the first request");
   assert.throws(() => reservePaidBatch(batchStorage, now, [ids[0], ids[0]]),
     /invalid_request_ids/);
   assert.equal(reservePaidBatch(batchStorage, now,
@@ -77,9 +79,9 @@ try {
   assert.equal(batchMap.get("paid:h:2026-10-22T13"), 10);
   // Distinct UTC-period diagnostics never weaken atomic no-reservation behavior.
   for (const [key, count, expected] of [
-    ["paid:h:2026-10-22T13", 9, "hourly_limited"],
-    ["paid:d:2026-10-22", 39, "daily_limited"],
-    ["paid:m:2026-10", 99, "monthly_limited"],
+    ["paid:h:2026-10-22T13", 49, "hourly_limited"],
+    ["paid:d:2026-10-22", 149, "daily_limited"],
+    ["paid:m:2026-10", 999, "monthly_limited"],
     ["paid:usd:2026-10", 4_997_500, "spending_limited"],
   ]) {
     const blockedMap = new Map([[key, count]]);
@@ -93,8 +95,33 @@ try {
     assert.deepEqual([...blockedMap], before,
       "failure may not reserve even one request or mutate counters");
   }
-  assert.equal(PAID_LIMITS.hourly, 10);
-  assert.equal(PAID_LIMITS.daily, 40);
-  assert.equal(PAID_LIMITS.monthly, 100);
+  assert.equal(PAID_LIMITS.hourly, 50);
+  assert.equal(PAID_LIMITS.daily, 150);
+  assert.equal(PAID_LIMITS.monthly, 1_000);
+  const dailyMap = new Map();
+  const dailyStorage = {
+    kv: { get: k => dailyMap.get(k), put: (k,v) => dailyMap.set(k,v) },
+    transactionSync: fn => fn(),
+  };
+  let dailyAccepted = 0;
+  for (let hour = 0; hour < 4; hour++) {
+    for (let i = 0; i < 50; i++) {
+      if (reservePaidBudget(dailyStorage, now + hour * 3_600_000)) dailyAccepted++;
+    }
+  }
+  assert.equal(dailyAccepted, 150);
+  assert.equal(dailyMap.get("paid:d:2026-10-22"), 150);
+  assert.equal(reservePaidBudget(dailyStorage, now + 86_400_000), true,
+    "a new UTC day resets its daily quota");
+  const monthlyMap = new Map([["paid:m:2026-10", 999]]);
+  const monthlyStorage = {
+    kv: { get: k => monthlyMap.get(k), put: (k,v) => monthlyMap.set(k,v) },
+    transactionSync: fn => fn(),
+  };
+  assert.equal(reservePaidBudget(monthlyStorage, now), true);
+  assert.equal(monthlyMap.get("paid:m:2026-10"), 1_000);
+  assert.equal(reservePaidBudget(monthlyStorage, now + 86_400_000), false);
+  assert.equal(reservePaidBudget(monthlyStorage, Date.parse("2026-11-01T00:00:00Z")), true,
+    "a new UTC month resets its monthly quota without changing the $5 cap");
   console.log("3B.1 money accounting and atomic complete-plan reservations passed");
 } finally { await unlink(out).catch(() => {}); }

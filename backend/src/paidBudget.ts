@@ -1,14 +1,17 @@
 /**
- * 3B.1 prepared monetary reservation ledger. Not connected to paid calls.
+ * Server-enforced paid model-call quotas and monetary reservation ledger.
  * All amounts are integer micro-USD, fixed one-owner namespace and UTC windows.
  * Reservations are never refunded automatically after a provider timeout:
  * unknown usage stays charged to the allowance (fail closed).
  */
 export const PAID_LIMITS = {
-  hourly: 10, daily: 40, monthly: 100,
+  hourly: 50, daily: 150, monthly: 1_000,
   monthlyMicroUsd: 5_000_000,
   perRequestMicroUsd: 1_500,
 } as const;
+
+/** One dinner search still allows at most ten model calls, regardless of hourly quota. */
+export const MAX_PAID_BATCH_CALLS = 10;
 
 export interface MoneyStorage {
   kv: { get(key: string): unknown; put(key: string, value: number): void };
@@ -103,15 +106,15 @@ export function settleRequest(storage: MoneyStorage, requestId: string,
 }
 
 /**
- * Atomically reserve an entire eligible model plan before sending the first
- * real Paprika request. Never accept browser-controlled request IDs.
+ * Atomically reserve an entire eligible model plan (at most ten calls) before
+ * sending the first real Paprika request. Limits count calls, not searches. Never accept browser-controlled request IDs.
  * If the hour or dollar budget cannot cover every call, no counters change.
  */
 export function reservePaidBatch(
   storage: MoneyStorage, timestamp: number, requestIds: readonly string[],
 ): "reserved" | "duplicate" | "hourly_limited" | "daily_limited" |
   "monthly_limited" | "spending_limited" {
-  if (requestIds.length < 1 || requestIds.length > PAID_LIMITS.hourly ||
+  if (requestIds.length < 1 || requestIds.length > MAX_PAID_BATCH_CALLS ||
       new Set(requestIds).size !== requestIds.length ||
       requestIds.some(id => !/^[a-zA-Z0-9_-]{16,80}$/.test(id))) {
     throw Error("invalid_request_ids");

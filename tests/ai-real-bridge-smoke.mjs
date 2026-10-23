@@ -140,13 +140,13 @@ try {
   assert.equal(map.get("paid:h:" + new Date().toISOString().slice(0,13)), calls);
   // No billable call occurs if the hourly quota cannot cover this entire plan.
   const hourKey = "paid:h:" + new Date().toISOString().slice(0, 13);
-  map.set(hourKey, 10);
+  map.set(hourKey, 50);
   const beforeBlocked = calls;
   r = await worker.fetch(request(), env, owner);
   assert.equal(r.status, 503);
   assert.deepEqual(await r.json(), { error: "budget_hourly_limit_reached" });
   assert.equal(calls, beforeBlocked, "budget rejection must not reach OpenAI");
-  assert.equal(map.get(hourKey), 10, "rejected batch must not mutate the limit");
+  assert.equal(map.get(hourKey), 50, "rejected batch must not mutate the limit");
   const beforeDisabled = calls;
   r = await worker.fetch(request(), { ...env, AI_REAL_MODE: "off" }, owner);
   assert.equal(r.status, 503);

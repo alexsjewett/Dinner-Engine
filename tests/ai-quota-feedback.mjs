@@ -17,11 +17,11 @@ try {
   const day = describeAiFailure("budget_daily_limit_reached", now);
   const month = describeAiFailure("budget_monthly_limit_reached", now);
   const spending = describeAiFailure("budget_spending_limit_reached", now);
-  assert.match(hour, /10 model calls/);
+  assert.match(hour, /50 model calls/);
   assert.match(hour, /Oct 23/);
-  assert.match(day, /40 model calls/);
+  assert.match(day, /150 model calls/);
   assert.match(day, /Oct 24/);
-  assert.match(month, /100 model calls/);
+  assert.match(month, /1,000 model calls/);
   assert.match(month, /Nov 1/);
   assert.match(spending, /\$5 monthly/);
   assert.match(spending, /Nov 1/);

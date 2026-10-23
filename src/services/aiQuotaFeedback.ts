@@ -27,13 +27,13 @@ function localReset(period: "hour" | "day" | "month", now: Date): string {
 export function describeAiFailure(code: string, now: Date = new Date()): string {
   switch (code) {
     case "budget_hourly_limit_reached":
-      return "AI hourly limit: up to 10 model calls per UTC hour, and one dinner search may use several calls. The next hourly window begins " +
+      return "AI hourly limit: up to 50 model calls per UTC hour, and one dinner search may use several calls. The next hourly window begins " +
         localReset("hour", now) + ". Other limits may still apply.";
     case "budget_daily_limit_reached":
-      return "AI daily limit: up to 40 model calls per UTC day. The next daily window begins " +
+      return "AI daily limit: up to 150 model calls per UTC day. The next daily window begins " +
         localReset("day", now) + ". Other limits may still apply.";
     case "budget_monthly_limit_reached":
-      return "AI monthly request limit: up to 100 model calls per UTC month. The next monthly window begins " +
+      return "AI monthly request limit: up to 1,000 model calls per UTC month. The next monthly window begins " +
         localReset("month", now) + ".";
     case "budget_spending_limit_reached":
       return "The server's $5 monthly AI spending allowance cannot cover this full recipe search. The next monthly window begins " +
