@@ -135,7 +135,7 @@ export function FindDinner() {
           const adjustments = reviewAiAdjustments(item.adjustments, recipe,
             submitted.haveText.split(","), submitted.unavailableText.split(","),
             mustAvoid);
-          const unsafeSwapWording = /\\b(substitut(?:e|ion)|swap|replac(?:e|ing)|instead of)\\b/i;
+          const unsafeSwapWording = /\b(substitut(?:e|ion)|swap|replac(?:e|ing)|instead of)\b/i;
           // Freeform model advice about swaps cannot bypass the reviewed
           // structured substitution contract.
           const explanation = unsafeSwapWording.test(item.explanation)
