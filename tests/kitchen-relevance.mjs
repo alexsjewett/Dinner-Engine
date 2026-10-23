@@ -9,7 +9,7 @@ const suffix = ".kitchen-relevance-" + process.pid + ".mjs";
 const output = path + suffix;
 try {
   const src = await readFile(path + ".ts", "utf8");
-  assert.ok(!/\\bfetch\\s*\\(|XMLHttpRequest|sendBeacon|localStorage/.test(src));
+  assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon|localStorage/.test(src));
   await writeFile(output, ts.transpileModule(src, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
   }).outputText, { flag: "wx" });
