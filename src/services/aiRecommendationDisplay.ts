@@ -22,6 +22,12 @@ export function isGenericAiDisclaimer(note: string): boolean {
     return true;
   return false;
 }
+/** Strip boilerplate sentences without discarding useful recipe-specific advice. */
+export function cleanAiNote(note: string): string {
+  return note.split(/(?<=[.!?])\\s+/)
+    .filter(sentence => !isGenericAiDisclaimer(sentence))
+    .join(" ").trim();
+}
 export function usefulAiNotes(notes: readonly string[]): string[] {
-  return notes.filter(note => !isGenericAiDisclaimer(note));
+  return notes.map(cleanAiNote).filter(Boolean);
 }
