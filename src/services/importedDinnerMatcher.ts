@@ -89,7 +89,9 @@ export function evaluateImportedRecipe(
       unavailable.push(line);
     } else if (have.some((term) => possibleLineMatch(term, line))) {
       onHand.push(line);
-    } else if (have.length > 0) {
+    } else {
+      // Show the original ingredient line even when users leave the pantry
+      // box blank. The input is not an exhaustive household inventory.
       notMarkedOnHand.push(line);
     }
   }
@@ -141,7 +143,7 @@ export function evaluateImportedRecipe(
     - unavailable.length * 50
     - hardHits * 100
     - softNotes.length * 12
-    - notMarkedOnHand.length * 2
+    - (have.length > 0 ? notMarkedOnHand.length * 2 : 0)
     - (time.minutes ?? 60) / 20;
 
   return {
@@ -151,7 +153,9 @@ export function evaluateImportedRecipe(
     category: "review",
     score,
     onHand: onHand.slice(0, 8),
-    notMarkedOnHand: notMarkedOnHand.slice(0, 8),
+    // Complete, unconfirmed ingredient list for the card, not a claim of
+    // what the household actually lacks. Do not abbreviate Paprika recipes.
+    notMarkedOnHand,
     unavailable: unavailable.slice(0, 8),
     softNotes,
     reviewReasons,
