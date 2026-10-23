@@ -37,7 +37,7 @@ export function AiDinnerCompanion({ recipes, criteria, diners }: Props) {
   }, [criteria, recipes]);
 
   const configured = !!validatedWorkerOrigin(AI_WORKER_ORIGIN);
-  const local = recipes.length && consent
+  const local = recipes.length > 0 && consent
     ? prepareLocalPaprikaRequest(recipes, criteria, diners, true)
     : null;
 
