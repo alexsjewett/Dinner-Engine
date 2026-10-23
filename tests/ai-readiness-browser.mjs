@@ -91,7 +91,7 @@ try {
   assert.equal(result.reason, "batch_plan_unavailable",
     "do not offer AI plan when every recipe is an obvious Must avoid conflict");
   const many = Array.from({ length: 18 }, (_, i) =>
-    recipe("r" + i, "rice, carrots", "Simmer and stir ".repeat(25)));
+    recipe("r" + i, "rice, carrots", "Simmer and stir ".repeat(65)));
   const fullPlan = assessLocalAiReadiness(
     prepareLocalPaprikaRequest(many, criteria, diners, true));
   assert.equal(fullPlan.ready, true);
@@ -100,7 +100,7 @@ try {
   const fewEligible = [
     recipe("match", "broccoli"),
     ...Array.from({ length: 7 }, (_, i) =>
-      recipe("excluded" + i, "tofu and oregano", "Stir and cook. ".repeat(60))),
+      recipe("excluded" + i, "tofu and oregano", "Stir and cook. ".repeat(115))),
   ];
   const sparseCriteria = { ...criteria, haveText: "broccoli", unavailableText: "tofu" };
   const sparse = assessLocalAiReadiness(
