@@ -108,6 +108,40 @@ try {
   assert.ok(plan.every(batch => batch.totalBatches === plan.length));
   assert.ok(plan.every(batch => batch.draft.inputBytes <= mod.MAX_STAGED_INPUT_BYTES));
   assert.deepEqual(plan.flatMap(batch => batch.recipeIds), multi.recipes.map(r => r.id));
+  // Regression: eight fully included recipes, but only broccoli is eligible.
+  // Old planner failed when a trailing or leading batch held only excluded
+  // recipes. An eligible anchor may repeat; original primary IDs may not.
+  const sparse = {
+    ...payload,
+    criteria: { ...criteria, have: ["broccoli"], unavailable: ["tofu"],
+      mustAvoidFoods: [] },
+    recipes: [
+      { ...recipe("broccoli", "broccoli and olive oil"), name: "Broccoli Dinner" },
+      ...Array.from({ length: 7 }, (_, i) => ({
+        ...recipe("tofu_" + i, "tofu and oregano"),
+        directions: "Stir and simmer. ".repeat(55),
+      })),
+    ],
+  };
+  for (const order of [sparse.recipes, [...sparse.recipes].reverse()]) {
+    const fullPlan = mod.planPaprikaModelBatches({ ...sparse, recipes: order });
+    assert.ok(fullPlan && fullPlan.length > 1 && fullPlan.length <= 10,
+      "mixed eligible and excluded library must still fit bounded model batches");
+    assert.deepEqual(fullPlan.flatMap(batch => batch.recipeIds),
+      order.map(recipe => recipe.id), "every original covered once as primary ID");
+    assert.ok(fullPlan.every(batch => batch.draft.eligibleIds.includes("broccoli")),
+      "every model batch must have an eligible recipe, not an excluded-only batch");
+    assert.ok(fullPlan.every(batch => batch.draft.inputBytes <= mod.MAX_STAGED_INPUT_BYTES));
+    for (const original of order) {
+      assert.ok(fullPlan.some(batch =>
+        JSON.parse(batch.draft.request.input).recipes.some(x =>
+          x.id === original.id && x.directions === original.directions)),
+        "full original text must never be silently dropped");
+    }
+  }
+  assert.equal(mod.planPaprikaModelBatches({ ...sparse,
+    recipes: sparse.recipes.slice(1) }), null,
+  "if every recipe is ineligible, do not synthesize dinner ideas");
   const conflictFirst = mod.planPaprikaModelBatches({
     ...payload,
     recipes: [recipe("known_conflict", "peanuts"), recipe("eligible", "beans")],
