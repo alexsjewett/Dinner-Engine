@@ -39,7 +39,9 @@ try {
   const card = await readFile("src/components/DinnerResultCard.tsx", "utf8");
   const detail = await readFile("src/pages/RecipeDetails.tsx", "utf8");
   const matcher = await readFile("src/services/importedDinnerMatcher.ts", "utf8");
-  assert.ok(card.includes("Other ingredients needed") &&
+  assert.ok(card.includes("Ingredients on-hand:") &&
+    card.includes("Ingredients needed:") &&
+    !card.includes("My Recipe") && !card.includes("AI pick") &&
     card.includes("otherNeeded.slice(0, 8)") &&
     card.includes("otherNeeded.slice(8)") &&
     card.includes("Not confirmed on hand"),
