@@ -6,6 +6,7 @@ import type { SearchCriteria } from "../services/dinnerMatcher";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
 import {
   AI_WORKER_ORIGIN, validatedWorkerOrigin, askAiWithSecurePopup,
+  checkAiSecureConnection,
   type AiDinnerResult,
 } from "../services/aiPopupBridge";
 
@@ -31,6 +32,8 @@ const messages: Record<string, string> = {
 export function AiDinnerCompanion({ recipes, criteria, diners }: Props) {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [connection, setConnection] = useState<string | null>(null);
   const [result, setResult] = useState<AiDinnerResult | null>(null);
   useEffect(() => {
     setConsent(false); setBusy(false); setResult(null);
@@ -40,6 +43,24 @@ export function AiDinnerCompanion({ recipes, criteria, diners }: Props) {
   const local = recipes.length > 0 && consent
     ? prepareLocalPaprikaRequest(recipes, criteria, diners, true)
     : null;
+
+  function testConnection() {
+    if (checking || busy) return;
+    setChecking(true);
+    setConnection(null);
+    // No recipe data is even constructed for this action.
+    void checkAiSecureConnection().then(outcome => {
+      setConnection(outcome.ok
+        ? outcome.enabled
+          ? "Secure connection verified. Real AI is enabled at the server; a separate consent click is still required before sharing recipes."
+          : "Secure connection verified. Real-recipe AI remains switched off. No recipes were sent or billed."
+        : outcome.error === "popup_blocked"
+          ? "Safari blocked the secure window. Allow pop-ups for Find dinner."
+          : "The secure connection could not be verified (" + outcome.error + "). No recipes were sent.");
+    }).catch(() => setConnection(
+      "The secure connection could not be verified. No recipes were sent."
+    )).finally(() => setChecking(false));
+  }
 
   function requestSuggestions() {
     if (!consent || busy || !configured) return;
@@ -70,6 +91,11 @@ export function AiDinnerCompanion({ recipes, criteria, diners }: Props) {
         Optional: ask the protected AI service to rank recipes from your own
         Paprika library. Your usual dinner matches keep working.
       </p>
+      <button type="button" className="profile-secondary-button"
+        onClick={testConnection} disabled={checking || busy}>
+        {checking ? "Checking secure connection…" : "Check secure AI connection — no recipe upload"}
+      </button>
+      {connection && <p className="helper-text" role="status">{connection}</p>}
       {recipes.length === 0 ? (
         <p className="helper-text">Import recipes under My recipes to try this feature.</p>
       ) : (
