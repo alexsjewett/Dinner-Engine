@@ -286,44 +286,69 @@ export interface StagedPaprikaBatch {
 export function planPaprikaModelBatches(value: unknown): StagedPaprikaBatch[] | null {
   if (!validateFullPaprikaPayload(value)) return null;
   const full = value as LibraryPayload & Record<string, unknown>;
-  const groups: LibraryRecipe[][] = [];
+
+  // A narrow pantry search can leave only one eligible recipe among many
+  // excluded originals. The old planner accumulated excluded-only groups,
+  // then failed its final model draft because it had no eligible IDs.
+  // Keep the complete library represented in model inputs, without silently
+  // dropping original text: repeat the smallest eligible *anchor* only when a
+  // group contains no eligible recipe. A full-library request is still sent
+  // from the browser; each original recipe is covered exactly once as a
+  // primary ID. An anchor may appear in more than one bounded model batch.
+  const eligible = full.recipes.filter(recipe =>
+    !knownHardConflict(recipe, full.criteria.mustAvoidFoods) &&
+    screenRecipeForSearch(recipe, full.criteria.have, full.criteria.unavailable).eligible);
+  if (!eligible.length) return null;
+  const anchor = [...eligible].sort((a, b) =>
+    JSON.stringify(a).length - JSON.stringify(b).length)[0];
+
+  const plannedGroups: Array<{ primaryIds: string[]; draft: StagedRequest }> = [];
   let group: LibraryRecipe[] = [];
+  const draftWithOptionalAnchor = (recipes: LibraryRecipe[]): StagedRequest | null => {
+    const direct = stagePaprikaModelRequest({ ...full, recipes });
+    if (direct) return direct;
+    // Never repeat the same ID *within* one model batch.
+    const withAnchor = recipes.some(recipe => recipe.id === anchor.id)
+      ? recipes : [anchor, ...recipes];
+    return stagePaprikaModelRequest({ ...full, recipes: withAnchor });
+  };
+  const flush = (): boolean => {
+    if (!group.length) return true;
+    const draft = stagePaprikaModelRequest({ ...full, recipes: group }) ??
+      draftWithOptionalAnchor(group);
+    if (!draft) return false;
+    plannedGroups.push({ primaryIds: group.map(recipe => recipe.id), draft });
+    group = [];
+    return plannedGroups.length <= MAX_PAPRIKA_MODEL_BATCHES;
+  };
+
   for (const recipe of full.recipes) {
     const trial = [...group, recipe];
-    const proposed = { ...full, recipes: trial };
-    if (stagePaprikaModelRequest(proposed)) {
+    if (draftWithOptionalAnchor(trial)) {
       group = trial;
-    } else if (group.length === 0) {
-      // A known-conflict recipe may share a batch with later eligible recipes.
-      group = trial;
-    } else if (stagePaprikaModelRequest({ ...full, recipes: group })) {
-      groups.push(group);
-      group = [recipe];
     } else {
-      // No partial result when a group cannot fit or has no eligible IDs.
-      return null;
+      if (!flush()) return null;
+      group = [recipe];
+      if (!draftWithOptionalAnchor(group)) return null;
     }
-    if (groups.length >= MAX_PAPRIKA_MODEL_BATCHES) return null;
   }
-  if (group.length > 0) groups.push(group);
-  if (groups.length < 1 || groups.length > MAX_PAPRIKA_MODEL_BATCHES) return null;
-  const result: StagedPaprikaBatch[] = [];
-  for (let i = 0; i < groups.length; i++) {
-    const recipes = groups[i];
-    const draft = stagePaprikaModelRequest({ ...full, recipes });
-    if (!draft) return null;
-    result.push({
-      batchNumber: i + 1,
-      totalBatches: groups.length,
-      totalLibraryRecipes: full.recipes.length,
-      recipeIds: recipes.map(recipe => recipe.id),
-      draft,
-    });
-  }
-  // Every original recipe must occur once in the model-input plan.
-  const allIds = result.flatMap(item => item.recipeIds);
-  if (allIds.length !== full.recipes.length ||
-      new Set(allIds).size !== allIds.length ||
-      allIds.some((id, i) => id !== full.recipes[i].id)) return null;
+  if (!flush() || plannedGroups.length === 0) return null;
+
+  const result = plannedGroups.map((item, i): StagedPaprikaBatch => ({
+    batchNumber: i + 1,
+    totalBatches: plannedGroups.length,
+    totalLibraryRecipes: full.recipes.length,
+    recipeIds: item.primaryIds,
+    draft: item.draft,
+  }));
+  // Every original recipe is represented in at least one complete model input,
+  // with no truncation. Primary IDs are unique and preserve archive order.
+  const primaryIds = result.flatMap(batch => batch.recipeIds);
+  if (primaryIds.length !== full.recipes.length ||
+      new Set(primaryIds).size !== primaryIds.length ||
+      primaryIds.some((id, i) => id !== full.recipes[i].id) ||
+      result.some(batch =>
+        !batch.recipeIds.every(id => batch.draft.request.input.includes(JSON.stringify(id)))))
+    return null;
   return result;
 }

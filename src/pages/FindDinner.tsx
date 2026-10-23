@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
+import { assessLocalAiReadiness } from "../services/aiPaprikaReadiness";
 import { AI_WORKER_ORIGIN, askAiWithSecurePopup, type AiDinnerSuggestion } from "../services/aiPopupBridge";
 import { evaluateImportedRecipe } from "../services/importedDinnerMatcher";
 import { reviewAiAdjustments, screenRecipeForSearch } from "../../backend/src/recipeRelevance";
@@ -103,6 +104,17 @@ export function FindDinner() {
         consent_required: "Enable AI assistance to share your recipes.",
       };
       setError(reasons[prepared.reason]);
+      return;
+    }
+    // Nonbillable local readiness check: do not open Access or incur provider
+    // costs if the full original library cannot fit a bounded model plan.
+    if (prepared?.ok && !assessLocalAiReadiness(prepared).ready) {
+      setSearch({ draft: submitted, submitted, expanded: false });
+      setAiSearch(false);
+      setAiSuggestions(null);
+      setAiFailure("");
+      setError("Your complete library does not fit the current AI batch limits. " +
+        "No AI request was sent; showing your usual recipe matches.");
       return;
     }
     // A fresh submit is the only act that authorizes this specific paid request.

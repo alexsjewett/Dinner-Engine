@@ -97,6 +97,20 @@ try {
   assert.equal(fullPlan.ready, true);
   assert.ok(fullPlan.batchCount > 1, "should exercise segmented full-library plan");
   assert.equal(fullPlan.batchRecipeCounts.reduce((a, b) => a + b, 0), many.length);
+  const fewEligible = [
+    recipe("match", "broccoli"),
+    ...Array.from({ length: 7 }, (_, i) =>
+      recipe("excluded" + i, "tofu and oregano", "Stir and cook. ".repeat(60))),
+  ];
+  const sparseCriteria = { ...criteria, haveText: "broccoli", unavailableText: "tofu" };
+  const sparse = assessLocalAiReadiness(
+    prepareLocalPaprikaRequest(fewEligible, sparseCriteria, [], true));
+  assert.equal(sparse.ready, true, "mixed library may have just one eligible recipe");
+  assert.equal(sparse.recipeCount, 8);
+  assert.equal(sparse.eligibleRecipeCount, 1, "anchor repetition must not inflate eligibility");
+  assert.equal(sparse.knownConflictExcludedCount, 7);
+  assert.equal(sparse.batchRecipeCounts.reduce((a,b)=>a+b, 0), 8);
+  assert.ok(sparse.batchCount > 1);
   console.log("Browser-only AI readiness: consent, full library, privacy, restrictions and fail-closed batch bounds passed");
 } finally {
   await Promise.all(made.map(path => unlink(path).catch(() => {})));
