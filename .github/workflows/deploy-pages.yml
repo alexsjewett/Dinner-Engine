@@ -33,6 +33,8 @@ jobs:
         run: npm run test:import
       - name: Test local dinner matching
         run: npm run test:matching
+      - name: Test pantry relevance and safe proposed ingredient swaps
+        run: node tests/kitchen-relevance.mjs
       - name: Test disabled AI foundation
         run: npm run test:ai-foundation
       - name: Test staged AI pilot safety
