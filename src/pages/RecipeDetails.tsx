@@ -70,10 +70,12 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
                 {aiExplanation && <p>{aiExplanation}</p>}
                 {(suggestion.adjustments?.length ?? 0) > 0 && (
                   <>
-                    <h3>Ingredient change to try</h3>
+                    <h3>Suggested recipe adjustments</h3>
                     <ul>{suggestion.adjustments?.map((change, index) => (
                       <li key={index}>
-                        <strong>Instead of {change.ingredientFrom}, try {change.ingredientTo}.</strong>{" "}
+                        <strong>{change.method === "omit" || change.ingredientTo === "omit"
+                          ? "Leave out " + change.ingredientFrom + "."
+                          : "Instead of " + change.ingredientFrom + ", try " + change.ingredientTo + "."}</strong>{" "}
                         {change.why}
                       </li>
                     ))}</ul>

@@ -10,7 +10,8 @@ import type { LocalPaprikaPreflight } from "./aiPaprikaRequest";
 
 export type AiDinnerSuggestion = {
   recipeId: string; explanation: string; cautions: string[];
-  adjustments?: Array<{ ingredientFrom: string; ingredientTo: string; why: string }>;
+  adjustments?: Array<{ ingredientFrom: string; ingredientTo: string; why: string;
+    method?: "substitute" | "omit" }>;
   requiresManualReview: true;
 };
 export type AiDinnerResult =
@@ -89,13 +90,14 @@ export function askAiWithSecurePopup(
               Array.isArray(s.cautions) &&
               s.cautions.every(x => typeof x === "string") &&
               (s.adjustments === undefined ||
-                (Array.isArray(s.adjustments) && s.adjustments.length <= 1 &&
+                (Array.isArray(s.adjustments) && s.adjustments.length <= 2 &&
                   s.adjustments.every((value: unknown) => {
                     if (!value || typeof value !== "object") return false;
                     const a = value as Record<string, unknown>;
                     return typeof a.ingredientFrom === "string" && a.ingredientFrom.length <= 80 &&
                       typeof a.ingredientTo === "string" && a.ingredientTo.length <= 80 &&
-                      typeof a.why === "string" && a.why.length <= 110;
+                      typeof a.why === "string" && a.why.length <= 110 &&
+                      (a.method === undefined || a.method === "substitute" || a.method === "omit");
                   }))) &&
               s.requiresManualReview === true;
           }) &&

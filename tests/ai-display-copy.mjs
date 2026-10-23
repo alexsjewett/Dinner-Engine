@@ -40,8 +40,8 @@ try {
   const detail = await readFile("src/pages/RecipeDetails.tsx", "utf8");
   const matcher = await readFile("src/services/importedDinnerMatcher.ts", "utf8");
   assert.ok(card.includes("Other ingredients needed") &&
-    card.includes("notMarkedOnHand.slice(0, 8)") &&
-    card.includes("notMarkedOnHand.slice(8)") &&
+    card.includes("otherNeeded.slice(0, 8)") &&
+    card.includes("otherNeeded.slice(8)") &&
     card.includes("Not confirmed on hand"),
     "recipe card must display available and remaining ingredients with an explanation");
   assert.ok(card.includes("usefulAiNotes(ai.cautions)") &&

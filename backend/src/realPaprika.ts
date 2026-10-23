@@ -13,7 +13,7 @@ import { callStagedOpenAi, type ProviderFailureCode, type ProviderFetch } from "
 import type { FullPaprikaPayload } from "./paprikaContract";
 import { type SyntheticPilotEnv } from "./pilotSynthetic";
 import type { AiAdjustment } from "./aiPilot";
-import { reviewAiAdjustments, screenRecipeForSearch } from "./recipeRelevance";
+import { reviewAiAdjustments, screenRecipeForSearch, recommendationFitScore } from "./recipeRelevance";
 
 export interface RealPaprikaEnv extends SyntheticPilotEnv {
   AI_REAL_MODE?: string;
@@ -52,7 +52,8 @@ export async function runRealPaprika(
   // Do not reserve or bill any OpenAI call when no recipe has a pantry match
   // or an explicitly unavailable ingredient is required.
   if (!payload.recipes.some(recipe => screenRecipeForSearch(recipe,
-    payload.criteria.have, payload.criteria.unavailable).eligible)) {
+    payload.criteria.have, payload.criteria.unavailable,
+    payload.criteria.mustAvoidFoods, payload.criteria.dietaryNeeds).eligible)) {
     return { ok: false, error: "no_eligible_recipes" };
   }
   const batches = planPaprikaModelBatches(payload);
@@ -122,24 +123,35 @@ export async function runRealPaprika(
       const recipe = recipeById.get(item.recipeId);
       const adjustments = recipe
         ? reviewAiAdjustments(item.adjustments, recipe, payload.criteria.have,
-          payload.criteria.unavailable, payload.criteria.mustAvoidFoods)
+          payload.criteria.unavailable, payload.criteria.mustAvoidFoods,
+          payload.criteria.dietaryNeeds)
         : [];
       return { ...item, adjustments };
     }));
+    // Compare the candidates across every bounded model batch using the
+    // same visible pantry, adaptation and preference factors. Batch-local
+    // model order breaks ties. No recipe can bypass server eligibility.
+    const scored = groups.flatMap(group => group.map((item, modelRank) => ({
+      item, modelRank,
+      score: (() => {
+        const recipe = recipeById.get(item.recipeId);
+        return recipe ? recommendationFitScore(recipe,
+          payload.criteria.have, payload.criteria.unavailable,
+          payload.criteria.mustAvoidFoods, payload.criteria.dietaryNeeds,
+          payload.criteria.shouldAvoidFoods, payload.criteria.preferAvoidFoods) : -10_000;
+      })(),
+    }))).sort((a, b) =>
+      b.score - a.score || a.modelRank - b.modelRank ||
+      a.item.recipeId.localeCompare(b.item.recipeId));
     const suggestions: Array<{
       recipeId: string; explanation: string; cautions: string[];
       adjustments?: AiAdjustment[]; requiresManualReview: true;
     }> = [];
-    for (let rank = 0; rank < 5 && suggestions.length < 3; rank++) {
-      for (const group of groups) {
-        const item = group[rank];
-        // An eligible anchor may occur across bounded batches. Show each
-        // original Paprika recipe at most once.
-        if (item && suggestions.length < 3 &&
-            !suggestions.some(existing => existing.recipeId === item.recipeId)) {
-          suggestions.push(item);
-        }
-      }
+    for (const choice of scored) {
+      if (suggestions.length >= 3) break;
+      if (choice.score < -1_000 ||
+          suggestions.some(existing => existing.recipeId === choice.item.recipeId)) continue;
+      suggestions.push(choice.item);
     }
     if (!suggestions.length) return { ok: false, error: "model_response_invalid" };
     return { ok: true, suggestions,

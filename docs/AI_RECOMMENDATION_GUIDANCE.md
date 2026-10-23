@@ -1,6 +1,6 @@
 # Kitchen Companion — AI Recipe Recommendation & Adaptation Guidance
 
-**Status:** Approved product behavior / design specification; **not yet implemented** in the live AI algorithm.  
+**Status:** Approved product behavior / design specification. Initial conservative implementation prepared in PR #13; verify Cloudflare Worker production deployment before treating backend behavior as live.  
 **Recorded:** October 22, 2026 (Pacific time).  
 **Scope:** Ranking dinner recipes from the user's Paprika library; suggesting ingredient swaps, omissions, and separately served components; explaining ingredient availability.  
 **Source of truth:** This document captures the product owner's decisions. Engineering prompts, screening, validators, UI copy, and tests should implement these rules without silently narrowing them.
@@ -132,3 +132,12 @@ Exact score weights and tie-breakers are **not yet specified**. They should be c
 - Review user-visible wording on iPhone for specific, concise adaptations and the "Other ingredients needed" section before deploying.
 
 **Change control:** This file records agreed behavior only. Production code, model prompt, schema, tests and deployment require a separately scoped implementation change.
+
+
+## Implementation notes — first chef-guided release
+
+The first release applies this document in the model prompt and adds conservative deterministic checks for known ingredient substitutions, optional omissions and Must-avoid conflicts. It removes the exact pantry-match requirement, allows approved off-pantry purchases, applies a preference-aware cross-batch ranking score, and displays validated changes and unconfirmed additional ingredients.
+
+**Boundaries:** The app does not automatically accept creative arbitrary replacement claims from AI. Server-approved transformations currently cover a narrow set of conventional ingredient pairs and contexts (for example black beans to pinto beans or dairy milk to coconut milk in compatible curries), optional garnishes explicitly marked as such, and an explicitly lower-priority quiche egg-to-tofu-and-nutritional-yeast adaptation. More nuanced omission/separate-serving options, broader culinary roles, ingredient aliases, and scoring calibration remain future improvements requiring tests. Complex or ambiguous hard conflicts fail closed; even an accepted adaptation is not an allergy or gluten safety certification.
+
+**Release verification:** \`main\` deploys the React site through GitHub Actions. The separate Access-protected Cloudflare Worker is connected to the repository through Cloudflare Builds as documented in \`backend/README.md\`. A green GitHub CI run is **not proof** that the Cloudflare Production Worker deployed: independently inspect Cloudflare's Builds/Deployments entry for the merged commit, ensure existing Access/secret/ledger controls are intact, and run an owner-authenticated opt-in test. Do not weaken authentication or budgeting to resolve deployment issues.
