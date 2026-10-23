@@ -6,7 +6,7 @@ import ts from "typescript";
 const suffix = ".ai-orchestrator-mock-" + process.pid + ".mjs";
 const paths = [
   "backend/src/guardrails.ts", "backend/src/aiPilot.ts",
-  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts",
+  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts", "backend/src/recipeRelevance.ts",
   "backend/src/paidBudget.ts", "backend/src/aiPilotOrchestrator.ts",
 ];
 const worker = await readFile("backend/src/index.ts", "utf8");
