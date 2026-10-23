@@ -38,7 +38,6 @@ function AppLayout() {
           </svg>
         </span>
         <span className="brand-name">Find dinner.</span>
-        <span className="header-note">your kitchen companion</span>
       </header>
       <main ref={mainRef} className="main-content" id="main-content">
         <Outlet />
