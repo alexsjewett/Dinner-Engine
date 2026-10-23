@@ -112,8 +112,35 @@ try {
   assert.ok(calls >= 1 && calls <= 10);
   assert.equal(map.get("paid:h:" + new Date().toISOString().slice(0,13)), calls);
   const priorCalls = calls;
+
+  const mixed = { ...payload,
+    recipes: payload.recipes.map((recipe, i) => ({
+      ...recipe,
+      ingredients: i === 0 ? "broccoli and rice" : "tofu oregano",
+      directions: "Stir the mixture. ".repeat(58),
+    })),
+    criteria: { ...payload.criteria, have: ["broccoli"],
+      unavailable: ["tofu"] },
+  };
+  const sparseRequest = new Request(origin + "/api/ai/recommend", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin,
+      "X-Find-Dinner-Intent": "real-paprika-opt-in" },
+    body: JSON.stringify(mixed),
+  });
+  r = await worker.fetch(sparseRequest, env, owner);
+  assert.equal(r.status, 200,
+    "one eligible broccoli recipe among excluded tofu recipes must be routable");
+  const sparseReply = await r.json();
+  assert.equal(sparseReply.ok, true);
+  assert.equal(sparseReply.suggestions.length, 1,
+    "anchor repetition cannot produce duplicate displayed recipes");
+  assert.equal(sparseReply.suggestions[0].recipeId, "invented-0");
+  assert.ok(calls > priorCalls);
+  assert.equal(map.get("paid:h:" + new Date().toISOString().slice(0,13)), calls);
+  const beforeDisabled = calls;
   r = await worker.fetch(request(), { ...env, AI_REAL_MODE: "off" }, owner);
   assert.equal(r.status, 503);
-  assert.equal(calls, priorCalls);
+  assert.equal(calls, beforeDisabled);
 } finally { globalThis.fetch = previousFetch; }
 console.log("Secure popup bridge, authentication, default-off real AI and mocked paid path passed");
