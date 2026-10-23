@@ -238,15 +238,14 @@ export function Profiles() {
         <p className="eyebrow">Made for your table</p>
         <h1>Who's eating dinner today?</h1>
         <p className="lead">
-          Save dietary needs and foods to avoid for each person. Find Dinner
-          will use this information in a future milestone.
+          Save dietary needs and foods to avoid for each person. Find Dinner uses these preferences when suggesting recipes.
         </p>
       </div>
 
       <div className="local-storage-note" role="note">
         <strong>Saved on this device only.</strong>{" "}
         Profiles stay in this browser, not GitHub, and do not sync to other devices.
-        Please use fictional test profiles rather than sensitive medical details.
+        
       </div>
 
       {saved.warning && <p className="profile-alert" role="alert">{saved.warning}</p>}
@@ -309,17 +308,6 @@ export function Profiles() {
         </div>
       )}
 
-      <div className="gentle-note">
-        <span className="note-symbol" aria-hidden="true">♡</span>
-        <div>
-          <strong>Restrictions are personal, not a guarantee of meal safety.</strong>
-          <p>
-            Different people can receive different versions of a dish.
-            Future suggestions may flag possible adaptations for a cook's review;
-            the app won't certify allergy or gluten safety.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
