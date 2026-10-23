@@ -44,7 +44,7 @@ function NavIcon({ name }: { name: NavIconName }) {
 }
 
 const items: { to: string; label: string; icon: NavIconName; end?: boolean }[] = [
-  { to: "/", label: "Find Dinner", icon: "search", end: true },
+  { to: "/", label: "Dinner", icon: "search", end: true },
   { to: "/library", label: "Recipe Library", icon: "book" },
   { to: "/profiles", label: "Profiles", icon: "users" },
 ];
