@@ -56,14 +56,30 @@ function plantBasedIngredient(line: string, term: string): boolean {
   if (t === "cheese") return /\b(?:vegan|dairy.free|plant.based)\s+cheese\b/i.test(line);
   return false;
 }
+function aliases(term: string): string[] {
+  switch (normalize(term)) {
+    case "dairy":
+      return ["milk", "butter", "cheese", "cream", "yogurt", "whey"];
+    case "soy":
+      return ["soy", "tofu", "tempeh", "edamame", "tamari"];
+    case "tree nuts":
+    case "nuts":
+      return ["almonds", "walnuts", "cashews", "pecans", "pistachios", "hazelnuts", "peanuts"];
+    case "gluten":
+      return ["gluten", "wheat", "all purpose flour", "soy sauce", "bread", "pasta"];
+    default: return [term];
+  }
+}
 function matchLines(recipe: SearchableRecipe, term: string): string[] {
   return ingredientLines(recipe.ingredients).filter(line =>
-    hasIngredientTerm(line, term) && !plantBasedIngredient(line, term));
+    aliases(term).some(alias =>
+      hasIngredientTerm(line, alias) && !plantBasedIngredient(line, alias)));
 }
 function avoidedReplacement(to: string, unavailable: readonly string[],
   mustAvoid: readonly string[], needs: readonly string[]): boolean {
   const blocked = [...unavailable, ...mustAvoid];
-  if (blocked.some(word => hasIngredientTerm(to, word) && !plantBasedIngredient(to, word))) return true;
+  if (blocked.some(word => aliases(word).some(alias =>
+      hasIngredientTerm(to, alias) && !plantBasedIngredient(to, alias)))) return true;
   const vegan = needs.includes("vegan");
   const vegetarian = vegan || needs.includes("vegetarian");
   if (vegetarian && /\b(?:meat|chicken|beef|pork|fish|shrimp)\b/i.test(to)) return true;
@@ -103,7 +119,11 @@ function chooseReplacement(term: string, line: string, recipe: SearchableRecipe,
   have: readonly string[], unavailable: readonly string[], must: readonly string[],
   needs: readonly string[]): { change: IngredientAdjustment; tier: number } | null {
   const title = normalize(recipe.name);
-  const t = normalize(term);
+  const normalizedTerm = normalize(term);
+  const t = normalizedTerm === "dairy"
+    ? ["milk", "butter", "cheese", "cream", "yogurt"].find(word =>
+        hasIngredientTerm(line, word) && !plantBasedIngredient(line, word)) ?? normalizedTerm
+    : normalizedTerm;
   if (t.length > 80) return null;
   const entireDish = title.includes(t) && !/black beans|pinto beans/.test(t);
   // Optional ingredients may be removed only when truly marked optional
@@ -111,7 +131,7 @@ function chooseReplacement(term: string, line: string, recipe: SearchableRecipe,
   if (optionalGarnish.has(t) && !entireDish &&
       /\b(optional|garnish|for serving|to serve|topping|on top)\b/i.test(line)) {
     return { tier: 2, change: {
-      ingredientFrom: term, ingredientTo: "omit", method: "omit",
+      ingredientFrom: t, ingredientTo: "omit", method: "omit",
       why: "Optional garnish; the main dish works without it.",
     } };
   }
@@ -149,7 +169,7 @@ function chooseReplacement(term: string, line: string, recipe: SearchableRecipe,
     return null;
   }
   return { tier: options.tier ?? 1, change: {
-    ingredientFrom: term, ingredientTo: to, method: "substitute",
+    ingredientFrom: t, ingredientTo: to, method: "substitute",
     why: have.some(x => hasIngredientTerm(to, x))
       ? "A conventional alternative you listed as available."
       : options.tier === 4
@@ -167,9 +187,11 @@ export function screenRecipeForSearch(
   mustAvoid: readonly string[] = [], dietaryNeeds: readonly string[] = [],
 ): RecipeScreen {
   const onHand = checkedTerms(have).filter(term =>
-    hasIngredientTerm(recipe.ingredients, term));
+    hasIngredientTerm(recipe.ingredients, term) &&
+    !checkedTerms(unavailable).some(missing => aliases(missing).some(x =>
+      hasIngredientTerm(term, x))));
   const missing = checkedTerms(unavailable).filter(term =>
-    hasIngredientTerm(recipe.name + "\n" + recipe.ingredients, term));
+    matchLines(recipe, term).length > 0 || hasIngredientTerm(recipe.name, term));
   const needs = checkedTerms(dietaryNeeds);
   const required = checkedTerms([...unavailable, ...mustAvoid, ...dietaryTerms(needs)]);
   const adjustments: IngredientAdjustment[] = [];
