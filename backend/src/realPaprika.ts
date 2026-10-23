@@ -111,8 +111,8 @@ export async function runRealPaprika(
     // the original ingredient list. Strip, never auto-apply, ungrounded or
     // obvious Must-avoid replacements. Recommendations remain usable.
     const normalize = (value: string) => " " + value.toLowerCase().normalize("NFKD")
-      .replace(/[\\u0300-\\u036f]/g, "")
-      .replace(/[^a-z0-9 ]/g, " ").replace(/\\s+/g, " ").trim() + " ";
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim() + " ";
     const recipeById = new Map(payload.recipes.map(recipe => [recipe.id, recipe]));
     const groups = outcome.groups.map(group => group.reply.suggestions.map(item => {
       const recipe = recipeById.get(item.recipeId);
