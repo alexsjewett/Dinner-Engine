@@ -85,6 +85,22 @@ try {
   assert.ok(matches.reviewReasons.some((value) => value.includes("Vegan")));
   assert.ok(matches.softNotes.some((value) => value.includes("Prefer to avoid")));
   assert.equal(userRecipe.ingredients, "2 eggs\n1 cup coconut milk\n1 tsp garlic powder\n1 eggplant");
+  assert.deepEqual(matches.notMarkedOnHand,
+    ["1 tsp garlic powder", "1 eggplant"],
+    "show all ingredients not confirmed by the pantry entry");
+  const openPantry = evaluateImportedRecipe(
+    userRecipe, { ...criteria, haveText: "", unavailableText: "" }, []);
+  assert.equal(openPantry.notMarkedOnHand.length, 4,
+    "a blank pantry does not imply there are no other ingredients needed");
+  const longRecipe = {
+    ...userRecipe,
+    ingredients: Array.from({ length: 14 }, (_, i) => "ingredient " + i).join("\n"),
+  };
+  const longMatch = evaluateImportedRecipe(longRecipe,
+    { ...criteria, haveText: "", unavailableText: "" }, []);
+  assert.equal(longMatch.notMarkedOnHand.length, 14,
+    "keep all original recipe lines for expandable ingredient list");
+
 
   const eggplantOnly = evaluateImportedRecipe({
     ...userRecipe, ingredients: "1 eggplant",

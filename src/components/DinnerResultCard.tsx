@@ -1,9 +1,10 @@
 import { Link } from "react-router";
 import type { DinnerSuggestion } from "../services/dinnerSuggestions";
 import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
+import { cleanAiNote, usefulAiNotes } from "../services/aiRecommendationDisplay";
 
 export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?: AiDinnerSuggestion }) {
-  const { onHand, unavailable, softNotes, reviewReasons } = result;
+  const { onHand, notMarkedOnHand, unavailable, softNotes, reviewReasons } = result;
   const imported = result.source === "imported";
   const title = imported ? result.recipe.name : result.recipe.title;
   const description = result.recipe.description;
@@ -16,6 +17,10 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
     : "/recipes/" + result.recipe.id;
   const review = result.category === "review";
   const hardFlags = reviewReasons.filter(reason => reason.includes("(Must avoid)"));
+  const aiExplanation = ai ? cleanAiNote(ai.explanation) : "";
+  const aiCautions = ai ? usefulAiNotes(ai.cautions) : [];
+  const aiHasAdvice = !!aiExplanation || aiCautions.length > 0 ||
+    (ai?.adjustments?.length ?? 0) > 0;
   return (
     <article className={"dinner-result-card" + (review ? " dinner-result-card--review" : "")}>
       <div className="dinner-result-header">
@@ -39,6 +44,27 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
           <strong>Possible on-hand matches:</strong> {onHand.join("; ")}
         </p>
       )}
+      {notMarkedOnHand.length > 0 && (
+        <section className="dinner-extra-ingredients" aria-label="Other ingredients needed">
+          <strong>Other ingredients needed</strong>
+          <ul>
+            {notMarkedOnHand.slice(0, 8).map((ingredient, index) => (
+              <li key={index}>{ingredient}</li>
+            ))}
+          </ul>
+          {notMarkedOnHand.length > 8 && (
+            <details>
+              <summary>Show {notMarkedOnHand.length - 8} more ingredients</summary>
+              <ul>
+                {notMarkedOnHand.slice(8).map((ingredient, index) => (
+                  <li key={index + 8}>{ingredient}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+          <p className="helper-text">Not confirmed on hand — you may already have these.</p>
+        </section>
+      )}
       {unavailable.length > 0 && (
         <p className="dinner-match-line">
           <strong>{imported ? "Possible unavailable matches:" : "Marked unavailable:"}</strong>{" "}
@@ -51,10 +77,10 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
           <ul>{hardFlags.map((reason, index) => <li key={index}>{reason}</li>)}</ul>
         </div>
       )}
-      {ai && (
+      {ai && aiHasAdvice && (
         <div className="dinner-result-notes">
           <strong>AI recommendation</strong>
-          <p>{ai.explanation}</p>
+          {aiExplanation && <p>{aiExplanation}</p>}
           {(ai.adjustments?.length ?? 0) > 0 && (
             <div className="dinner-ai-adjustments">
               <strong>Ingredient change to try</strong>
@@ -64,11 +90,10 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
                   {change.why}
                 </li>
               ))}</ul>
-              <p>Proposed only — check dietary needs before using a substitute.</p>
             </div>
           )}
-          {ai.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).length > 0 && (
-            <ul>{ai.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).map((note, index) => <li key={index}>{note}</li>)}</ul>
+          {aiCautions.length > 0 && (
+            <ul>{aiCautions.map((note, index) => <li key={index}>{note}</li>)}</ul>
           )}
         </div>
       )}

@@ -5,6 +5,7 @@ import { getRecipeById } from "../data/cookbook";
 import { getImportedRecipe } from "../services/importedRecipeStorage";
 import type { ImportedRecipe } from "../types/importedRecipe";
 import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
+import { cleanAiNote, usefulAiNotes } from "../services/aiRecommendationDisplay";
 
 interface DetailsLocationState { from?: string; aiSuggestion?: AiDinnerSuggestion; }
 
@@ -17,6 +18,10 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
     typeof suggestion.explanation === "string" &&
     Array.isArray(suggestion.cautions) &&
     suggestion.cautions.every(item => typeof item === "string");
+  const aiExplanation = suggestion ? cleanAiNote(suggestion.explanation) : "";
+  const aiCautions = suggestion ? usefulAiNotes(suggestion.cautions) : [];
+  const aiHasAdvice = !!aiExplanation || aiCautions.length > 0 ||
+    (suggestion?.adjustments?.length ?? 0) > 0;
   const backTo = origin?.from === "/" ? "/" : "/library";
   const backLabel = backTo === "/" ? "Dinner ideas" : "Recipe Library";
   const recipe = imported ? undefined : getRecipeById(recipeId ?? "");
@@ -60,9 +65,9 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
                 )}
               </div>
             </div>
-            {validSuggestion && suggestion && (
+            {validSuggestion && suggestion && aiHasAdvice && (
               <FeatureCard title="AI dinner ideas">
-                <p>{suggestion.explanation}</p>
+                {aiExplanation && <p>{aiExplanation}</p>}
                 {(suggestion.adjustments?.length ?? 0) > 0 && (
                   <>
                     <h3>Ingredient change to try</h3>
@@ -74,15 +79,11 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
                     ))}</ul>
                   </>
                 )}
-                {suggestion.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).length > 0 && (
-                  <ul>{suggestion.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).map((note, index) => (
+                {aiCautions.length > 0 && (
+                  <ul>{aiCautions.map((note, index) => (
                     <li key={index}>{note}</li>
                   ))}</ul>
                 )}
-                <p className="helper-text">
-                  AI notes are suggestions, not changes to your original Paprika recipe.
-                  Check ingredients and food restrictions before serving.
-                </p>
               </FeatureCard>
             )}
             <FeatureCard eyebrow="Unmodified Paprika text" title="Original ingredients">
