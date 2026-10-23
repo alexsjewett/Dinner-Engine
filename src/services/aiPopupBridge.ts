@@ -16,16 +16,21 @@ export type AiDinnerResult =
   | { ok: true; suggestions: AiDinnerSuggestion[];
       estimatedMicroUsd: number; batchCount: number }
   | { ok: false; error: string };
-export const AI_WORKER_ORIGIN = (import.meta.env.VITE_AI_WORKER_ORIGIN ?? "").trim();
+/**
+ * Pin the owner's verified, public Worker address. This is not a secret.
+ * Do not trust a dynamic build variable or a look-alike *.workers.dev
+ * hostname for a page that may transmit Paprika recipe text.
+ */
+export const AI_WORKER_ORIGIN = "https://dinner-engine-ai.alexsjewett.workers.dev";
 
 export function validatedWorkerOrigin(value: string): string | null {
   try {
     const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password ||
-        url.search || url.hash || url.pathname !== "/" ||
-        !url.hostname.startsWith("dinner-engine-ai.") ||
-        !url.hostname.endsWith(".workers.dev")) return null;
-    return url.origin;
+    return url.origin === AI_WORKER_ORIGIN &&
+      url.protocol === "https:" &&
+      !url.username && !url.password &&
+      !url.search && !url.hash &&
+      url.pathname === "/" ? url.origin : null;
   } catch { return null; }
 }
 
