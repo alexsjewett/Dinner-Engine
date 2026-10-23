@@ -10,6 +10,7 @@ import type { LocalPaprikaPreflight } from "./aiPaprikaRequest";
 
 export type AiDinnerSuggestion = {
   recipeId: string; explanation: string; cautions: string[];
+  adjustments?: Array<{ ingredientFrom: string; ingredientTo: string; why: string }>;
   requiresManualReview: true;
 };
 export type AiDinnerResult =
@@ -87,6 +88,15 @@ export function askAiWithSecurePopup(
               typeof s.explanation === "string" &&
               Array.isArray(s.cautions) &&
               s.cautions.every(x => typeof x === "string") &&
+              (s.adjustments === undefined ||
+                (Array.isArray(s.adjustments) && s.adjustments.length <= 1 &&
+                  s.adjustments.every((value: unknown) => {
+                    if (!value || typeof value !== "object") return false;
+                    const a = value as Record<string, unknown>;
+                    return typeof a.ingredientFrom === "string" && a.ingredientFrom.length <= 80 &&
+                      typeof a.ingredientTo === "string" && a.ingredientTo.length <= 80 &&
+                      typeof a.why === "string" && a.why.length <= 110;
+                  }))) &&
               s.requiresManualReview === true;
           }) &&
           Number.isSafeInteger(data.estimatedMicroUsd) &&

@@ -25,10 +25,17 @@ interface PilotPayload {
     dietaryNeeds?: string[];
   };
 }
+export interface AiAdjustment {
+  ingredientFrom: string;
+  ingredientTo: string;
+  why: string;
+}
 export interface AiSuggestion {
   recipeId: string;
   explanation: string;
   cautions: string[];
+  /** Optional for compatibility with previously validated pilot replies. */
+  adjustments?: AiAdjustment[];
 }
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -45,15 +52,26 @@ export function validateAiResponse(data: unknown, allowedIds: readonly string[])
   const allowed = new Set(allowedIds);
   const suggestions: AiSuggestion[] = [];
   for (const item of data.suggestions) {
-    if (!record(item) || Object.keys(item).some(k => !["recipeId", "explanation", "cautions"].includes(k)) ||
+    if (!record(item) || Object.keys(item).some(k => !["recipeId", "explanation", "cautions", "adjustments"].includes(k)) ||
         !shortText(item.recipeId, 128) || !allowed.has(item.recipeId) || seen.has(item.recipeId) ||
         !shortText(item.explanation, 240) || !Array.isArray(item.cautions) ||
         item.cautions.length > 3 || item.cautions.some((x: unknown) => !shortText(x, 120))) return null;
+    if (item.adjustments !== undefined &&
+      (!Array.isArray(item.adjustments) || item.adjustments.length > 1 ||
+        item.adjustments.some((value: unknown) =>
+          !record(value) ||
+          Object.keys(value).some(key => !["ingredientFrom", "ingredientTo", "why"].includes(key)) ||
+          !shortText(value.ingredientFrom, 80) ||
+          !shortText(value.ingredientTo, 80) ||
+          !shortText(value.why, 110)))) return null;
     seen.add(item.recipeId);
     suggestions.push({
       recipeId: item.recipeId,
       explanation: item.explanation,
       cautions: [...item.cautions] as string[],
+      ...(item.adjustments === undefined ? {} : {
+        adjustments: (item.adjustments as AiAdjustment[]).map(change => ({ ...change })),
+      }),
     });
   }
   return suggestions;

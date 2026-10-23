@@ -29,6 +29,12 @@ assert.ok(pageSrc.includes("DinnerResultCard") && pageSrc.includes("aiById"),
 assert.ok(!pageSrc.includes("AiDinnerCompanion") &&
   !pageSrc.includes("Full-library preparation check"),
   "do not show the obsolete second AI search interface");
+const cardSrc = await readFile("src/components/DinnerResultCard.tsx", "utf8");
+const detailsSrc = await readFile("src/pages/RecipeDetails.tsx", "utf8");
+assert.ok(cardSrc.includes("Ingredient change to try") &&
+  cardSrc.includes("ai.adjustments"), "cards must show generated recipe changes");
+assert.ok(detailsSrc.includes("Ingredient change to try") &&
+  detailsSrc.includes("suggestion.adjustments"), "details must show identical changes");
 const popupSrc = await readFile("src/services/aiPopupBridge.ts", "utf8");
 try {
   const compile = text => ts.transpileModule(text, {

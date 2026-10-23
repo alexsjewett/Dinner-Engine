@@ -63,8 +63,19 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
             {validSuggestion && suggestion && (
               <FeatureCard title="AI dinner ideas">
                 <p>{suggestion.explanation}</p>
-                {suggestion.cautions.length > 0 && (
-                  <ul>{suggestion.cautions.map((note, index) => (
+                {(suggestion.adjustments?.length ?? 0) > 0 && (
+                  <>
+                    <h3>Ingredient change to try</h3>
+                    <ul>{suggestion.adjustments?.map((change, index) => (
+                      <li key={index}>
+                        <strong>Instead of {change.ingredientFrom}, try {change.ingredientTo}.</strong>{" "}
+                        {change.why}
+                      </li>
+                    ))}</ul>
+                  </>
+                )}
+                {suggestion.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).length > 0 && (
+                  <ul>{suggestion.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).map((note, index) => (
                     <li key={index}>{note}</li>
                   ))}</ul>
                 )}

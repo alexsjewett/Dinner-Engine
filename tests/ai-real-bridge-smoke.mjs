@@ -94,6 +94,8 @@ try {
       output: [{ type: "message", content: [{ type: "output_text",
         text: JSON.stringify({ suggestions: [{
           recipeId: valid[0], explanation: "Fits the pantry", cautions: [],
+          adjustments: [{ ingredientFrom: "lentils", ingredientTo: "beans",
+            why: "A pantry alternative" }],
         }] }),
       }] }],
     });
@@ -104,6 +106,9 @@ try {
   assert.equal(data.ok, true);
   assert.ok(data.suggestions.every(s => payload.recipes.some(x => x.id === s.recipeId)));
   assert.ok(data.suggestions.every(s => s.requiresManualReview));
+  assert.ok(data.suggestions.some(s => s.adjustments?.some(a =>
+    a.ingredientFrom === "lentils" && a.ingredientTo === "beans")),
+    "safe, original-ingredient-based changes must reach the frontend");
   assert.ok(!JSON.stringify(data).includes("private_recipe_notes"));
   assert.ok(calls >= 1 && calls <= 10);
   assert.equal(map.get("paid:h:" + new Date().toISOString().slice(0,13)), calls);
