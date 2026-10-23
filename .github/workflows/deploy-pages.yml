@@ -37,6 +37,8 @@ jobs:
         run: node tests/kitchen-relevance.mjs
       - name: Test concise AI presentation and ingredient lists
         run: node tests/ai-display-copy.mjs
+      - name: Test descriptive AI quota messages
+        run: node tests/ai-quota-feedback.mjs
       - name: Test disabled AI foundation
         run: npm run test:ai-foundation
       - name: Test staged AI pilot safety
