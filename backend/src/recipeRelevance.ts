@@ -104,7 +104,7 @@ function chooseReplacement(term: string, line: string, recipe: SearchableRecipe,
   needs: readonly string[]): { change: IngredientAdjustment; tier: number } | null {
   const title = normalize(recipe.name);
   const t = normalize(term);
-  const source = normalize(line);
+  if (t.length > 80) return null;
   const entireDish = title.includes(t) && !/black beans|pinto beans/.test(t);
   // Optional ingredients may be removed only when truly marked optional
   // and the dish is not named for that ingredient.
@@ -137,9 +137,8 @@ function chooseReplacement(term: string, line: string, recipe: SearchableRecipe,
   // Limit transformative adaptations to explicitly recognized contexts.
   if (entireDish && !/quiche/.test(title) && !/beans/.test(t)) return null;
   const alternatives = [...options.to].sort((a, b) =>
-    Number(have.some(x => hasIngredientTerm(a, x))) -
-    Number(have.some(x => hasIngredientTerm(b, x))));
-  alternatives.reverse();
+    Number(have.some(x => hasIngredientTerm(b, x))) -
+    Number(have.some(x => hasIngredientTerm(a, x))));
   const to = alternatives.find(candidate =>
     !avoidedReplacement(candidate, unavailable, must, needs));
   if (!to) return null;
