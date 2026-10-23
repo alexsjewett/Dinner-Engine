@@ -1,5 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
+import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
+import { AI_WORKER_ORIGIN, askAiWithSecurePopup, type AiDinnerSuggestion } from "../services/aiPopupBridge";
+import { evaluateImportedRecipe } from "../services/importedDinnerMatcher";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
 import { loadProfiles } from "../services/profileStorage";
@@ -16,6 +19,11 @@ export function FindDinner() {
   const [search, setSearch] = useState<SavedSearch>(readSearchSession);
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
+  const [useAi, setUseAi] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<AiDinnerSuggestion[] | null>(null);
+  const [aiFailure, setAiFailure] = useState("");
+  const [aiSearch, setAiSearch] = useState(false);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
@@ -41,6 +49,8 @@ export function FindDinner() {
       draft: { ...previous.draft, ...partial },
     }));
     setError("");
+    setAiSuggestions(null);
+    setAiFailure("");
   }
 
   function togglePerson(id: string, checked: boolean) {
@@ -57,8 +67,53 @@ export function FindDinner() {
       return;
     }
     const submitted = { ...search.draft, selectedProfileIds: selected };
+    const dinersForRequest = selectDiners(profiles, submitted);
+    if (useAi && (libraryStatus !== "ready" || localRecipes.length === 0)) {
+      setError("Import some Paprika recipes before searching with AI.");
+      return;
+    }
+    const prepared = useAi
+      ? prepareLocalPaprikaRequest(localRecipes, submitted, dinersForRequest, true)
+      : null;
+    if (prepared && !prepared.ok) {
+      const reasons: Record<string, string> = {
+        empty_library: "Import Paprika recipes before asking AI.",
+        too_many_recipes: "The AI pilot currently supports up to 40 complete recipes per request.",
+        request_too_large: "Your complete library exceeds this pilot's safe request size. Nothing was uploaded.",
+        invalid_recipe_or_constraints: "The complete library did not pass the local request checks.",
+        consent_required: "Enable AI assistance to share your recipes.",
+      };
+      setError(reasons[prepared.reason]);
+      return;
+    }
+    // A fresh submit is the only act that authorizes this specific paid request.
+    // The protected popup must open synchronously in the submit gesture on iPhone.
+    const promise = prepared && prepared.ok
+      ? askAiWithSecurePopup(prepared, AI_WORKER_ORIGIN)
+      : null;
     setSearch({ draft: submitted, submitted, expanded: false });
+    setAiSearch(!!promise);
+    setAiSuggestions(null);
+    setAiFailure("");
     setError("");
+    if (promise) {
+      setAiBusy(true);
+      void promise.then(result => {
+        if (!result.ok) {
+          setAiFailure("AI suggestions couldn't finish (" + result.error +
+            "). Showing your usual recipe matches instead. No automatic retry.");
+          return;
+        }
+        const allowed = new Set(localRecipes.map(recipe => recipe.id));
+        if (result.suggestions.some(item => !allowed.has(item.recipeId))) {
+          setAiFailure("AI returned an unknown recipe. Showing your usual matches instead.");
+          return;
+        }
+        setAiSuggestions(result.suggestions);
+      }).catch(() => {
+        setAiFailure("AI is unavailable. Showing your usual recipe matches. No automatic retry.");
+      }).finally(() => setAiBusy(false));
+    }
   }
 
   const draft = search.draft;
@@ -67,8 +122,21 @@ export function FindDinner() {
   const results = submitted && libraryStatus !== "loading"
     ? recommendAllDinners(localRecipes, [], submitted, profiles, 10)
     : [];
-  const firstThree = results.slice(0, 3);
-  const extras = results.slice(3);
+  // AI and ordinary searches share the same imported-recipe card component.
+  // Only validated IDs already present in the browser's library are displayed.
+  const displayed = aiSearch && aiSuggestions
+    ? aiSuggestions.map(item => {
+        const recipe = localRecipes.find(recipe => recipe.id === item.recipeId);
+        if (!recipe || !submitted) return null;
+        const match = evaluateImportedRecipe(recipe, submitted, diners);
+        // Independently refuse recipes with detected hard dietary conflicts.
+        if (match.reviewReasons.some(reason => reason.includes("(Must avoid)"))) return null;
+        return match;
+      }).filter((item): item is NonNullable<typeof item> => item !== null)
+    : results;
+  const aiById = new Map(aiSuggestions?.map(item => [item.recipeId, item]) ?? []);
+  const firstThree = displayed.slice(0, 3);
+  const extras = displayed.slice(3);
   const direct = firstThree.filter((item) => item.category === "straightforward");
   const review = firstThree.filter((item) => item.category === "review");
   const extraDirect = extras.filter((item) => item.category === "straightforward");
@@ -185,10 +253,27 @@ export function FindDinner() {
             )}
           </fieldset>
 
+          <label className="dinner-mode-choice dinner-ai-toggle">
+            <input type="checkbox" role="switch" aria-label="Use AI assistance"
+              checked={useAi} disabled={aiBusy}
+              onChange={event => { setUseAi(event.target.checked); setAiFailure(""); }} />
+            <span><strong>Use AI assistance</strong>
+              <span className="dinner-ai-toggle-subtitle"> Optional · More tailored ideas</span>
+            </span>
+          </label>
           {error && <p className="profile-alert" role="alert">{error}</p>}
-          <button type="submit" className="profile-primary-button dinner-search-submit">
-            Find Dinner Ideas
+          <button type="submit" disabled={aiBusy || libraryStatus === "loading"}
+            className="profile-primary-button dinner-search-submit">
+            {aiBusy ? "AI is finding dinner ideas…" : "Find Dinner Ideas"}
           </button>
+          <p className="helper-text dinner-ai-disclosure">
+            {useAi
+              ? "AI shares your entire imported recipe library and selected dietary preferences (not people's names) with OpenAI. Requests may incur API costs within the $5 monthly pilot allowance. Review all ingredients and suggestions before cooking or eating."
+              : "AI is off. Dinner matching stays on your device."}
+          </p>
+          {aiBusy && <p className="helper-text" role="status" aria-live="polite">
+            AI is thinking… Your dinner ideas will appear below when ready.
+          </p>}
         </form>
       </FeatureCard>
 
@@ -204,7 +289,7 @@ export function FindDinner() {
         </p>
       )}
 
-      {submitted && libraryStatus !== "loading" && (
+      {submitted && libraryStatus === "ready" && (
         <section className="dinner-results" aria-labelledby="dinner-results-heading">
           <div className="dinner-results-heading">
             <p className="eyebrow">
@@ -212,7 +297,7 @@ export function FindDinner() {
             </p>
             <h2 id="dinner-results-heading">Dinner ideas</h2>
             <p className="helper-text">
-              Showing {search.expanded ? results.length : firstThree.length} of the top {results.length} recipe ideas
+              Showing {search.expanded ? displayed.length : firstThree.length} of {displayed.length} recipe ideas
               from your {localRecipes.length} saved recipes.
               {diners.length > 0
                 ? " Considering " + diners.map((person) => person.name).join(", ") + "."
@@ -220,10 +305,21 @@ export function FindDinner() {
             </p>
           </div>
 
+          {aiFailure && <p className="profile-alert" role="status">{aiFailure}</p>}
+          {aiBusy && <p className="helper-text" role="status">Preparing your AI recommendations…</p>}
+          {!aiBusy && aiSearch && aiSuggestions && (
+            <p className="helper-text" role="status">
+              {displayed.length ? "AI selected recipes from your Paprika library." :
+                "AI had no suggestions that passed the dietary checks. Review your usual matches below."}
+            </p>
+          )}
+          {!aiBusy && displayed.length === 0 && (
+            <p className="helper-text">No matching recipes yet. Try another ingredient or import more from Paprika.</p>
+          )}
           {direct.length > 0 && (
             <div className="dinner-result-section">
               <h3>More straightforward options</h3>
-              {direct.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
+              {direct.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} ai={aiById.get(item.recipe.id)} />)}
             </div>
           )}
 
@@ -234,7 +330,7 @@ export function FindDinner() {
                 These may still inspire dinner, but need more time, shopping, portion
                 changes or a cook's assessment before serving.
               </p>
-              {review.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
+              {review.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} ai={aiById.get(item.recipe.id)} />)}
             </div>
           )}
 
@@ -251,13 +347,13 @@ export function FindDinner() {
               {extraDirect.length > 0 && (
                 <div className="dinner-additional-group">
                   <h4>More straightforward options</h4>
-                  {extraDirect.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
+                  {extraDirect.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} ai={aiById.get(item.recipe.id)} />)}
                 </div>
               )}
               {extraReview.length > 0 && (
                 <div className="dinner-additional-group">
                   <h4>More options needing adjustment or review</h4>
-                  {extraReview.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
+                  {extraReview.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} ai={aiById.get(item.recipe.id)} />)}
                 </div>
               )}
             </div>
