@@ -135,7 +135,7 @@ export function FindDinner() {
       }).filter((item): item is NonNullable<typeof item> => item !== null)
     : null;
   const showingAi = aiMatches !== null && aiMatches.length > 0;
-  const displayed = showingAi ? aiMatches : results;
+  const displayed = showingAi && aiMatches ? aiMatches : results;
   const aiById = new Map(showingAi ? aiSuggestions?.map(item => [item.recipeId, item]) : []);
   const firstThree = displayed.slice(0, 3);
   const extras = displayed.slice(3);
