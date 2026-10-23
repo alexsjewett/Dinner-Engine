@@ -94,7 +94,7 @@ try {
     "a blank pantry does not imply there are no other ingredients needed");
   const longRecipe = {
     ...userRecipe,
-    ingredients: Array.from({ length: 14 }, (_, i) => "ingredient " + i).join("\\n"),
+    ingredients: Array.from({ length: 14 }, (_, i) => "ingredient " + i).join("\n"),
   };
   const longMatch = evaluateImportedRecipe(longRecipe,
     { ...criteria, haveText: "", unavailableText: "" }, []);
