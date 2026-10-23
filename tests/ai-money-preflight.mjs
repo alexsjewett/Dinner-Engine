@@ -66,7 +66,7 @@ try {
   assert.equal(settleRequest(batchStorage, ids[0], 79), "settled");
   assert.equal(batchMap.get("paid:usd:2026-10"), 1579);
   assert.equal(reservePaidBatch(batchStorage, now,
-    Array.from({ length: 9 }, (_, i) => "over_limit_batch_id_" + i)), "limited");
+    Array.from({ length: 9 }, (_, i) => "over_limit_batch_id_" + i)), "hourly_limited");
   assert.equal(batchMap.get("paid:h:2026-10-22T13"), 2,
     "overlimit batch must not reserve even the first request");
   assert.throws(() => reservePaidBatch(batchStorage, now, [ids[0], ids[0]]),
@@ -75,5 +75,26 @@ try {
     Array.from({ length: 8 }, (_, i) => "valid_batch_request_" + String(i).padStart(5,"0"))),
     "reserved");
   assert.equal(batchMap.get("paid:h:2026-10-22T13"), 10);
+  // Distinct UTC-period diagnostics never weaken atomic no-reservation behavior.
+  for (const [key, count, expected] of [
+    ["paid:h:2026-10-22T13", 9, "hourly_limited"],
+    ["paid:d:2026-10-22", 39, "daily_limited"],
+    ["paid:m:2026-10", 99, "monthly_limited"],
+    ["paid:usd:2026-10", 4_997_500, "spending_limited"],
+  ]) {
+    const blockedMap = new Map([[key, count]]);
+    const blockedStorage = {
+      kv: { get: k => blockedMap.get(k), put: (k, v) => blockedMap.set(k, v) },
+      transactionSync: fn => fn(),
+    };
+    const before = [...blockedMap];
+    const blockedIds = ["test_batch_limit_000001", "test_batch_limit_000002"];
+    assert.equal(reservePaidBatch(blockedStorage, now, blockedIds), expected);
+    assert.deepEqual([...blockedMap], before,
+      "failure may not reserve even one request or mutate counters");
+  }
+  assert.equal(PAID_LIMITS.hourly, 10);
+  assert.equal(PAID_LIMITS.daily, 40);
+  assert.equal(PAID_LIMITS.monthly, 100);
   console.log("3B.1 money accounting and atomic complete-plan reservations passed");
 } finally { await unlink(out).catch(() => {}); }
