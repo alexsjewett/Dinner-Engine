@@ -1,8 +1,9 @@
 import { Link } from "react-router";
 import type { DinnerSuggestion } from "../services/dinnerSuggestions";
+import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
 
-export function DinnerResultCard({ result }: { result: DinnerSuggestion }) {
-  const { onHand, notMarkedOnHand, unavailable, softNotes, reviewReasons } = result;
+export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?: AiDinnerSuggestion }) {
+  const { onHand, unavailable, softNotes, reviewReasons } = result;
   const imported = result.source === "imported";
   const title = imported ? result.recipe.name : result.recipe.title;
   const description = result.recipe.description;
@@ -14,6 +15,7 @@ export function DinnerResultCard({ result }: { result: DinnerSuggestion }) {
     ? "/recipes/imported/" + encodeURIComponent(result.recipe.id)
     : "/recipes/" + result.recipe.id;
   const review = result.category === "review";
+  const hardFlags = reviewReasons.filter(reason => reason.includes("(Must avoid)"));
   return (
     <article className={"dinner-result-card" + (review ? " dinner-result-card--review" : "")}>
       <div className="dinner-result-header">
@@ -21,9 +23,7 @@ export function DinnerResultCard({ result }: { result: DinnerSuggestion }) {
           <span className={"dinner-source-tag" + (imported ? " dinner-source-tag--my" : "")}>
             {imported ? "My Recipe" : "Sample Recipe"}
           </span>
-          <span className="dinner-result-category">
-            {review ? "Needs adjustment or review" : "No identified conflicts in demo rules"}
-          </span>
+          {ai && <span className="dinner-result-category">AI pick</span>}
         </div>
         <span className="recipe-timing">{time}</span>
       </div>
@@ -39,24 +39,25 @@ export function DinnerResultCard({ result }: { result: DinnerSuggestion }) {
           <strong>Possible on-hand matches:</strong> {onHand.join("; ")}
         </p>
       )}
-      {notMarkedOnHand.length > 0 && (
-        <p className="dinner-match-line">
-          <strong>Not marked on hand:</strong> {notMarkedOnHand.join("; ")}
-          {imported ? " (partial list; not necessarily missing)" : ""}
-        </p>
-      )}
       {unavailable.length > 0 && (
         <p className="dinner-match-line">
           <strong>{imported ? "Possible unavailable matches:" : "Marked unavailable:"}</strong>{" "}
           {unavailable.join("; ")}
         </p>
       )}
-      {reviewReasons.length > 0 && (
-        <div className="dinner-result-review">
-          <strong>What needs review</strong>
-          <ul>{reviewReasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul>
-          <p>Check the full original recipe, labels, preparation and cross-contact.
-            A separate portion is never automatically safe.</p>
+      {hardFlags.length > 0 && (
+        <div className="dinner-result-review" role="note">
+          <strong>Possible dietary conflict</strong>
+          <ul>{hardFlags.map((reason, index) => <li key={index}>{reason}</li>)}</ul>
+        </div>
+      )}
+      {ai && (
+        <div className="dinner-result-notes">
+          <strong>AI recommendation</strong>
+          <p>{ai.explanation}</p>
+          {ai.cautions.length > 0 && (
+            <ul>{ai.cautions.map((note, index) => <li key={index}>{note}</li>)}</ul>
+          )}
         </div>
       )}
       {softNotes.length > 0 && (
@@ -67,7 +68,7 @@ export function DinnerResultCard({ result }: { result: DinnerSuggestion }) {
       )}
       <div className="dinner-result-footer">
         <span>{servings}</span>
-        <Link className="view-recipe" to={to} state={{ from: "/" }}
+        <Link className="view-recipe" to={to} state={{ from: "/", aiSuggestion: ai }}
           aria-label={"View original " + title + " recipe"}>
           View recipe <span aria-hidden="true">→</span>
         </Link>
