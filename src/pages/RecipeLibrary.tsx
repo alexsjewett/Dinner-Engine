@@ -1,26 +1,11 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { Link } from "react-router";
-import { RecipeCard } from "../components/RecipeCard";
 import { FeatureCard } from "../components/FeatureCard";
-import { getAllRecipes } from "../data/cookbook";
 import { parsePaprikaFile } from "../services/paprikaImport";
 import { listImportedRecipes, saveImportedRecipes } from "../services/importedRecipeStorage";
 import type { ImportPreview, ImportedRecipe } from "../types/importedRecipe";
 
-const samples = getAllRecipes();
-type Tab = "my" | "sample";
-const TAB_SESSION_KEY = "find-dinner:library-tab:v1";
-
-function readTab(): Tab {
-  try {
-    return sessionStorage.getItem(TAB_SESSION_KEY) === "sample" ? "sample" : "my";
-  } catch {
-    return "my";
-  }
-}
-
 export function RecipeLibrary() {
-  const [tab, setTab] = useState<Tab>(readTab);
   const [imported, setImported] = useState<ImportedRecipe[]>([]);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
@@ -28,10 +13,6 @@ export function RecipeLibrary() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-
-  useEffect(() => {
-    try { sessionStorage.setItem(TAB_SESSION_KEY, tab); } catch { /* optional */ }
-  }, [tab]);
 
   useEffect(() => {
     listImportedRecipes()
@@ -55,7 +36,6 @@ export function RecipeLibrary() {
     try {
       const parsed = await parsePaprikaFile(file);
       setPreview(parsed);
-      setTab("my");
       // No default selection: only recipes the user chooses are saved.
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not read that export.");
@@ -100,7 +80,7 @@ export function RecipeLibrary() {
         <p className="eyebrow">A collection worth keeping</p>
         <h1>Your recipe library</h1>
         <p className="lead">
-          Bring your favorite Paprika recipes into your browser, or explore our ten sample dinners.
+          Keep your Paprika recipes close and find something good to cook.
         </p>
       </div>
 
@@ -108,27 +88,10 @@ export function RecipeLibrary() {
         <strong>Private to this browser—not synced or backed up.</strong>{" "}
         Imported recipes are stored in this device's IndexedDB, not GitHub.
         Clearing website data or using a private tab may erase them.
-        Your Paprika export stays your backup. Find Dinner now suggests
-        imported recipes with explicit manual-review warnings.
+        Your Paprika export stays your backup.
       </div>
 
-      <div className="recipe-library-tabs" role="group" aria-label="Recipe collections">
-        <button
-          type="button"
-          className={tab === "my" ? "recipe-library-tab recipe-library-tab--active" : "recipe-library-tab"}
-          aria-pressed={tab === "my"}
-          onClick={() => setTab("my")}
-        >My recipes ({imported.length})</button>
-        <button
-          type="button"
-          className={tab === "sample" ? "recipe-library-tab recipe-library-tab--active" : "recipe-library-tab"}
-          aria-pressed={tab === "sample"}
-          onClick={() => setTab("sample")}
-        >Sample recipes ({samples.length})</button>
-      </div>
-
-      {tab === "my" ? (
-        <>
+      <>
           <FeatureCard eyebrow="Add your own recipes" title="Import from Paprika">
             <p>
               In Paprika, choose <strong>Settings → Export Recipes → Paprika Recipe Format</strong>.
@@ -244,21 +207,8 @@ export function RecipeLibrary() {
               ))}
             </div>
           )}
-        </>
-      ) : (
-        <>
-          <div className="library-heading">
-            <h2>Sample cookbook</h2>
-            <span className="recipe-count">{samples.length} recipes</span>
-          </div>
-          <p className="library-note">
-            Fictional demo recipes only; sample matching and times are illustrative.
-          </p>
-          <div className="recipe-grid">
-            {samples.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}
-          </div>
-        </>
-      )}
+      </>
+
     </div>
   );
 }
