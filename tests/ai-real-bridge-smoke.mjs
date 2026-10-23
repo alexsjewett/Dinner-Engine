@@ -106,9 +106,8 @@ try {
   assert.equal(data.ok, true);
   assert.ok(data.suggestions.every(s => payload.recipes.some(x => x.id === s.recipeId)));
   assert.ok(data.suggestions.every(s => s.requiresManualReview));
-  assert.ok(data.suggestions.some(s => s.adjustments?.some(a =>
-    a.ingredientFrom === "lentils" && a.ingredientTo === "beans")),
-    "safe, original-ingredient-based changes must reach the frontend");
+  assert.ok(data.suggestions.every(s => (s.adjustments ?? []).length === 0),
+    "do not forward the model's unapproved lentil-to-bean replacement");
   assert.ok(!JSON.stringify(data).includes("private_recipe_notes"));
   assert.ok(calls >= 1 && calls <= 10);
   assert.equal(map.get("paid:h:" + new Date().toISOString().slice(0,13)), calls);
