@@ -491,6 +491,19 @@ h1 {
   padding: 9px 12px; cursor: pointer; font-size: 14px;
 }
 .dinner-diner-person:has(input:disabled) { background: #f0f2ed; cursor: default; }
+.dinner-ai-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  background: #f3f7f0;
+  border: 1px solid #d8e5d3;
+  border-radius: 14px;
+  margin: 6px 0 0;
+}
+.dinner-ai-toggle input { width: 20px; height: 20px; accent-color: var(--sage); }
+.dinner-ai-toggle-subtitle { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+.dinner-ai-disclosure { font-size: 12px; line-height: 1.6; margin: 3px 0 0; }
 .dinner-search-submit { width: 100%; min-height: 52px; font-size: 15px; }
 .dinner-results { margin: 31px 0; }
 .dinner-results-heading h2 {
