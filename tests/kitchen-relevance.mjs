@@ -76,6 +76,17 @@ try {
   assert.equal(curryScreen.adjustments[0]?.ingredientTo, "coconut milk");
   assert.equal(screenRecipeForSearch(curry, [], [], ["milk"], ["vegan"]).eligible, true,
     "a replacement can require shopping; on-hand is not mandatory");
+  assert.equal(screenRecipeForSearch(curry, [], [], ["dairy"]).eligible, true,
+    "a dairy-wide restriction recognizes a milk line and its practical curry swap");
+  assert.equal(screenRecipeForSearch({ name: "Tofu stir fry",
+    ingredients: "tofu\nrice" }, [], [], ["soy"]).eligible, false,
+    "soy restriction must recognize tofu, not only the word soy");
+  assert.equal(screenRecipeForSearch({ name: "Cashew pasta",
+    ingredients: "cashews\npasta" }, [], [], ["tree nuts"]).eligible, false,
+    "broad nut restrictions must catch named nuts");
+  assert.equal(screenRecipeForSearch({ name: "Pasta",
+    ingredients: "wheat flour\nwater" }, [], [], ["gluten"]).eligible, false,
+    "broad gluten restrictions must catch wheat flour");
   const beans = { name: "Burrito bowl",
     ingredients: "1 can black beans\nrice\nlime", directions: "Heat the beans." };
   const beansScreen = screenRecipeForSearch(beans, [], ["black beans"]);
