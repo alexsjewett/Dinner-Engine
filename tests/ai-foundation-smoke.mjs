@@ -14,7 +14,7 @@ const paths = [
   "backend/src/paidBudget.ts",
   "backend/src/paprikaContract.ts",
   "backend/src/aiPilot.ts",
-  "backend/src/paprikaModelDraft.ts",
+  "backend/src/paprikaModelDraft.ts", "backend/src/recipeRelevance.ts",
   "backend/src/aiPilotOrchestrator.ts",
   "backend/src/openAiTransport.ts",
   "backend/src/pilotSynthetic.ts",
