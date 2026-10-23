@@ -2,7 +2,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { Link } from "react-router";
 import { FeatureCard } from "../components/FeatureCard";
 import { parsePaprikaFile } from "../services/paprikaImport";
-import { listImportedRecipes, saveImportedRecipes } from "../services/importedRecipeStorage";
+import { listImportedRecipes, saveImportedRecipes, deleteImportedRecipe, deleteAllImportedRecipes } from "../services/importedRecipeStorage";
 import type { ImportPreview, ImportedRecipe } from "../types/importedRecipe";
 
 export function RecipeLibrary() {
@@ -71,6 +71,36 @@ export function RecipeLibrary() {
       );
     } catch {
       setError("Couldn't save your selection. Browser storage may be full or unavailable. Your Paprika export file has not been changed.");
+    } finally { setBusy(false); }
+  }
+
+  async function removeRecipe(recipe: ImportedRecipe) {
+    if (busy || !window.confirm('Delete "' + recipe.name + '" from this browser? This cannot be undone.')) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await deleteImportedRecipe(recipe.id);
+      setImported(await listImportedRecipes());
+      setNotice('Deleted "' + recipe.name + '".');
+    } catch {
+      setError("Could not delete the recipe. Please try again.");
+    } finally { setBusy(false); }
+  }
+
+  async function removeAllRecipes() {
+    if (busy || imported.length === 0 || !window.confirm(
+      "Delete all " + imported.length + " saved recipes from this browser? This cannot be undone. Your Paprika export will not be affected."
+    )) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await deleteAllImportedRecipes();
+      setImported(await listImportedRecipes());
+      setNotice("All saved recipes deleted from this browser.");
+    } catch {
+      setError("Could not delete all recipes. Please try again.");
     } finally { setBusy(false); }
   }
 
@@ -175,7 +205,7 @@ export function RecipeLibrary() {
 
           <div className="library-heading paprika-library-heading">
             <h2>My recipes</h2>
-            <span className="recipe-count">{imported.length} saved</span>
+            <div className="profile-form-actions"><span className="recipe-count">{imported.length} saved</span>{imported.length > 0 && <button type="button" className="profile-secondary-button" disabled={busy || loading} onClick={removeAllRecipes}>Delete all recipes</button>}</div>
           </div>
           {loading ? (
             <p role="status" className="helper-text">Loading local recipes…</p>
@@ -202,6 +232,7 @@ export function RecipeLibrary() {
                       state={{ from: "/library" }}
                       aria-label={"View imported recipe " + recipe.name}
                     >View <span aria-hidden="true">→</span></Link>
+                    <button type="button" className="profile-secondary-button" disabled={busy} onClick={() => void removeRecipe(recipe)} aria-label={"Delete " + recipe.name}>Delete</button>
                   </div>
                 </article>
               ))}
