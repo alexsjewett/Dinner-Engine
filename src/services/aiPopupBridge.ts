@@ -37,6 +37,7 @@ export function askAiWithSecurePopup(
   preflight: LocalPaprikaPreflight, approvedWorkerOrigin: string,
 ): Promise<AiDinnerResult> {
   if (!preflight.ok) return Promise.resolve({ ok: false, error: preflight.reason });
+  const payload = preflight.payload;
   const origin = validatedWorkerOrigin(approvedWorkerOrigin);
   if (!origin) return Promise.resolve({ ok: false, error: "bridge_not_configured" });
   const state = crypto.randomUUID();
@@ -68,7 +69,7 @@ export function askAiWithSecurePopup(
         // Recipe text leaves the device ONLY after the signed-in popup verifies
         // the exact approved origin and announces active server safeguards.
         popup.postMessage({ type: "dinner-ai-request", state,
-          payload: preflight.payload }, origin);
+          payload }, origin);
       } else if (event.data.type === "dinner-ai-result" && sent) {
         const data = event.data;
         const valid = data.ok === true &&
