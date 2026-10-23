@@ -5,7 +5,7 @@ import { getRecipeById } from "../data/cookbook";
 import { getImportedRecipe } from "../services/importedRecipeStorage";
 import type { ImportedRecipe } from "../types/importedRecipe";
 import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
-import { isGenericAiDisclaimer, usefulAiNotes } from "../services/aiRecommendationDisplay";
+import { cleanAiNote, usefulAiNotes } from "../services/aiRecommendationDisplay";
 
 interface DetailsLocationState { from?: string; aiSuggestion?: AiDinnerSuggestion; }
 
@@ -18,8 +18,7 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
     typeof suggestion.explanation === "string" &&
     Array.isArray(suggestion.cautions) &&
     suggestion.cautions.every(item => typeof item === "string");
-  const aiExplanation = suggestion && !isGenericAiDisclaimer(suggestion.explanation)
-    ? suggestion.explanation : "";
+  const aiExplanation = suggestion ? cleanAiNote(suggestion.explanation) : "";
   const aiCautions = suggestion ? usefulAiNotes(suggestion.cautions) : [];
   const aiHasAdvice = !!aiExplanation || aiCautions.length > 0 ||
     (suggestion?.adjustments?.length ?? 0) > 0;
