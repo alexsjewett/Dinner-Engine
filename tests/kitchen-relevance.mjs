@@ -22,8 +22,8 @@ try {
   assert.equal(unavailable.eligible, false, "never recommend explicitly unavailable tofu");
   assert.deepEqual(unavailable.missing, ["tofu"]);
   assert.deepEqual(unavailable.onHand, [], "do not invent a broccoli match");
-  assert.equal(screenRecipeForSearch(burger, ["broccoli"], []).eligible, false,
-    "a pantry search should not rank completely unrelated ingredients");
+  assert.equal(screenRecipeForSearch(burger, ["broccoli"], []).eligible, true,
+    "an on-hand ingredient is a ranking signal, not an exclusion rule");
   assert.equal(screenRecipeForSearch(burger, [], ["tofu"]).eligible, false,
     "the unavailable ingredient is a hard exclusion even without on-hand foods");
   assert.equal(screenRecipeForSearch(burger, [], []).eligible, true,
@@ -53,7 +53,7 @@ try {
     why: "Magic nutrition claim that should not be shown",
   }], soup, ["cauliflower"], [], []);
   assert.equal(reviewed.length, 1, "conservative within-role swaps may appear");
-  assert.match(reviewed[0].why, /listed cauliflower as available/);
+  assert.match(reviewed[0].why, /listed as available/);
   assert.ok(!reviewed[0].why.includes("Magic"), "never display ungrounded AI rationale");
   assert.equal(reviewAiAdjustments([{
     ingredientFrom: "broccoli", ingredientTo: "cauliflower", why: "Works",
@@ -68,6 +68,32 @@ try {
   }], soup, ["cauliflower"], [], []).length, 0,
   "never swap a made-up original ingredient");
 
+
+  const curry = { name: "Chickpea curry",
+    ingredients: "1 cup dairy milk\n1 can chickpeas\ncurry paste", directions: "Simmer the curry." };
+  const curryScreen = screenRecipeForSearch(curry, ["coconut milk"], [], ["milk"], ["vegan"]);
+  assert.equal(curryScreen.eligible, true, "conventional plant-milk curry swap");
+  assert.equal(curryScreen.adjustments[0]?.ingredientTo, "coconut milk");
+  assert.equal(screenRecipeForSearch(curry, [], [], ["milk"], ["vegan"]).eligible, true,
+    "a replacement can require shopping; on-hand is not mandatory");
+  const beans = { name: "Burrito bowl",
+    ingredients: "1 can black beans\nrice\nlime", directions: "Heat the beans." };
+  const beansScreen = screenRecipeForSearch(beans, [], ["black beans"]);
+  assert.equal(beansScreen.eligible, true);
+  assert.equal(beansScreen.adjustments[0]?.ingredientTo, "pinto beans");
+  assert.equal(screenRecipeForSearch({ name: "Olive Tapenade",
+    ingredients: "2 cups olives" }, [], [], ["olives"]).eligible, false);
+  assert.equal(screenRecipeForSearch({ name: "Green salad",
+    ingredients: "spinach\nolives (optional)" }, [], ["olives"]).adjustments[0]?.method, "omit");
+  assert.equal(screenRecipeForSearch({ name: "Tomato marinara",
+    ingredients: "tomatoes\nsalt" }, [], [], ["tomatoes"]).eligible, false);
+  const quiche = { name: "Spinach quiche",
+    ingredients: "4 eggs\nspinach\nsalt", directions: "Bake a quiche." };
+  const quicheScreen = screenRecipeForSearch(quiche, [], [], [], ["vegan"]);
+  assert.equal(quicheScreen.eligible, true);
+  assert.equal(quicheScreen.adaptationTier, 4);
+  assert.ok(curryScreen.adaptationTier < quicheScreen.adaptationTier,
+    "a complicated tofu quiche is below a simple milk swap");
   const ui = await readFile("src/pages/FindDinner.tsx", "utf8");
   assert.ok(ui.includes("eligibleForSearch(recipe, submitted, dinersForRequest)") &&
     ui.includes("eligibleNow.length === 0") &&
