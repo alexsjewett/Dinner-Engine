@@ -38,7 +38,6 @@ function AppLayout() {
           </svg>
         </span>
         <span className="brand-name">Find dinner.</span>
-        <span className="header-note">your kitchen companion</span>
       </header>
       <main ref={mainRef} className="main-content" id="main-content">
         <Outlet />
@@ -58,7 +57,7 @@ export default function App() {
         <Route path="/library" element={<RecipeLibrary />} />
         <Route path="/profiles" element={<Profiles />} />
         <Route path="/recipes/imported/:recipeId" element={<RecipeDetails imported />} />
-        <Route path="/recipes/:recipeId" element={<RecipeDetails />} />
+        <Route path="/recipes/:recipeId" element={<Navigate to="/library" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

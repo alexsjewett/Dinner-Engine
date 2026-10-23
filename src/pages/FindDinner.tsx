@@ -1,12 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { AiDinnerCompanion } from "../components/AiDinnerCompanion";
-import { localPaprikaShortlist, fullPaprikaLibraryPreview } from "../services/aiPaprikaPreview";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
-import { assessLocalCatalogReadiness, type CatalogReadiness } from "../services/aiPaprikaCatalogReadiness";
+import { AI_WORKER_ORIGIN, askAiWithSecurePopup, type AiDinnerSuggestion } from "../services/aiPopupBridge";
+import { evaluateImportedRecipe } from "../services/importedDinnerMatcher";
 import { FeatureCard } from "../components/FeatureCard";
 import { DinnerResultCard } from "../components/DinnerResultCard";
-import { getAllRecipes } from "../data/cookbook";
 import { loadProfiles } from "../services/profileStorage";
 import { listImportedRecipes } from "../services/importedRecipeStorage";
 import { recommendAllDinners } from "../services/dinnerSuggestions";
@@ -21,8 +19,11 @@ export function FindDinner() {
   const [search, setSearch] = useState<SavedSearch>(readSearchSession);
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
-  const [aiScopeReviewed, setAiScopeReviewed] = useState(false);
-  const [localAiReadiness, setLocalAiReadiness] = useState<CatalogReadiness | null>(null);
+  const [useAi, setUseAi] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<AiDinnerSuggestion[] | null>(null);
+  const [aiFailure, setAiFailure] = useState("");
+  const [aiSearch, setAiSearch] = useState(false);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
@@ -34,7 +35,6 @@ export function FindDinner() {
       .then((recipes) => {
         if (!live) return;
         setLocalRecipes(recipes);
-        setLocalAiReadiness(null);
         setLibraryStatus("ready");
       })
       .catch(() => {
@@ -49,8 +49,8 @@ export function FindDinner() {
       draft: { ...previous.draft, ...partial },
     }));
     setError("");
-    setAiScopeReviewed(false);
-    setLocalAiReadiness(null);
+    setAiSuggestions(null);
+    setAiFailure("");
   }
 
   function togglePerson(id: string, checked: boolean) {
@@ -67,47 +67,89 @@ export function FindDinner() {
       return;
     }
     const submitted = { ...search.draft, selectedProfileIds: selected };
+    const dinersForRequest = selectDiners(profiles, submitted);
+    if (useAi && (libraryStatus !== "ready" || localRecipes.length === 0)) {
+      setError("Import some Paprika recipes before searching with AI.");
+      return;
+    }
+    const prepared = useAi
+      ? prepareLocalPaprikaRequest(localRecipes, submitted, dinersForRequest, true)
+      : null;
+    if (prepared && !prepared.ok) {
+      const reasons: Record<string, string> = {
+        empty_library: "Import Paprika recipes before asking AI.",
+        too_many_recipes: "The AI pilot currently supports up to 40 complete recipes per request.",
+        request_too_large: "Your complete library exceeds this pilot's safe request size. Nothing was uploaded.",
+        invalid_recipe_or_constraints: "The complete library did not pass the local request checks.",
+        consent_required: "Enable AI assistance to share your recipes.",
+      };
+      setError(reasons[prepared.reason]);
+      return;
+    }
+    // A fresh submit is the only act that authorizes this specific paid request.
+    // The protected popup must open synchronously in the submit gesture on iPhone.
+    const promise = prepared && prepared.ok
+      ? askAiWithSecurePopup(prepared, AI_WORKER_ORIGIN)
+      : null;
     setSearch({ draft: submitted, submitted, expanded: false });
+    setAiSearch(!!promise);
+    setAiSuggestions(null);
+    setAiFailure("");
     setError("");
-    setAiScopeReviewed(false);
-    setLocalAiReadiness(null);
+    if (promise) {
+      setAiBusy(true);
+      void promise.then(result => {
+        if (!result.ok) {
+          setAiFailure("AI suggestions couldn't finish (" + result.error +
+            "). Showing your usual recipe matches instead. No automatic retry.");
+          return;
+        }
+        const allowed = new Set(localRecipes.map(recipe => recipe.id));
+        if (result.suggestions.some(item => !allowed.has(item.recipeId))) {
+          setAiFailure("AI returned an unknown recipe. Showing your usual matches instead.");
+          return;
+        }
+        setAiSuggestions(result.suggestions);
+      }).catch(() => {
+        setAiFailure("AI is unavailable. Showing your usual recipe matches. No automatic retry.");
+      }).finally(() => setAiBusy(false));
+    }
   }
 
   const draft = search.draft;
   const submitted = search.submitted;
   const diners = submitted ? selectDiners(profiles, submitted) : [];
   const results = submitted && libraryStatus !== "loading"
-    ? recommendAllDinners(localRecipes, getAllRecipes(), submitted, profiles, 10)
+    ? recommendAllDinners(localRecipes, [], submitted, profiles, 10)
     : [];
-  const aiPaprikaPreview = localPaprikaShortlist(results);
-  const aiLibrarySummary = fullPaprikaLibraryPreview(localRecipes);
-  const aiFullRequest = submitted && aiScopeReviewed && libraryStatus === "ready"
-    ? prepareLocalPaprikaRequest(localRecipes, submitted, diners, true)
+  // AI and ordinary searches share the same imported-recipe card component.
+  // Only validated IDs already present in the browser's library are displayed.
+  const aiMatches = aiSearch && aiSuggestions
+    ? aiSuggestions.map(item => {
+        const recipe = localRecipes.find(recipe => recipe.id === item.recipeId);
+        if (!recipe || !submitted) return null;
+        const match = evaluateImportedRecipe(recipe, submitted, diners);
+        // Independently refuse recipes with detected hard dietary conflicts.
+        if (match.reviewReasons.some(reason => reason.includes("(Must avoid)"))) return null;
+        return match;
+      }).filter((item): item is NonNullable<typeof item> => item !== null)
     : null;
-  function checkLocalAiPlan() {
-    if (!submitted || !aiScopeReviewed || libraryStatus !== "ready") return;
-    // Never send, store or log recipe content during this local-only action.
-    setLocalAiReadiness(assessLocalCatalogReadiness(localRecipes, submitted, diners, true));
-  }
-  const firstThree = results.slice(0, 3);
-  const extras = results.slice(3);
-  const direct = firstThree.filter((item) => item.category === "straightforward");
-  const review = firstThree.filter((item) => item.category === "review");
-  const extraDirect = extras.filter((item) => item.category === "straightforward");
-  const extraReview = extras.filter((item) => item.category === "review");
+  const showingAi = aiMatches !== null && aiMatches.length > 0;
+  const displayed = showingAi && aiMatches ? aiMatches : results;
+  const aiById = new Map(showingAi ? aiSuggestions?.map(item => [item.recipeId, item]) : []);
+  const firstThree = displayed.slice(0, 3);
+  const extras = displayed.slice(3);
 
   return (
     <div className="page-content">
       <div className="page-intro">
-        <p className="eyebrow">A little less deciding, a lot more dinner</p>
         <h1>What sounds good tonight?</h1>
         <p className="lead">
-          Share what's in your kitchen, how much time you have, and who's eating.
-          We'll suggest ideas from your saved Paprika recipes and our sample cookbook.
+          Your kitchen, your table. Find something good in your Paprika recipes.
         </p>
       </div>
 
-      <FeatureCard eyebrow="Your kitchen, your table" title="Find your dinner">
+      <FeatureCard title="Find your dinner">
         <form className="dinner-search-form" onSubmit={handleSearch}>
           <div className="profile-field">
             <label htmlFor="dinner-have">What ingredients do you have?</label>
@@ -209,10 +251,27 @@ export function FindDinner() {
             )}
           </fieldset>
 
+          <label className="dinner-mode-choice dinner-ai-toggle">
+            <input type="checkbox" role="switch" aria-label="Use AI assistance"
+              checked={useAi} disabled={aiBusy}
+              onChange={event => { setUseAi(event.target.checked); setAiFailure(""); setAiSuggestions(null); setAiSearch(false); }} />
+            <span><strong>Use AI assistance</strong>
+              <span className="dinner-ai-toggle-subtitle"> Optional · More tailored ideas</span>
+            </span>
+          </label>
           {error && <p className="profile-alert" role="alert">{error}</p>}
-          <button type="submit" className="profile-primary-button dinner-search-submit">
-            Find Dinner Ideas
+          <button type="submit" disabled={aiBusy || libraryStatus === "loading"}
+            className="profile-primary-button dinner-search-submit">
+            {aiBusy ? "AI is finding dinner ideas…" : "Find Dinner Ideas"}
           </button>
+          <p className="helper-text dinner-ai-disclosure">
+            {useAi
+              ? "AI shares your entire imported recipe library and selected dietary preferences (not people's names) with OpenAI. Requests may incur API costs within the $5 monthly pilot allowance. Review all ingredients and suggestions before cooking or eating."
+              : "AI is off. Dinner matching stays on your device."}
+          </p>
+          {aiBusy && <p className="helper-text" role="status" aria-live="polite">
+            AI is thinking… Your dinner ideas will appear below when ready.
+          </p>}
         </form>
       </FeatureCard>
 
@@ -224,192 +283,50 @@ export function FindDinner() {
       {libraryStatus === "error" && (
         <p role="alert" className="profile-alert">
           Your local recipe library could not be read in this browser.
-          Search results currently include sample recipes only; try reopening the app
-          or check your browser's site data settings.
+          Try reopening the app or check your browser's site data settings.
         </p>
       )}
 
-      {submitted && libraryStatus !== "loading" && (
+      {submitted && libraryStatus === "ready" && (
         <section className="dinner-results" aria-labelledby="dinner-results-heading">
           <div className="dinner-results-heading">
             <p className="eyebrow">
-              {localRecipes.length > 0 ? "Your recipes first · Sample recipes also eligible" : "From your sample cookbook"}
+              Your Paprika recipes
             </p>
             <h2 id="dinner-results-heading">Dinner ideas</h2>
             <p className="helper-text">
-              Showing {search.expanded ? results.length : firstThree.length} of the top {results.length} recipe ideas
-              from {localRecipes.length} saved and {getAllRecipes().length} sample recipes.
+              Showing {search.expanded ? displayed.length : firstThree.length} of {displayed.length} recipe ideas
+              from your {localRecipes.length} saved recipes.
               {diners.length > 0
                 ? " Considering " + diners.map((person) => person.name).join(", ") + "."
                 : " No saved profiles selected: dietary restrictions were not checked."}
             </p>
-            <p className="dinner-results-caveat">
-              Imported Paprika recipes are matched by simple ingredient words and any listed
-              cooking times; their dietary suitability is NOT verified. All imported recipes
-              require manual review. Sample recipes use limited demo rules.
-              Never assume a meal is allergy-safe or gluten-free: check the complete original
-              ingredient list, labels, preparation and cross-contact.
-            </p>
           </div>
 
-          <div className="dinner-result-section" aria-label="Upcoming AI recommendations">
-            <AiDinnerCompanion recipes={localRecipes}
-              criteria={submitted} diners={diners} />
-            <h3>Full-library preparation check (offline)</h3>
-            <p className="helper-text">
-              This optional planning check runs only on your phone. It does not
-              start an AI request, send recipes or incur a model charge.
+          {aiFailure && <p className="profile-alert" role="status">{aiFailure}</p>}
+          {aiBusy && <p className="helper-text" role="status">Preparing your AI recommendations…</p>}
+          {!aiBusy && aiSearch && aiSuggestions && (
+            <p className="helper-text" role="status">
+              {showingAi ? "AI selected recipes from your Paprika library." :
+                "No AI suggestions passed dietary screening. Showing your usual matches."}
             </p>
-            {aiPaprikaPreview.length > 0 && (
-              <details>
-                <summary>Preview Paprika recipes for future AI suggestions ({aiPaprikaPreview.length})</summary>
-                <p className="helper-text">This preview stays in your browser. Nothing is sent to AI yet. Imported recipes still need dietary review.</p>
-                <ul>
-                  {aiPaprikaPreview.map((item) => (
-                    <li key={item.id}><strong>{item.title}</strong> — Manual dietary review required.</li>
-                  ))}
-                </ul>
-              </details>
-            )}
-            <details>
-              <summary>What sharing your full Paprika library with AI would mean</summary>
-              <p className="helper-text">
-                Your library currently contains {aiLibrarySummary.recipeCount} imported recipes.
-                A future full-library AI request may include every imported recipe's
-                ingredients, directions, descriptions, notes, timing, categories and source links,
-                not just the five examples above. It may also include selected diners'
-                food restrictions and dietary needs without their profile names or IDs.
-                Personal information inside the recipe text itself is not automatically removed.
-                OpenAI may retain submitted data under its API policies even when
-                response storage is disabled. The offline preparation check never transmits anything.
-                The separate Ask AI action above requires deliberate consent
-                and a protected, activated backend before sending recipes.
-              </p>
-            </details>
-            {libraryStatus === "ready" && localRecipes.length > 0 && (
-              <div className="profile-field">
-                <label className="dinner-mode-choice">
-                  <input
-                    type="checkbox"
-                    checked={aiScopeReviewed}
-                    onChange={(event) => {
-                      setAiScopeReviewed(event.target.checked);
-                      setLocalAiReadiness(null);
-                    }}
-                  />
-                  Review how my complete Paprika library would be prepared for AI
-                </label>
-                <p className="helper-text">
-                  Preview only. Checking this box does not upload recipes, start an AI call,
-                  or activate billing. Any future AI request will need an explicit action.
-                </p>
-                {aiFullRequest && (
-                  <p className="helper-text" role="status">
-                    {aiFullRequest.ok
-                      ? "The single-window check passed: " + aiFullRequest.count +
-                        " complete recipes, " + aiFullRequest.bytes.toLocaleString() +
-                        " UTF-8 bytes. Multi-window local planning is available below."
-                      : "The single-window check is limited (" + aiFullRequest.reason +
-                        "). The offline planner below can still examine all " +
-                        localRecipes.length + " recipes. No upload."}
-                  </p>
-                )}
-                <button type="button" className="profile-secondary-button"
-                  onClick={checkLocalAiPlan}>
-                  Check full-library AI plan locally — no upload
-                </button>
-                {localAiReadiness && (
-                  <div className="local-ai-readiness" role="status" aria-live="polite">
-                    {localAiReadiness.ready ? (
-                      <>
-                        <strong>Local preparation checks passed (not activated).</strong>
-                        <p>
-                          All {localAiReadiness.recipeCount} recipes are accounted
-                          for in {localAiReadiness.windowCount} complete planning
-                          window{localAiReadiness.windowCount === 1 ? "" : "s"} and{" "}
-                          {localAiReadiness.batchCount} bounded model batch
-                          {localAiReadiness.batchCount === 1 ? "" : "es"}.
-                          {" "}{localAiReadiness.eligibleRecipeCount} recipe IDs remain eligible;
-                          {" "}{localAiReadiness.knownConflictExcludedCount} have obvious
-                          text conflicts with Must avoid terms and cannot be recommended.
-                        </p>
-                        <p>
-                          Recipes per planning window: {localAiReadiness.windowRecipeCounts.join(", ")}.
-                          Model batches per window are limited separately.
-                          Largest staged input: {localAiReadiness.largestBatchBytes.toLocaleString()} bytes.
-                          This is not a tokenizer, dietary certification or cost estimate.
-                        </p>
-                        <p>
-                          No AI suggestions were generated or billed. This is
-                          a complete local-only catalog preview, not an active
-                          multi-window AI sending feature.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <strong>Full-library AI preparation is blocked.</strong>
-                        <p>
-                          Reason: {localAiReadiness.reason}. We will not
-                          silently drop recipes, shorten the original recipe
-                          text, or remove Must avoid rules. Your normal dinner
-                          suggestions still work.
-                        </p>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            <p className="helper-text">
-              The offline preparation check never activates paid AI.
-            </p>
-          </div>
-
-          {direct.length > 0 && (
-            <div className="dinner-result-section">
-              <h3>More straightforward options</h3>
-              <p className="helper-text">
-                No conflicts identified by the limited sample rules. Imported recipes
-                never receive this label; it is not a food-safety determination.
-              </p>
-              {direct.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
-            </div>
           )}
-
-          {review.length > 0 && (
+          {!aiBusy && displayed.length === 0 && (
+            <p className="helper-text">No matching recipes yet. Try another ingredient or import more from Paprika.</p>
+          )}
+          {firstThree.length > 0 && (
             <div className="dinner-result-section">
-              <h3>Needs adjustment or review</h3>
-              <p className="helper-text">
-                These may still inspire dinner, but need more time, shopping, portion
-                changes or a cook's assessment before serving.
-              </p>
-              {review.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
+              {firstThree.map((item) => <DinnerResultCard key={item.source + item.recipe.id}
+                result={item} ai={aiById.get(item.recipe.id)} />)}
             </div>
           )}
 
           {extras.length > 0 && (
-            <div
-              className="dinner-result-section"
-              id="additional-dinner-matches"
-              hidden={!search.expanded}
-            >
-              <h3>Additional matches</h3>
-              <p className="helper-text">
-                More ranked ideas from your saved recipes and the sample cookbook.
-                Review notices and food restrictions still apply to every recipe.
-              </p>
-              {extraDirect.length > 0 && (
-                <div className="dinner-additional-group">
-                  <h4>More straightforward options</h4>
-                  {extraDirect.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
-                </div>
-              )}
-              {extraReview.length > 0 && (
-                <div className="dinner-additional-group">
-                  <h4>More options needing adjustment or review</h4>
-                  {extraReview.map((item) => <DinnerResultCard key={item.source + item.recipe.id} result={item} />)}
-                </div>
-              )}
+            <div className="dinner-result-section" id="additional-dinner-matches"
+              hidden={!search.expanded}>
+              <h3>More dinner ideas</h3>
+              {extras.map((item) => <DinnerResultCard key={item.source + item.recipe.id}
+                result={item} ai={aiById.get(item.recipe.id)} />)}
             </div>
           )}
 
@@ -432,18 +349,6 @@ export function FindDinner() {
         </section>
       )}
 
-      <div className="gentle-note">
-        <span className="note-symbol" aria-hidden="true">✦</span>
-        <div>
-          <strong>Original recipes stay unchanged.</strong>
-          <p>
-            Find Dinner reads imported recipes from this browser only, alongside
-            ten manually classified fictional samples. Original Paprika text is
-            preserved, and recommendations are not verified for allergies,
-            gluten or cross-contact. Later we'll explore cook-reviewed swaps.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

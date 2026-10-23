@@ -4,13 +4,19 @@ import { FeatureCard } from "../components/FeatureCard";
 import { getRecipeById } from "../data/cookbook";
 import { getImportedRecipe } from "../services/importedRecipeStorage";
 import type { ImportedRecipe } from "../types/importedRecipe";
+import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
 
-interface DetailsLocationState { from?: string; }
+interface DetailsLocationState { from?: string; aiSuggestion?: AiDinnerSuggestion; }
 
 export function RecipeDetails({ imported = false }: { imported?: boolean }) {
   const { recipeId } = useParams<{ recipeId: string }>();
   const { state } = useLocation();
   const origin = state as DetailsLocationState | null;
+  const suggestion = origin?.aiSuggestion;
+  const validSuggestion = imported && !!suggestion && suggestion.recipeId === recipeId &&
+    typeof suggestion.explanation === "string" &&
+    Array.isArray(suggestion.cautions) &&
+    suggestion.cautions.every(item => typeof item === "string");
   const backTo = origin?.from === "/" ? "/" : "/library";
   const backLabel = backTo === "/" ? "Find Dinner" : "Recipe Library";
   const recipe = imported ? undefined : getRecipeById(recipeId ?? "");
@@ -54,6 +60,20 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
                 )}
               </div>
             </div>
+            {validSuggestion && suggestion && (
+              <FeatureCard title="AI dinner ideas">
+                <p>{suggestion.explanation}</p>
+                {suggestion.cautions.length > 0 && (
+                  <ul>{suggestion.cautions.map((note, index) => (
+                    <li key={index}>{note}</li>
+                  ))}</ul>
+                )}
+                <p className="helper-text">
+                  AI notes are suggestions, not changes to your original Paprika recipe.
+                  Check ingredients and food restrictions before serving.
+                </p>
+              </FeatureCard>
+            )}
             <FeatureCard eyebrow="Unmodified Paprika text" title="Original ingredients">
               <div className="import-original-text">{savedRecipe.ingredients || "No ingredients listed."}</div>
             </FeatureCard>
@@ -74,11 +94,6 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
                 )}
               </FeatureCard>
             )}
-            <p className="library-note">
-              This recipe can now appear in Find Dinner suggestions, but its
-              ingredient screening is only a text match. Review the complete
-              recipe and labels for all dietary needs before cooking.
-            </p>
           </>
         ) : (
           <FeatureCard title="Imported recipe not found">
