@@ -24,8 +24,8 @@ second hosted website or migrating the existing local Paprika cookbook.
   before planning model requests. The server model and tokens remain fixed.
 - For one request (max 40 full recipes and 98,304 UTF-8 bytes), every staged
   model call is **atomically** reserved from the existing Durable Object before
-  the first provider call. The rate limits remain 10/hour, 40/day, 100/month,
-  and $5/month reserved spending. Insufficient limits reject the full request
+  the first provider call. The per-owner model-call limits are 50/hour, 150/day, 1,000/month,
+  and $5/month reserved spending. A single search remains capped at 10 model calls. Insufficient limits reject the full request
   before any provider call. Model validation and estimated-cost settlement
   are required; failure yields no partial AI suggestions or retries.
 - Only matching original recipe IDs, bounded explanations, and mandatory

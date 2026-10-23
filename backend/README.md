@@ -187,3 +187,19 @@ gate**:
 
 Review the GitHub Actions tests and independent Cloudflare Production deployment
 of this commit before manually opting into another fictional billable test.
+
+
+## Paid model-call quota increase — October 23, 2026
+
+Current paid AI limits in `src/paidBudget.ts` are **50 model calls per UTC hour,
+150 per UTC day, 1,000 per UTC month**, plus the unchanged **$5 per UTC
+month** server-side budget and **$0.0015 per-call maximum reservation**.
+Each dinner search can require multiple model calls; the per-search batch maximum
+remains 10. Every call in a dinner search must reserve successfully before the
+first model call; denied reservations spend nothing. Unknown or failed model
+outcomes continue to retain their conservative reservation, and there are no
+automatic retries. No remaining-call or quota dashboard was added to the app.
+
+These paid limits are separate from the older **nonbillable guardrail-test**
+counters documented above, which intentionally retain 10/hour, 40/day and
+100/month plus simulated spending because they do not govern real OpenAI calls.

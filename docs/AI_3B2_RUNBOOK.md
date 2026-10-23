@@ -61,8 +61,9 @@ an explicit same-origin button. An unconfigured Worker rejects the request
 before consuming any body. No cross-origin CORS access is granted.
 
 Each fictional request reserves $0.0015 in a one-user SQLite Durable Object
-ledger before contacting the Responses API. Limits are 10/hour, 40/day,
-100/month and a $5 monthly *server-side allowance*. The model is pinned
+ledger before contacting the Responses API. Limits are 50/hour, 150/day,
+1,000/month and a $5 monthly *server-side allowance*. One dinner search
+still cannot reserve more than 10 model calls. The model is pinned
 to `gpt-6-luna`, response output limited to 700 tokens; transport times out,
 never automatically retries, and reserves ambiguous costs. Only validated
 completed output and reported usage trigger idempotent cost settlement.

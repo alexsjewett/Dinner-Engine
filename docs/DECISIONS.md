@@ -246,3 +246,18 @@ An authorized health request is not full security acceptance: still test Private
 | DEC-097 | Outstanding 3B.1 work | Add actual disabled provider transport, durable real-cost reservation/reconciliation, authenticated browser session and CORS policy, and final privacy/security tests before 3B.2 activation. | Avoid claiming that prepared constants or a disabled UI are a working AI integration. |
 
 | DEC-098 | Preparatory implementation only | Add standalone synchronous $5/month reservation arithmetic with synthetic concurrency and corruption tests, but do not connect it to provider calls or assert production financial enforcement. | Verify monetary invariants incrementally while preserving the 3B.2 activation gate. |
+
+
+## October 23, 2026 — Paid AI testing limits
+
+The owner approved increasing the paid AI model-call quotas from 10/hour,
+40/day, 100/month to **50/hour, 150/day, 1,000/month** to support heavier
+Kitchen Companion recipe recommendation testing, while keeping the **$5/month
+server-side spending allowance**, the per-call $0.0015 conservative reservation,
+and the per-search ten-model-call maximum unchanged. Calls are counted per model
+batch, not per search; the entire search's batch reservations remain atomic,
+with no partial paid execution when quotas are insufficient and no automatic
+retry. Do **not** add a quota dashboard, remaining-call counter or related usage
+indicator to the app. Existing error messages on limit exhaustion may remain
+accurate. The legacy nonbillable guardrails simulation retains its separate
+10/40/100 placeholder quotas.

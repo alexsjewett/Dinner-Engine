@@ -305,3 +305,16 @@ confirmed, on iPhone search and inspect the new local check; do not use a
 paid AI test or send your actual Paprika data. Full-library billable
 activation requires a separate explicit authorization and privacy/security
 review, not this readiness checkbox.
+
+
+## Active paid AI model-call limits (October 23, 2026)
+
+The server-side paid model-call ledger allows **50 calls per UTC hour,
+150 per UTC day and 1,000 per UTC month**, subject to the unchanged **$5 per
+UTC month** spending allowance. An individual dinner search may require more
+than one model call and is still capped at ten calls, reserved together before
+any provider request. Failed/uncertain requests may keep a conservative budget
+reservation; there are no automatic retries. The site does not include a
+quota/remaining-usage display. See `backend/src/paidBudget.ts` and
+`docs/ONE_CLICK_AI.md` for the current implementation. The older synthetic
+simulation quotas described earlier in this file remain intentionally separate.
