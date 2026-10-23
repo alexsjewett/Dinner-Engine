@@ -5,7 +5,7 @@ import ts from "typescript";
 const suffix = ".ai-bridge-mock-" + process.pid + ".mjs";
 const files = [
   "guardrails", "paidBudget", "paprikaContract", "aiPilot",
-  "paprikaModelDraft", "aiPilotOrchestrator", "openAiTransport",
+  "paprikaModelDraft", "recipeRelevance", "aiPilotOrchestrator", "openAiTransport",
   "pilotSynthetic", "realPaprika", "bridgePage", "usageLedger", "index",
 ];
 const made = [];
