@@ -14,8 +14,19 @@ assert.ok(!/fetch\s*\(|XMLHttpRequest|sendBeacon|OPENAI_API_KEY/.test(frontendSr
 assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(pageSrc),
   "the recommendation UI must have no direct browser network calls");
 assert.ok(pageSrc.includes("Check full-library AI plan locally — no upload"));
-assert.ok(pageSrc.includes("disabled"),
-  "the real Paprika AI action remains disabled pending activation");
+assert.ok(pageSrc.includes("AiDinnerCompanion"),
+  "optional AI action remains a separately opted-in feature");
+const popupSrc = await readFile("src/services/aiPopupBridge.ts", "utf8");
+const optInSrc = await readFile("src/components/AiDinnerCompanion.tsx", "utf8");
+assert.ok(popupSrc.includes("window.open") &&
+  popupSrc.includes('event.origin !== origin') &&
+  popupSrc.includes('event.source !== popup'),
+  "real AI must use origin-and-nonce-bound protected popups");
+assert.ok(popupSrc.includes('event.data.enabled !== true'),
+  "real recipes cannot leave the page unless the server is activated");
+assert.ok(optInSrc.includes('I want to share all') &&
+  optInSrc.includes('!consent'),
+  "the user must opt in to every request");
 try {
   const compile = text => ts.transpileModule(text, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
