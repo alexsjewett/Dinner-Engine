@@ -131,7 +131,7 @@ export function checkAiSecureConnection(): Promise<
   { ok: true; enabled: boolean } | { ok: false; error: string }
 > {
   const state = crypto.randomUUID();
-  const popup = window.open(AI_WORKER_ORIGIN + "/api/ai/bridge?state=" + state,
+  const popup = window.open(AI_WORKER_ORIGIN + "/api/ai/bridge?state=" + state + "&check=1",
     "_blank");
   if (!popup) return Promise.resolve({ ok: false, error: "popup_blocked" });
   return new Promise(resolve => {

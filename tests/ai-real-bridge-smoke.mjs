@@ -37,9 +37,23 @@ assert.deepEqual(await r.json(), { service: "find-dinner-ai", enabled: false });
 assert.equal((await worker.fetch(new Request(origin + "/api/ai/bridge"), base, wrong)).status, 403);
 r = await worker.fetch(new Request(origin + "/api/ai/bridge"), base, owner);
 assert.equal(r.status, 200);
-assert.ok((await r.text()).includes("secure AI connection"));
+const bridgeHtml = await r.text();
+assert.ok(bridgeHtml.includes("secure AI connection"));
+assert.ok(bridgeHtml.includes('id="heading"'));
+assert.ok(bridgeHtml.includes('id="loader"'));
+assert.ok(bridgeHtml.includes('aria-live="polite"'));
+assert.ok(bridgeHtml.includes("prefers-reduced-motion"));
+assert.ok(bridgeHtml.includes("this window will close automatically"));
 r = await worker.fetch(new Request(origin + "/api/ai/bridge/client.js"), base, owner);
-assert.ok((await r.text()).includes("window.opener.postMessage"));
+const bridgeJs = await r.text();
+assert.ok(bridgeJs.includes("window.opener.postMessage"));
+assert.ok(bridgeJs.includes("Finding your dinner ideas"));
+assert.ok(bridgeJs.includes("This may take a moment"));
+assert.ok(bridgeJs.includes("your AI suggestions are waiting".replace("your", "Your")));
+assert.ok(bridgeJs.includes("checkOnly"));
+assert.ok(bridgeJs.includes("window.close()"));
+assert.ok(bridgeJs.includes("window.opener.focus()"));
+assert.ok(bridgeJs.includes("real-paprika-opt-in"));
 const payload = {
   version: 2, scope: "full-paprika-library", consent: "explicit-per-request",
   recipes: Array.from({length: 8}, (_, i) => ({
