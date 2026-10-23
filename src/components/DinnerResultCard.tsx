@@ -55,8 +55,20 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
         <div className="dinner-result-notes">
           <strong>AI recommendation</strong>
           <p>{ai.explanation}</p>
-          {ai.cautions.length > 0 && (
-            <ul>{ai.cautions.map((note, index) => <li key={index}>{note}</li>)}</ul>
+          {(ai.adjustments?.length ?? 0) > 0 && (
+            <div className="dinner-ai-adjustments">
+              <strong>Ingredient change to try</strong>
+              <ul>{ai.adjustments?.map((change, index) => (
+                <li key={index}>
+                  <strong>Instead of {change.ingredientFrom}, try {change.ingredientTo}.</strong>{" "}
+                  {change.why}
+                </li>
+              ))}</ul>
+              <p>Proposed only — check dietary needs before using a substitute.</p>
+            </div>
+          )}
+          {ai.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).length > 0 && (
+            <ul>{ai.cautions.filter(note => !note.startsWith("Imported Paprika recipe: check all ingredients")).map((note, index) => <li key={index}>{note}</li>)}</ul>
           )}
         </div>
       )}
