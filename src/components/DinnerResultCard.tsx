@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import type { DinnerSuggestion } from "../services/dinnerSuggestions";
 import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
 import { cleanAiNote, usefulAiNotes } from "../services/aiRecommendationDisplay";
+import { hasIngredientTerm } from "../../backend/src/recipeRelevance";
 
 export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?: AiDinnerSuggestion }) {
   const { onHand, notMarkedOnHand, unavailable, softNotes, reviewReasons } = result;
@@ -19,8 +20,18 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
   const hardFlags = reviewReasons.filter(reason => reason.includes("(Must avoid)"));
   const aiExplanation = ai ? cleanAiNote(ai.explanation) : "";
   const aiCautions = ai ? usefulAiNotes(ai.cautions) : [];
-  const aiHasAdvice = !!aiExplanation || aiCautions.length > 0 ||
-    (ai?.adjustments?.length ?? 0) > 0;
+  const changes = ai?.adjustments ?? [];
+  const adjustedOtherIngredients = ai
+    ? notMarkedOnHand.filter(line => !changes.some(change =>
+        hasIngredientTerm(line, change.ingredientFrom)))
+    : notMarkedOnHand;
+  const replacementIngredients = changes
+    .filter(change => change.method !== "omit" && change.ingredientTo !== "omit" &&
+      !onHand.some(line => hasIngredientTerm(line, change.ingredientTo)) &&
+      !adjustedOtherIngredients.some(line => hasIngredientTerm(line, change.ingredientTo)))
+    .map(change => change.ingredientTo + " (suggested replacement)");
+  const otherNeeded = [...adjustedOtherIngredients, ...replacementIngredients];
+  const aiHasAdvice = !!aiExplanation || aiCautions.length > 0 || changes.length > 0;
   return (
     <article className={"dinner-result-card" + (review ? " dinner-result-card--review" : "")}>
       <div className="dinner-result-header">
@@ -44,19 +55,19 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
           <strong>Possible on-hand matches:</strong> {onHand.join("; ")}
         </p>
       )}
-      {notMarkedOnHand.length > 0 && (
+      {otherNeeded.length > 0 && (
         <section className="dinner-extra-ingredients" aria-label="Other ingredients needed">
           <strong>Other ingredients needed</strong>
           <ul>
-            {notMarkedOnHand.slice(0, 8).map((ingredient, index) => (
+            {otherNeeded.slice(0, 8).map((ingredient, index) => (
               <li key={index}>{ingredient}</li>
             ))}
           </ul>
-          {notMarkedOnHand.length > 8 && (
+          {otherNeeded.length > 8 && (
             <details>
-              <summary>Show {notMarkedOnHand.length - 8} more ingredients</summary>
+              <summary>Show {otherNeeded.length - 8} more ingredients</summary>
               <ul>
-                {notMarkedOnHand.slice(8).map((ingredient, index) => (
+                {otherNeeded.slice(8).map((ingredient, index) => (
                   <li key={index + 8}>{ingredient}</li>
                 ))}
               </ul>
@@ -83,10 +94,12 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
           {aiExplanation && <p>{aiExplanation}</p>}
           {(ai.adjustments?.length ?? 0) > 0 && (
             <div className="dinner-ai-adjustments">
-              <strong>Ingredient change to try</strong>
+              <strong>Suggested recipe adjustments</strong>
               <ul>{ai.adjustments?.map((change, index) => (
                 <li key={index}>
-                  <strong>Instead of {change.ingredientFrom}, try {change.ingredientTo}.</strong>{" "}
+                  <strong>{change.method === "omit" || change.ingredientTo === "omit"
+                    ? "Leave out " + change.ingredientFrom + "."
+                    : "Instead of " + change.ingredientFrom + ", try " + change.ingredientTo + "."}</strong>{" "}
                   {change.why}
                 </li>
               ))}</ul>
