@@ -1,0 +1,30 @@
+name: Validate Dinner Engine changes
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run browser and backend contract tests
+        run: |
+          npm run test:import
+          npm run test:matching
+          npm run test:ai-paprika-browser
+          npm run test:ai-activation-gate
+          npm run test:ai-real-bridge
+          npm run test:ai-paprika-model
+          npm run test:ai-money
+      - name: Typecheck and build
+        run: npm run build
