@@ -7,13 +7,13 @@
  * server-held API secret. Identity checks precede body reads or provider work.
  */
 import { checkBody } from "./guardrails";
-import { runSyntheticPilot, syntheticPilotReady, type SyntheticPilotEnv } from "./pilotSynthetic";
+import { runSyntheticPilot, syntheticPilotReady } from "./pilotSynthetic";
 import { BRIDGE_HTML, BRIDGE_JS } from "./bridgePage";
 import { runRealPaprika, realPaprikaReady, type RealPaprikaEnv } from "./realPaprika";
 import { readFullPaprikaBody } from "./paprikaContract";
 export { UsageLedger } from "./usageLedger";
 
-interface WorkerEnv extends SyntheticPilotEnv, RealPaprikaEnv {
+interface WorkerEnv extends RealPaprikaEnv {
   ALLOWED_EMAIL?: string; // Private Cloudflare Production runtime Secret
   AI_GUARDRAIL_MODE?: string; // Default absent/off; "test" permits nonbillable check only
   USAGE_LEDGER?: {
