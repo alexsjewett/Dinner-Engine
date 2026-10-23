@@ -1,6 +1,6 @@
-# Find Dinner
+# Kitchen Companion
 
-A mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
+Kitchen Companion is a mobile-first, iPhone-friendly web application that helps a household choose what to cook based on available ingredients, missing staples, time, and household food restrictions, while proposing substitutions for human review.
 
 **Status:** Milestone 3A.0 approved and staged. AI is not yet active: a nonbillable, fail-closed backend scaffold and security plan have been added. Existing 2B dinner recommendations remain live.
 
