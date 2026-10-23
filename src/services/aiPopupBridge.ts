@@ -16,16 +16,21 @@ export type AiDinnerResult =
   | { ok: true; suggestions: AiDinnerSuggestion[];
       estimatedMicroUsd: number; batchCount: number }
   | { ok: false; error: string };
-export const AI_WORKER_ORIGIN = (import.meta.env.VITE_AI_WORKER_ORIGIN ?? "").trim();
+/**
+ * Pin the owner's verified, public Worker address. This is not a secret.
+ * Do not trust a dynamic build variable or a look-alike *.workers.dev
+ * hostname for a page that may transmit Paprika recipe text.
+ */
+export const AI_WORKER_ORIGIN = "https://dinner-engine-ai.alexsjewett.workers.dev";
 
 export function validatedWorkerOrigin(value: string): string | null {
   try {
     const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password ||
-        url.search || url.hash || url.pathname !== "/" ||
-        !url.hostname.startsWith("dinner-engine-ai.") ||
-        !url.hostname.endsWith(".workers.dev")) return null;
-    return url.origin;
+    return url.origin === AI_WORKER_ORIGIN &&
+      url.protocol === "https:" &&
+      !url.username && !url.password &&
+      !url.search && !url.hash &&
+      url.pathname === "/" ? url.origin : null;
   } catch { return null; }
 }
 
@@ -102,5 +107,43 @@ export function askAiWithSecurePopup(
     }, 1000);
     const timeout = setTimeout(() =>
       complete({ ok: false, error: "bridge_timeout" }), 300_000);
+  });
+}
+
+/**
+ * Nonbillable Safari/Cloudflare Access test: opens the exact protected
+ * Worker origin and waits for one verified response. Never constructs or
+ * transmits a Paprika payload, whether real AI is on or off.
+ */
+export function checkAiSecureConnection(): Promise<
+  { ok: true; enabled: boolean } | { ok: false; error: string }
+> {
+  const state = crypto.randomUUID();
+  const popup = window.open(AI_WORKER_ORIGIN + "/api/ai/bridge?state=" + state,
+    "_blank");
+  if (!popup) return Promise.resolve({ ok: false, error: "popup_blocked" });
+  return new Promise(resolve => {
+    let finished = false;
+    const finish = (answer: { ok: true; enabled: boolean } |
+      { ok: false; error: string }) => {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener("message", onMessage);
+      clearInterval(closed);
+      clearTimeout(timeout);
+      resolve(answer);
+    };
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== AI_WORKER_ORIGIN || event.source !== popup ||
+          event.data?.state !== state || event.data?.type !== "dinner-ai-ready")
+        return;
+      finish({ ok: true, enabled: event.data.enabled === true });
+    };
+    window.addEventListener("message", onMessage);
+    const closed = setInterval(() => {
+      if (popup.closed) finish({ ok: false, error: "bridge_closed" });
+    }, 1_000);
+    const timeout = setTimeout(() => finish({ ok: false, error: "bridge_timeout" }),
+      120_000);
   });
 }

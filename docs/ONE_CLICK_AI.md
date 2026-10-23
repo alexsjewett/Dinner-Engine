@@ -43,11 +43,15 @@ iPhone Safari before treating the feature as production-ready.
 
 ## Remaining configuration and activation (owner controlled)
 
-1. Obtain the **exact non-secret HTTPS Worker address** from the owner's
-   Cloudflare dashboard: Workers & Pages → dinner-engine-ai → URL.
-   Configure GitHub Pages with that single verified `dinner-engine-ai.*.workers.dev`
-   origin via `VITE_AI_WORKER_ORIGIN` (build-time public setting). No API
-   keys, email addresses or private values may go in frontend variables.
+1. **Completed:** The owner confirmed the existing, non-secret protected
+   Worker address as `https://dinner-engine-ai.alexsjewett.workers.dev/`.
+   The GitHub Pages frontend now pins this exact HTTPS origin in code; it
+   rejects similarly named Worker hosts. No API key, Cloudflare account
+   credential or personal email address was added to the frontend.
+   A new **Check secure AI connection — no recipe upload** button is safe
+   to try before activation: it sends no Paprika recipes and cannot make
+   a paid model request. It checks first-party Access authentication and
+   receipt of the Worker readiness response.
 2. Leave `AI_REAL_MODE` **absent** initially; use the iPhone app button to
    confirm popup sign-in and that it reports *not activated* without sending
    the library. Verify the app and its local recipes remain intact.
