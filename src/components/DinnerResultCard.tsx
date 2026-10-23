@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import type { DinnerSuggestion } from "../services/dinnerSuggestions";
 import type { AiDinnerSuggestion } from "../services/aiPopupBridge";
-import { isGenericAiDisclaimer, usefulAiNotes } from "../services/aiRecommendationDisplay";
+import { cleanAiNote, usefulAiNotes } from "../services/aiRecommendationDisplay";
 
 export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?: AiDinnerSuggestion }) {
   const { onHand, notMarkedOnHand, unavailable, softNotes, reviewReasons } = result;
@@ -17,7 +17,7 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
     : "/recipes/" + result.recipe.id;
   const review = result.category === "review";
   const hardFlags = reviewReasons.filter(reason => reason.includes("(Must avoid)"));
-  const aiExplanation = ai && !isGenericAiDisclaimer(ai.explanation) ? ai.explanation : "";
+  const aiExplanation = ai ? cleanAiNote(ai.explanation) : "";
   const aiCautions = ai ? usefulAiNotes(ai.cautions) : [];
   const aiHasAdvice = !!aiExplanation || aiCautions.length > 0 ||
     (ai?.adjustments?.length ?? 0) > 0;
