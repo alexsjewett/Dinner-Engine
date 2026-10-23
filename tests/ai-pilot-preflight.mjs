@@ -45,6 +45,16 @@ try {
     recipeId: "synthetic-1", explanation: "Fits the available ingredients", cautions: ["Review dietary suitability"],
   }]);
   assert.equal(mod.validateAiResponse({ suggestions: [{
+    recipeId: "synthetic-1", explanation: "Fits", cautions: [],
+    adjustments: [{ ingredientFrom: "water", ingredientTo: "broth",
+      why: "A more savory option" }],
+  }] }, ["synthetic-1"])?.[0].adjustments?.[0].ingredientTo, "broth");
+  assert.equal(mod.validateAiResponse({ suggestions: [{
+    recipeId: "synthetic-1", explanation: "Fits", cautions: [],
+    adjustments: [{ ingredientFrom: "water", ingredientTo: "broth",
+      why: "x".repeat(111) }],
+  }] }, ["synthetic-1"]), null);
+  assert.equal(mod.validateAiResponse({ suggestions: [{
     recipeId: "invented-id", explanation: "Made up", cautions: [],
   }] }, ["synthetic-1"]), null);
   assert.equal(mod.validateAiResponse({ suggestions: [{
