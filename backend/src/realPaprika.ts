@@ -19,7 +19,9 @@ export interface RealPaprikaEnv extends SyntheticPilotEnv {
   AI_REAL_MODE?: string;
 }
 type RealFailure = ProviderFailureCode | ModelValidationDiagnostic |
-  "budget_limit_reached" | "budget_unavailable" | "model_response_incomplete" |
+  "budget_limit_reached" | "budget_hourly_limit_reached" |
+  "budget_daily_limit_reached" | "budget_monthly_limit_reached" |
+  "budget_spending_limit_reached" | "budget_unavailable" | "model_response_incomplete" |
   "model_response_invalid" | "budget_settlement_failed";
 type RealResponse =
   | { ok: true; estimatedMicroUsd: number; batchCount: number;
@@ -64,9 +66,18 @@ export async function runRealPaprika(
   try {
     ledger = env.USAGE_LEDGER!.getByName("pilot-owner-v1");
     const reserved = await callLedger(ledger, "reserve-paid-batch", { requestIds: ids });
-    if (reserved.result !== "reserved" || reserved.code !== 200)
-      return { ok: false, error: reserved.result === "limited" ?
-        "budget_limit_reached" : "budget_unavailable" };
+    if (reserved.result !== "reserved" || reserved.code !== 200) {
+      const knownLimits: Record<string, RealFailure> = {
+        hourly_limited: "budget_hourly_limit_reached",
+        daily_limited: "budget_daily_limit_reached",
+        monthly_limited: "budget_monthly_limit_reached",
+        spending_limited: "budget_spending_limit_reached",
+        limited: "budget_limit_reached", // Compatibility with older internal ledgers.
+      };
+      return { ok: false, error: reserved.code === 409 &&
+        typeof reserved.result === "string" ?
+        knownLimits[reserved.result] ?? "budget_unavailable" : "budget_unavailable" };
+    }
   } catch {
     return { ok: false, error: "budget_unavailable" };
   }
