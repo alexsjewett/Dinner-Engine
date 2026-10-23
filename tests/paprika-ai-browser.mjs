@@ -31,9 +31,9 @@ assert.ok(!pageSrc.includes("AiDinnerCompanion") &&
   "do not show the obsolete second AI search interface");
 const cardSrc = await readFile("src/components/DinnerResultCard.tsx", "utf8");
 const detailsSrc = await readFile("src/pages/RecipeDetails.tsx", "utf8");
-assert.ok(cardSrc.includes("Ingredient change to try") &&
+assert.ok(cardSrc.includes("Suggested recipe adjustments") &&
   cardSrc.includes("ai.adjustments"), "cards must show generated recipe changes");
-assert.ok(detailsSrc.includes("Ingredient change to try") &&
+assert.ok(detailsSrc.includes("Suggested recipe adjustments") &&
   detailsSrc.includes("suggestion.adjustments"), "details must show identical changes");
 const popupSrc = await readFile("src/services/aiPopupBridge.ts", "utf8");
 try {
