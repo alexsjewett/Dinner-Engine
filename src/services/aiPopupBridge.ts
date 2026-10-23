@@ -109,3 +109,41 @@ export function askAiWithSecurePopup(
       complete({ ok: false, error: "bridge_timeout" }), 300_000);
   });
 }
+
+/**
+ * Nonbillable Safari/Cloudflare Access test: opens the exact protected
+ * Worker origin and waits for one verified response. Never constructs or
+ * transmits a Paprika payload, whether real AI is on or off.
+ */
+export function checkAiSecureConnection(): Promise<
+  { ok: true; enabled: boolean } | { ok: false; error: string }
+> {
+  const state = crypto.randomUUID();
+  const popup = window.open(AI_WORKER_ORIGIN + "/api/ai/bridge?state=" + state,
+    "_blank");
+  if (!popup) return Promise.resolve({ ok: false, error: "popup_blocked" });
+  return new Promise(resolve => {
+    let finished = false;
+    const finish = (answer: { ok: true; enabled: boolean } |
+      { ok: false; error: string }) => {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener("message", onMessage);
+      clearInterval(closed);
+      clearTimeout(timeout);
+      resolve(answer);
+    };
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== AI_WORKER_ORIGIN || event.source !== popup ||
+          event.data?.state !== state || event.data?.type !== "dinner-ai-ready")
+        return;
+      finish({ ok: true, enabled: event.data.enabled === true });
+    };
+    window.addEventListener("message", onMessage);
+    const closed = setInterval(() => {
+      if (popup.closed) finish({ ok: false, error: "bridge_closed" });
+    }, 1_000);
+    const timeout = setTimeout(() => finish({ ok: false, error: "bridge_timeout" }),
+      120_000);
+  });
+}
