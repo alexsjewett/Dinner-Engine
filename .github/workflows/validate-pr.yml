@@ -23,6 +23,7 @@ jobs:
           npm run test:matching
           node tests/kitchen-relevance.mjs
           node tests/ai-display-copy.mjs
+          node tests/ai-quota-feedback.mjs
           npm run test:ai-foundation
           npm run test:ai-pilot
           npm run test:ai-paprika
