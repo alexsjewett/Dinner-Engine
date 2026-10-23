@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
+import { describeAiFailure } from "../services/aiQuotaFeedback";
 import { assessLocalAiReadiness } from "../services/aiPaprikaReadiness";
 import { AI_WORKER_ORIGIN, askAiWithSecurePopup, type AiDinnerSuggestion } from "../services/aiPopupBridge";
 import { evaluateImportedRecipe } from "../services/importedDinnerMatcher";
@@ -133,8 +134,8 @@ export function FindDinner() {
       setAiBusy(true);
       void promise.then(result => {
         if (!result.ok) {
-          setAiFailure("AI suggestions couldn't finish (" + result.error +
-            "). Showing your usual recipe matches instead. No automatic retry.");
+          setAiFailure(describeAiFailure(result.error) +
+            " Showing your usual recipe matches instead. No automatic retry.");
           return;
         }
         const allowed = new Map(eligibleNow.map(recipe => [recipe.id, recipe]));
