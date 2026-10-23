@@ -74,3 +74,31 @@ export async function saveImportedRecipes(recipes: ImportedRecipe[]): Promise<nu
     });
   } finally { db.close(); }
 }
+
+/** Delete a single saved recipe, after its IndexedDB transaction commits. */
+export async function deleteImportedRecipe(id: string): Promise<void> {
+  const db = await openDb();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error("Could not delete recipe."));
+      tx.onabort = () => reject(tx.error || new Error("Could not delete recipe."));
+    });
+  } finally { db.close(); }
+}
+
+/** Clear saved recipes only; never delete profiles or other browser data. */
+export async function deleteAllImportedRecipes(): Promise<void> {
+  const db = await openDb();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error("Could not delete saved recipes."));
+      tx.onabort = () => reject(tx.error || new Error("Could not delete saved recipes."));
+    });
+  } finally { db.close(); }
+}
