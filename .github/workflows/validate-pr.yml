@@ -21,6 +21,7 @@ jobs:
         run: |
           npm run test:import
           npm run test:matching
+          node tests/kitchen-relevance.mjs
           npm run test:ai-paprika-browser
           npm run test:ai-activation-gate
           npm run test:ai-real-bridge
