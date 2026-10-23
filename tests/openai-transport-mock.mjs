@@ -6,7 +6,7 @@ import ts from "typescript";
 const suffix = ".openai-mock-test-" + process.pid + ".mjs";
 const paths = [
   "backend/src/guardrails.ts", "backend/src/aiPilot.ts",
-  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts",
+  "backend/src/paprikaContract.ts", "backend/src/paprikaModelDraft.ts", "backend/src/recipeRelevance.ts",
   "backend/src/openAiTransport.ts",
 ];
 const worker = await readFile("backend/src/index.ts", "utf8");
