@@ -13,29 +13,23 @@ assert.ok(!/fetch\s*\(|XMLHttpRequest|sendBeacon|OPENAI_API_KEY/.test(frontendSr
   "the local preflight must not transmit data");
 assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(pageSrc),
   "the recommendation UI must have no direct browser network calls");
-assert.ok(pageSrc.includes("Check full-library AI plan locally — no upload"));
-assert.ok(pageSrc.includes("AiDinnerCompanion"),
-  "optional AI action remains a separately opted-in feature");
+assert.ok(!pageSrc.includes("Check full-library AI plan locally — no upload"),
+  "the retired preparation panel must be absent from the dinner experience");
+assert.ok(pageSrc.includes('role="switch"') &&
+  pageSrc.includes('Use AI assistance') &&
+  pageSrc.includes("Find Dinner Ideas"), "AI is an option on the single search form");
+assert.ok(pageSrc.includes("prepareLocalPaprikaRequest(localRecipes, submitted, dinersForRequest, true)"),
+  "each opted-in search must pass complete-library validation");
+assert.ok(pageSrc.includes("askAiWithSecurePopup(prepared, AI_WORKER_ORIGIN)"),
+  "only an explicit submit can initiate an authenticated request");
+assert.ok(pageSrc.includes("aiBusy") && pageSrc.includes("AI is thinking"),
+  "the original page displays progress during the request");
+assert.ok(pageSrc.includes("DinnerResultCard") && pageSrc.includes("aiById"),
+  "AI and deterministic matches reuse ordinary recipe cards");
+assert.ok(!pageSrc.includes("AiDinnerCompanion") &&
+  !pageSrc.includes("Full-library preparation check"),
+  "do not show the obsolete second AI search interface");
 const popupSrc = await readFile("src/services/aiPopupBridge.ts", "utf8");
-const optInSrc = await readFile("src/components/AiDinnerCompanion.tsx", "utf8");
-assert.ok(popupSrc.includes("window.open") &&
-  popupSrc.includes('event.origin !== origin') &&
-  popupSrc.includes('event.source !== popup'),
-  "real AI must use origin-and-nonce-bound protected popups");
-assert.ok(popupSrc.includes('event.data.enabled !== true'),
-  "real recipes cannot leave the page unless the server is activated");
-assert.ok(popupSrc.includes('https://dinner-engine-ai.alexsjewett.workers.dev'),
-  "worker URL must exactly match the verified Access-protected account");
-assert.ok(popupSrc.includes("url.origin === AI_WORKER_ORIGIN"),
-  "do not allow an untrusted look-alike Cloudflare Worker hostname");
-assert.ok(popupSrc.includes("checkAiSecureConnection") &&
-  popupSrc.includes('event.data?.type !== "dinner-ai-ready"'),
-  "offline connection check must be origin, popup and nonce bound");
-assert.ok(optInSrc.includes("Check secure AI connection — no recipe upload"),
-  "connection should be testable on iPhone without sharing real recipes");
-assert.ok(optInSrc.includes('I want to share all') &&
-  optInSrc.includes('!consent'),
-  "the user must opt in to every request");
 try {
   const compile = text => ts.transpileModule(text, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
