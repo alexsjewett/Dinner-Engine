@@ -35,6 +35,7 @@ jobs:
         run: npm run test:matching
       - name: Test pantry relevance and safe proposed ingredient swaps
         run: node tests/kitchen-relevance.mjs
+      - name: Test concise AI presentation and ingredient lists
         run: node tests/ai-display-copy.mjs
       - name: Test disabled AI foundation
         run: npm run test:ai-foundation
