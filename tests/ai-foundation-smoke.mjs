@@ -388,11 +388,11 @@ assert.equal((await durable2.fetch(new Request("https://internal/no"))).status, 
 const paidStorage = storage();
 const paidLedger = new UsageLedger({ storage: paidStorage }, {});
 const paidUrl = "https://internal/reserve-paid-preflight";
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 50; i++) {
   assert.equal((await paidLedger.fetch(new Request(paidUrl, { method: "POST" }))).status, 200);
 }
 assert.equal((await paidLedger.fetch(new Request(paidUrl, { method: "POST" }))).status, 429);
-assert.equal(paidStorage.values.get("paid:usd:" + new Date().toISOString().slice(0, 7)), 15000);
+assert.equal(paidStorage.values.get("paid:usd:" + new Date().toISOString().slice(0, 7)), 75000);
 assert.equal((await new UsageLedger({ storage: paidStorage }, {}).fetch(
   new Request(paidUrl, { method: "POST" }))).status, 429);
 assert.equal((await paidLedger.fetch(new Request(paidUrl))).status, 404);
