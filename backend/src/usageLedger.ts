@@ -9,7 +9,7 @@
  * model pricing and reservation/reconciliation changes.
  */
 import { DurableObject } from "cloudflare:workers";
-import { reservePaidBudget, reserveRequest, settleRequest } from "./paidBudget";
+import { reservePaidBudget, reserveRequest, reservePaidBatch, settleRequest } from "./paidBudget";
 
 export const LIMITS = {
   perHour: 10,
@@ -71,7 +71,7 @@ export class UsageLedger extends DurableObject {
   async fetch(request: Request): Promise<Response> {
     const pathname = new URL(request.url).pathname;
     if (request.method !== "POST" ||
-        !["/reserve-test", "/reserve-paid-preflight", "/reserve-paid-id", "/settle-paid-id"].includes(pathname)) {
+        !["/reserve-test", "/reserve-paid-preflight", "/reserve-paid-id", "/reserve-paid-batch", "/settle-paid-id"].includes(pathname)) {
       return new Response("not_found", { status: 404 });
     }
     try {
@@ -100,6 +100,21 @@ export class UsageLedger extends DurableObject {
         }
         const result = settleRequest(this.ctx.storage as LedgerContext["storage"], data.requestId, data.actualMicroUsd);
         return Response.json({ result }, { status: result === "settled" ? 200 : 409 });
+      }
+      if (pathname === "/reserve-paid-batch") {
+        // One Worker-owned list of opaque IDs; never recipes, profiles or IPs.
+        const raw = await request.text();
+        if (raw.length > 1_000) return Response.json({ error: "invalid" }, { status: 400 });
+        const value: unknown = JSON.parse(raw);
+        if (!value || typeof value !== "object" || Array.isArray(value) ||
+            Object.keys(value).length !== 1 || !("requestIds" in value) ||
+            !Array.isArray(value.requestIds) ||
+            value.requestIds.some(id => typeof id !== "string")) {
+          return Response.json({ error: "invalid" }, { status: 400 });
+        }
+        const result = reservePaidBatch(
+          this.ctx.storage as LedgerContext["storage"], Date.now(), value.requestIds);
+        return Response.json({ result }, { status: result === "reserved" ? 200 : 409 });
       }
       if (pathname === "/reserve-paid-preflight") {
         const allowed = reservePaidBudget(this.ctx.storage as LedgerContext["storage"], Date.now());
