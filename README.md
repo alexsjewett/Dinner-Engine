@@ -33,6 +33,7 @@ Phase numbers describe planning sequence, not delivery commitments.
 - Agree on the scope of each code-writing step and obtain explicit approval before creating or editing application code.
 
 ## Project documents
+- [AI recommendation guidance — agreed product rules (implementation pending)](docs/AI_RECOMMENDATION_GUIDANCE.md)
 - [Decision register](docs/DECISIONS.md)
 - [Future features and roadmap](docs/FUTURE_FEATURES.md)
 - [Key learnings](docs/KEY_LEARNINGS.md)
