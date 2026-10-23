@@ -13,7 +13,7 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
   const { state } = useLocation();
   const origin = state as DetailsLocationState | null;
   const suggestion = origin?.aiSuggestion;
-  const validSuggestion = imported && suggestion?.recipeId === recipeId &&
+  const validSuggestion = imported && !!suggestion && suggestion.recipeId === recipeId &&
     typeof suggestion.explanation === "string" &&
     Array.isArray(suggestion.cautions) &&
     suggestion.cautions.every(item => typeof item === "string");
