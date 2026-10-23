@@ -26,8 +26,12 @@ assert.ok(!/Access-Control-Allow-Origin.*\*/.test(worker),
   "no wildcard cross-origin permission");
 assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(browser),
   "Github Pages must not transmit Paprika data by default");
-assert.ok(browser.includes("AiDinnerCompanion"),
-  "real-recipe AI uses the explicit user-consent component");
+assert.ok(browser.includes('role="switch"') &&
+  browser.includes("prepareLocalPaprikaRequest") &&
+  browser.includes("askAiWithSecurePopup(prepared, AI_WORKER_ORIGIN)"),
+  "real-recipe AI requires a user-enabled toggle and an explicit search submit");
+assert.ok(browser.includes('setUseAi(false)') === false,
+  "AI is never automatically activated by a background effect");
 assert.ok(!JSON.stringify(config).includes("AI_REAL_MODE"),
   "repository must never activate the protected real endpoint by default");
 assert.ok(!/\bfetch\s*\(|XMLHttpRequest|sendBeacon/.test(catalog),
