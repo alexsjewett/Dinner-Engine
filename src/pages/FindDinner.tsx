@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { readAiSearchSession, saveAiSearchSession, emptyAiSearch } from "../services/aiSearchSession";
 import { Link } from "react-router";
 import { prepareLocalPaprikaRequest } from "../services/aiPaprikaRequest";
 import { describeAiFailure } from "../services/aiQuotaFeedback";
@@ -22,16 +23,15 @@ export function FindDinner() {
   const [search, setSearch] = useState<SavedSearch>(readSearchSession);
   const [profilesState] = useState(loadProfiles);
   const [error, setError] = useState("");
-  const [useAi, setUseAi] = useState(false);
+  const [aiState, setAiState] = useState(() => readAiSearchSession(search.submitted));
+  const { enabled: useAi, searched: aiSearch, suggestions: aiSuggestions, failure: aiFailure } = aiState;
   const [aiBusy, setAiBusy] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<AiDinnerSuggestion[] | null>(null);
-  const [aiFailure, setAiFailure] = useState("");
-  const [aiSearch, setAiSearch] = useState(false);
   const [localRecipes, setLocalRecipes] = useState<ImportedRecipe[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<"loading" | "ready" | "error">("loading");
   const profiles = profilesState.profiles;
 
   useEffect(() => { saveSearchSession(search); }, [search]);
+  useEffect(() => { saveAiSearchSession(aiState, search.submitted); }, [aiState, search.submitted]);
   useEffect(() => {
     let live = true;
     listImportedRecipes()
@@ -52,8 +52,7 @@ export function FindDinner() {
       draft: { ...previous.draft, ...partial },
     }));
     setError("");
-    setAiSuggestions(null);
-    setAiFailure("");
+    setAiState(previous => ({ ...previous, searched: false, suggestions: null, failure: "" }));
   }
 
   function togglePerson(id: string, checked: boolean) {
@@ -89,9 +88,7 @@ export function FindDinner() {
       eligibleForSearch(recipe, submitted, dinersForRequest));
     if (useAi && eligibleNow.length === 0) {
       setSearch({ draft: submitted, submitted, expanded: false });
-      setAiSearch(false);
-      setAiSuggestions(null);
-      setAiFailure("");
+      setAiState(previous => ({ ...previous, searched: false, suggestions: null, failure: "" }));
       setError("No recipes have a verified, practical route around your unavailable ingredients and Must-avoid restrictions. AI was not called.");
       return;
     }
@@ -113,9 +110,7 @@ export function FindDinner() {
     // costs if the full original library cannot fit a bounded model plan.
     if (prepared?.ok && !assessLocalAiReadiness(prepared).ready) {
       setSearch({ draft: submitted, submitted, expanded: false });
-      setAiSearch(false);
-      setAiSuggestions(null);
-      setAiFailure("");
+      setAiState(previous => ({ ...previous, searched: false, suggestions: null, failure: "" }));
       setError("Your complete library does not fit the current AI batch limits. " +
         "No AI request was sent; showing your usual recipe matches.");
       return;
@@ -126,16 +121,15 @@ export function FindDinner() {
       ? askAiWithSecurePopup(prepared, AI_WORKER_ORIGIN)
       : null;
     setSearch({ draft: submitted, submitted, expanded: false });
-    setAiSearch(!!promise);
-    setAiSuggestions(null);
-    setAiFailure("");
+    setAiState(previous => ({ ...previous, searched: !!promise, suggestions: null, failure: "" }));
     setError("");
     if (promise) {
       setAiBusy(true);
       void promise.then(result => {
         if (!result.ok) {
-          setAiFailure(describeAiFailure(result.error) +
-            " Showing your usual recipe matches instead. No automatic retry.");
+          setAiState(previous => ({ ...previous, suggestions: null,
+            failure: describeAiFailure(result.error) +
+              " Showing your usual recipe matches instead. No automatic retry." }));
           return;
         }
         const allowed = new Map(eligibleNow.map(recipe => [recipe.id, recipe]));
@@ -164,12 +158,14 @@ export function FindDinner() {
           return [{ ...item, explanation, cautions, adjustments }];
         });
         if (safe.length === 0) {
-          setAiFailure("No AI ideas met your ingredient rules. Showing matching recipes instead.");
+          setAiState(previous => ({ ...previous, suggestions: null,
+            failure: "No AI ideas met your ingredient rules. Showing matching recipes instead." }));
           return;
         }
-        setAiSuggestions(safe);
+        setAiState(previous => ({ ...previous, suggestions: safe, failure: "" }));
       }).catch(() => {
-        setAiFailure("AI is unavailable. Showing your usual recipe matches. No automatic retry.");
+        setAiState(previous => ({ ...previous, suggestions: null,
+          failure: "AI is unavailable. Showing your usual recipe matches. No automatic retry." }));
       }).finally(() => setAiBusy(false));
     }
   }
@@ -315,7 +311,7 @@ export function FindDinner() {
           <label className="dinner-mode-choice dinner-ai-toggle">
             <input type="checkbox" role="switch" aria-label="Use AI assistance"
               checked={useAi} disabled={aiBusy}
-              onChange={event => { setUseAi(event.target.checked); setAiFailure(""); setAiSuggestions(null); setAiSearch(false); }} />
+              onChange={event => setAiState(emptyAiSearch(event.target.checked))} />
             <span><strong>Use AI assistance</strong>
               <span className="dinner-ai-toggle-subtitle"> Optional · More tailored ideas</span>
             </span>
