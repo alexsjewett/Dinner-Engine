@@ -22,10 +22,17 @@ jobs:
           npm run test:import
           npm run test:matching
           node tests/kitchen-relevance.mjs
+          npm run test:ai-foundation
+          npm run test:ai-pilot
+          npm run test:ai-paprika
           npm run test:ai-paprika-browser
+          npm run test:ai-readiness
+          npm run test:ai-catalog
           npm run test:ai-activation-gate
           npm run test:ai-real-bridge
           npm run test:ai-paprika-model
           npm run test:ai-money
+          npm run test:ai-transport
+          npm run test:ai-orchestrator
       - name: Typecheck and build
         run: npm run build
