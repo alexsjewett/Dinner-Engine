@@ -54,10 +54,12 @@ export function assessLocalAiReadiness(preflight: LocalPaprikaPreflight): LocalA
     ready: false, reason: "batch_plan_unavailable",
     recipeCount: preflight.count, totalBytes: preflight.bytes,
   };
-  const knownConflictExcludedCount =
-    batches.reduce((n, batch) => n + batch.draft.excludedKnownConflictIds.length, 0);
-  const eligibleRecipeCount =
-    batches.reduce((n, batch) => n + batch.draft.eligibleIds.length, 0);
+  // Anchored model batches may repeat an eligible candidate to carry excluded
+  // full-text recipes. Summarize the distinct library IDs, not repeated drafts.
+  const libraryIds = new Set(expected);
+  const eligibleIds = new Set(batches.flatMap(batch => batch.draft.eligibleIds));
+  const eligibleRecipeCount = [...eligibleIds].filter(id => libraryIds.has(id)).length;
+  const knownConflictExcludedCount = preflight.count - eligibleRecipeCount;
   if (eligibleRecipeCount < 1 ||
       eligibleRecipeCount + knownConflictExcludedCount !== preflight.count) {
     return {
