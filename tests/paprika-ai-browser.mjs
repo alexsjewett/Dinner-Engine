@@ -24,6 +24,15 @@ assert.ok(popupSrc.includes("window.open") &&
   "real AI must use origin-and-nonce-bound protected popups");
 assert.ok(popupSrc.includes('event.data.enabled !== true'),
   "real recipes cannot leave the page unless the server is activated");
+assert.ok(popupSrc.includes('https://dinner-engine-ai.alexsjewett.workers.dev'),
+  "worker URL must exactly match the verified Access-protected account");
+assert.ok(popupSrc.includes("url.origin === AI_WORKER_ORIGIN"),
+  "do not allow an untrusted look-alike Cloudflare Worker hostname");
+assert.ok(popupSrc.includes("checkAiSecureConnection") &&
+  popupSrc.includes('event.data?.type !== "dinner-ai-ready"'),
+  "offline connection check must be origin, popup and nonce bound");
+assert.ok(optInSrc.includes("Check secure AI connection — no recipe upload"),
+  "connection should be testable on iPhone without sharing real recipes");
 assert.ok(optInSrc.includes('I want to share all') &&
   optInSrc.includes('!consent'),
   "the user must opt in to every request");
