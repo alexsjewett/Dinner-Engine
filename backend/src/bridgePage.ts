@@ -77,7 +77,8 @@ export const BRIDGE_JS = `"use strict";
       notify("dinner-ai-result", { ok: false, error: "ai_unavailable" });
     }
     status.textContent = "Request complete. Return to Find dinner.";
-    window.close();
+    // Give Safari time to deliver postMessage before closing the popup.
+    setTimeout(() => window.close(), 750);
   });
   begin();
 })();`;
