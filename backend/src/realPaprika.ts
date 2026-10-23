@@ -133,7 +133,12 @@ export async function runRealPaprika(
     for (let rank = 0; rank < 5 && suggestions.length < 3; rank++) {
       for (const group of groups) {
         const item = group[rank];
-        if (item && suggestions.length < 3) suggestions.push(item);
+        // An eligible anchor may occur across bounded batches. Show each
+        // original Paprika recipe at most once.
+        if (item && suggestions.length < 3 &&
+            !suggestions.some(existing => existing.recipeId === item.recipeId)) {
+          suggestions.push(item);
+        }
       }
     }
     if (!suggestions.length) return { ok: false, error: "model_response_invalid" };
