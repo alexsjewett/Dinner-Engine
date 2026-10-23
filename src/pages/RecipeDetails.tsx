@@ -88,7 +88,7 @@ export function RecipeDetails({ imported = false }: { imported?: boolean }) {
                 )}
               </FeatureCard>
             )}
-            <FeatureCard eyebrow="Unmodified Paprika text" title="Original ingredients">
+            <FeatureCard title="Original ingredients">
               <div className="import-original-text">{savedRecipe.ingredients || "No ingredients listed."}</div>
             </FeatureCard>
             <FeatureCard title="Original instructions">
