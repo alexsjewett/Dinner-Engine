@@ -62,10 +62,12 @@ export function FindDinner() {
 
   function eligibleForSearch(recipe: ImportedRecipe, criteria: SearchCriteria,
     dinersForSearch: ReturnType<typeof selectDiners>): boolean {
-    const relevant = screenRecipeForSearch(recipe,
-      criteria.haveText.split(","), criteria.unavailableText.split(","));
-    return relevant.eligible && !evaluateImportedRecipe(recipe, criteria, dinersForSearch)
-      .reviewReasons.some(reason => reason.includes("(Must avoid)"));
+    const must = dinersForSearch.flatMap(diner => diner.foodRestrictions
+      .filter(item => item.level === "must").map(item => item.food));
+    const needs = [...new Set(dinersForSearch.flatMap(diner => diner.dietaryNeeds))];
+    return screenRecipeForSearch(recipe,
+      criteria.haveText.split(","), criteria.unavailableText.split(","),
+      must, needs).eligible;
   }
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -89,7 +91,7 @@ export function FindDinner() {
       setAiSearch(false);
       setAiSuggestions(null);
       setAiFailure("");
-      setError("None of your saved recipes match those ingredients and restrictions. AI was not called.");
+      setError("No recipes have a verified, practical route around your unavailable ingredients and Must-avoid restrictions. AI was not called.");
       return;
     }
     const prepared = useAi
@@ -144,14 +146,17 @@ export function FindDinner() {
           const mustAvoid = dinersForRequest.flatMap(d => d.foodRestrictions
             .filter(restriction => restriction.level === "must")
             .map(restriction => restriction.food));
+          const needs = [...new Set(dinersForRequest.flatMap(d => d.dietaryNeeds))];
           const adjustments = reviewAiAdjustments(item.adjustments, recipe,
             submitted.haveText.split(","), submitted.unavailableText.split(","),
-            mustAvoid);
+            mustAvoid, needs);
           const unsafeSwapWording = /\b(substitut(?:e|ion)|swap|replac(?:e|ing)|instead of)\b/i;
           // Freeform model advice about swaps cannot bypass the reviewed
           // structured substitution contract.
           const explanation = unsafeSwapWording.test(item.explanation)
-            ? "This recipe matches ingredients you listed. Review the original before cooking."
+            ? adjustments.length > 0
+              ? "This recipe is an option with the ingredient change shown below."
+              : "This is a potential dinner from your saved recipes."
             : item.explanation;
           const cautions = item.cautions.filter(note =>
             !unsafeSwapWording.test(note));
@@ -185,8 +190,7 @@ export function FindDinner() {
         if (!recipe || !submitted) return null;
         const match = evaluateImportedRecipe(recipe, submitted, diners);
         // Independently refuse recipes with detected hard dietary conflicts.
-        if (!eligibleRecipes.some(candidate => candidate.id === recipe.id) ||
-            match.reviewReasons.some(reason => reason.includes("(Must avoid)"))) return null;
+        if (!eligibleRecipes.some(candidate => candidate.id === recipe.id)) return null;
         return match;
       }).filter((item): item is NonNullable<typeof item> => item !== null)
     : null;
@@ -235,7 +239,7 @@ export function FindDinner() {
               aria-describedby="dinner-unavailable-help"
             />
             <p id="dinner-unavailable-help" className="helper-text">
-              Recipes requiring those ingredients will be excluded.
+              These ingredients need a sensible substitution or omission; otherwise the recipe won't qualify for AI suggestions.
             </p>
           </div>
 
@@ -368,7 +372,7 @@ export function FindDinner() {
             </p>
           )}
           {!aiBusy && displayed.length === 0 && (
-            <p className="helper-text">No recipes match the available and unavailable ingredients you entered. Try changing your criteria or importing more recipes.</p>
+            <p className="helper-text">No suitable recipes with a verified workaround match these restrictions. Try changing your criteria or importing more recipes.</p>
           )}
           {firstThree.length > 0 && (
             <div className="dinner-result-section">
