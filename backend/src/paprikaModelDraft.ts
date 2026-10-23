@@ -305,6 +305,8 @@ export function planPaprikaModelBatches(value: unknown): StagedPaprikaBatch[] | 
   const plannedGroups: Array<{ primaryIds: string[]; draft: StagedRequest }> = [];
   let group: LibraryRecipe[] = [];
   const draftWithOptionalAnchor = (recipes: LibraryRecipe[]): StagedRequest | null => {
+    const direct = stagePaprikaModelRequest({ ...full, recipes });
+    if (direct) return direct;
     // Never repeat the same ID *within* one model batch.
     const withAnchor = recipes.some(recipe => recipe.id === anchor.id)
       ? recipes : [anchor, ...recipes];
