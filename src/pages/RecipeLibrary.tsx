@@ -193,7 +193,7 @@ export function RecipeLibrary() {
                     <span className="recipe-timing">From Paprika</span>
                   </div>
                   <h3>{recipe.name}</h3>
-                  <p>{recipe.description || "Original recipe imported from Paprika."}</p>
+                  {recipe.description?.trim() && <p>{recipe.description}</p>}
                   <div className="recipe-card-bottom">
                     <span>{recipe.totalTime || recipe.cookTime || "Time not listed"}</span>
                     <Link
