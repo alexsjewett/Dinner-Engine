@@ -62,6 +62,11 @@ try {
   assert.equal(itemSchema.cautions.maxItems, 3);
   assert.equal(itemSchema.cautions.items.minLength, 1);
   assert.equal(itemSchema.cautions.items.maxLength, 120);
+  assert.deepEqual(suggested.items.required,
+    ["recipeId", "explanation", "cautions", "adjustments"]);
+  assert.equal(itemSchema.adjustments.maxItems, 1);
+  assert.deepEqual(itemSchema.adjustments.items.required,
+    ["ingredientFrom", "ingredientTo", "why"]);
   const nonblank = new RegExp(itemSchema.explanation.pattern);
   for (const text of ["Fits pantry", " one ", "Visible text"]) {
     assert.ok(nonblank.test(text));
@@ -132,6 +137,16 @@ try {
   assert.ok(verified.suggestions[0].cautions.some(x => x.includes("check all ingredients")));
   assert.ok(verified.estimatedMicroUsd > 0 && verified.estimatedMicroUsd <= 1_500);
   assert.equal(mod.diagnosePaprikaModelReply(respond([suggestion]), staged.eligibleIds), null);
+  const adjusted = { ...suggestion, adjustments: [{
+    ingredientFrom: "beans", ingredientTo: "lentils",
+    why: "Available in the pantry",
+  }] };
+  assert.equal(mod.validatePaprikaModelReply(
+    respond([adjusted]), staged.eligibleIds).suggestions[0].adjustments[0].ingredientTo,
+    "lentils");
+  assert.equal(mod.validatePaprikaModelReply(respond([{
+    ...adjusted, adjustments: [{...adjusted.adjustments[0], why: "x".repeat(111)}],
+  }]), staged.eligibleIds), null);
   const modelDiagnosisCases = [
     [ { ...respond([suggestion]), status: "incomplete" }, "model_status_invalid" ],
     [ { ...respond([suggestion]), usage: null }, "model_usage_invalid" ],
