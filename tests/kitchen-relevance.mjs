@@ -78,7 +78,8 @@ try {
   assert.ok(model.includes("screenRecipeForSearch(recipe, payload.criteria.have"),
     "Worker must exclude irrelevant and unavailable recipes before model ranking");
   const worker = await readFile("backend/src/realPaprika.ts", "utf8");
-  assert.ok(worker.indexOf("no_eligible_recipes") < worker.indexOf("reserve-paid-batch"),
+  const liveFlow = worker.slice(worker.indexOf("export async function runRealPaprika("));
+  assert.ok(liveFlow.indexOf("no_eligible_recipes") < liveFlow.indexOf('callLedger(ledger, "reserve-paid-batch"'),
     "empty eligibility must fail before billable batch reservations");
   const html = await readFile("index.html", "utf8");
   const app = await readFile("src/App.tsx", "utf8");
