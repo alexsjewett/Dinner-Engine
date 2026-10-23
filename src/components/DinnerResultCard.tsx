@@ -35,12 +35,6 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
   return (
     <article className={"dinner-result-card" + (review ? " dinner-result-card--review" : "")}>
       <div className="dinner-result-header">
-        <div className="dinner-result-labels">
-          <span className={"dinner-source-tag" + (imported ? " dinner-source-tag--my" : "")}>
-            {imported ? "My Recipe" : "Sample Recipe"}
-          </span>
-          {ai && <span className="dinner-result-category">AI pick</span>}
-        </div>
         <span className="recipe-timing">{time}</span>
       </div>
       <h3>{title}</h3>
@@ -51,13 +45,14 @@ export function DinnerResultCard({ result, ai }: { result: DinnerSuggestion; ai?
         {description.length > 240 ? "…" : ""}
       </p>
       {onHand.length > 0 && (
-        <p className="dinner-match-line">
-          <strong>Possible on-hand matches:</strong> {onHand.join("; ")}
-        </p>
+        <section className="dinner-extra-ingredients" aria-label="Ingredients on-hand">
+          <strong>Ingredients on-hand:</strong>
+          <p>{onHand.join("; ")}</p>
+        </section>
       )}
       {otherNeeded.length > 0 && (
-        <section className="dinner-extra-ingredients" aria-label="Other ingredients needed">
-          <strong>Other ingredients needed</strong>
+        <section className="dinner-extra-ingredients" aria-label="Ingredients needed">
+          <strong>Ingredients needed:</strong>
           <ul>
             {otherNeeded.slice(0, 8).map((ingredient, index) => (
               <li key={index}>{ingredient}</li>
