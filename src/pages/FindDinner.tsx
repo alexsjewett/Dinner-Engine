@@ -406,6 +406,7 @@ export function FindDinner() {
         </section>
       )}
 
+      <p className="dinner-credit">made by alex</p>
     </div>
   );
 }

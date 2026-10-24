@@ -651,3 +651,10 @@ h1 {
 }
 .dinner-source-tag--my { background: #dfece0; color: #31543a; }
 .dinner-result-description { overflow-wrap: anywhere; }
+
+.dinner-credit {
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: left;
+}
